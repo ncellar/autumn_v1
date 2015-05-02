@@ -1,6 +1,6 @@
-package com.norswap.autumn.parsing;
+package com.norswap.autumn.parsing3;
 
-public class Precedence
+public final class Precedence
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

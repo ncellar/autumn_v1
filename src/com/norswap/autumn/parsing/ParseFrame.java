@@ -4,8 +4,6 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import static com.norswap.autumn.parsing.ParseFrameFlags.*; // PFF_*
-import static com.norswap.autumn.parsing.Precedence.ESCAPE_PRECEDENCE;
-import static com.norswap.autumn.parsing.Precedence.NO_PRECEDENCE;
 
 /**
  * A parse frame is a snapshot of the parser's state.
@@ -121,28 +119,13 @@ public final class ParseFrame
         childrenSize = parseOutput.childrenSize();
 
         // --------------------------------------
-        // PRECEDENCE
 
-        precedence = pe.precedence();
-
-        // NO_PRECEDENCE means current precedence isn't affected
-        if (precedence == NO_PRECEDENCE)
-        {
-            precedence = oldFrame.precedence;
-        }
-
-        // ESCAPE_PRECEDENCE means reset the precedence to 0
-        if (precedence == ESCAPE_PRECEDENCE)
-        {
-            precedence = NO_PRECEDENCE;
-        }
+        precedence = Precedence.get(pe, oldFrame.precedence);
 
         // --------------------------------------
 
-        if (pe.isCuttable())
-        {
-            setFlags(PFF_CUTTABLE);
-        }
+        // Set PFF_CUTTABLE if the old frame has it.
+        setFlags(oldFrame.flags & PFF_CUTTABLE);
 
         parentCuttable = oldFrame.isCuttable()
             ? oldFrame
@@ -162,17 +145,19 @@ public final class ParseFrame
         {
             if (seeds == null)
             {
-                // Necessary so that we can still access the seed stack after growing the seeds.
+                // Necessary so that we can still access the seed stack after having reset the
+                // frame prior to retrying a left-recursive expression.
+                //
                 // Not wrong either, since frame.position == oldFrame.position.
                 seeds = oldFrame.seeds = new ArrayDeque<>(2);
             }
 
             pushSeed(ParseOutput.fail(pe, position));
-        }
 
-        if (pe.isLeftAssociative())
-        {
-            leftAssociatives.push(pe);
+            if (pe.isLeftAssociative())
+            {
+                leftAssociatives.push(pe);
+            }
         }
 
         // --------------------------------------
@@ -408,6 +393,7 @@ public final class ParseFrame
         }
         else
         {
+            // TODO should truncate?
             // Discard unsaved children.
             oldFrame.childrenSize = oldFrame.parseOutput.childrenSize();
         }

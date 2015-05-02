@@ -88,6 +88,7 @@ public final class Parser
             // We bypass error handling: it is not expected that the input matches this expression.
 
             oldFrame.fail();
+            --depth;
             return;
         }
 
@@ -332,7 +333,6 @@ public final class Parser
                 }
 
             } break;
-
 
             // ------------------------------------
 

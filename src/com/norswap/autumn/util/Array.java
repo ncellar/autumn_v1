@@ -2,6 +2,7 @@ package com.norswap.autumn.util;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * A dynamic array to serve as minimal substitute to ArrayList.
@@ -9,7 +10,7 @@ import java.util.Collection;
  * The idea to to be able to implement functions not implemented by ArrayList, such as {@link
  * #truncate}.
  */
-public final class Array<T>
+public final class Array<T> implements Iterable<T>
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -113,6 +114,43 @@ public final class Array<T>
         {
             add(array.get(i));
         }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void push(T t)
+    {
+        add(t);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public T pop()
+    {
+        return Caster.cast(array[--next]);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public Iterator<T> iterator()
+    {
+        return new Iterator<T>()
+        {
+            private int index;
+
+            @Override
+            public boolean hasNext()
+            {
+                return index < next;
+            }
+
+            @Override
+            public T next()
+            {
+                return Caster.cast(array[index++]);
+            }
+        };
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

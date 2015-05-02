@@ -22,7 +22,7 @@ public class ParseFrameFlags
         = 1 << i++;
 
     /**
-     * Indicates that the expression owning this frame can is cuttable.
+     * Indicates that the expression owning this frame can be cut.
      */
     public static int PFF_CUTTABLE
         = 1 << i++;
