@@ -1,7 +1,10 @@
 package com.norswap.autumn.parsing3;
 
 import com.norswap.autumn.parsing.Source;
+import com.norswap.autumn.parsing3.expressions.Token;
 import com.norswap.autumn.util.Array;
+
+import static com.norswap.autumn.parsing3.Registry.PEF_ERROR_RECORDING;
 
 /**
  * The default error handling strategy consist of reporting the error(s) occuring at the farthest
@@ -24,7 +27,7 @@ public class DefaultErrorHandler implements ErrorHandler
     @Override
     public void handle(ParsingExpression pe, int fileOffset)
     {
-        if (!pe.isErrorRecording() && !pe.isToken())
+        if (!pe.hasFlagsSet(PEF_ERROR_RECORDING) && !(pe instanceof Token))
         {
             return;
         }

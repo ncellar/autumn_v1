@@ -1,11 +1,11 @@
 package com.norswap.autumn.parsing3.expressions;
 
-import com.norswap.autumn.parsing3.ParseInput;
+import com.norswap.autumn.parsing3.*;
 import com.norswap.autumn.parsing3.ParseOutput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
 
-public final class Sequence extends ParsingExpression
+public final class LongestMatch extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -19,22 +19,33 @@ public final class Sequence extends ParsingExpression
         final ParseInput down = new ParseInput(input);
         final ParseOutput up = down.output;
 
+        down.isolateCuts();
+
+        ParseOutput farthestOutput = ParseOutput.failure();
+        ParseResult longestResult = null;
+
         for (ParsingExpression operand : operands)
         {
+            down.setResult(ParseResult.container());
+
             operand.parse(parser, down);
 
-            if (up.succeeded())
+            if (up.position > farthestOutput.position)
             {
-                down.advance(up);
+                farthestOutput.become(up);
+                longestResult = down.result;
             }
-            else
-            {
-                parser.fail(this, input);
-                return;
-            }
+
+            down.resetOutput();
         }
 
-        input.output.become(up);
+        input.output.become(farthestOutput);
+        input.merge(longestResult);
+
+        if (input.output.failed())
+        {
+            parser.fail(this, input);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -42,17 +53,19 @@ public final class Sequence extends ParsingExpression
     @Override
     public int parseDumb(CharSequence text, int position)
     {
+        int farthestPosition = -1;
+
         for (ParsingExpression operand: operands)
         {
-            position = operand.parseDumb(text, position);
+            int result = operand.parseDumb(text, position);
 
-            if (position == -1)
+            if (result > farthestPosition)
             {
-                break;
+                farthestPosition = result;
             }
         }
 
-        return position;
+        return farthestPosition;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -60,7 +73,7 @@ public final class Sequence extends ParsingExpression
     @Override
     public void appendTo(StringBuilder builder)
     {
-        builder.append("sequence(");
+        builder.append("longestMatch(");
 
         for (ParsingExpression operand: operands)
         {

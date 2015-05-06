@@ -1,191 +1,256 @@
 package com.norswap.autumn.parsing3;
 
-import com.norswap.autumn.parsing.Operator;
-import com.norswap.autumn.parsing.Precedence;
+import com.norswap.autumn.parsing3.expressions.*;
+import com.norswap.autumn.parsing3.expressions.Whitespace;
 
-import static com.norswap.autumn.parsing.Operator.*;
-import static com.norswap.autumn.parsing.ParsingExpressionFlags.*;
+import static com.norswap.autumn.parsing3.Registry.*; // PEF_*
 
 public final class ParsingExpressionFactory
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    private static ParsingExpression operands(Operator operator, ParsingExpression[] operands)
+
+    public static Any any()
     {
-        ParsingExpression result = new ParsingExpression(operator);
-        result.setOperands(operands);
+        return null;
+    }
+
+    public static Capture capture(String captureName, ParsingExpression operand)
+    {
+        Capture result = new Capture();
+        result.name = captureName;
+        result.operand = operand;
         return result;
     }
 
-    private static ParsingExpression operand(Operator operator, ParsingExpression operand)
+    public static Capture captureGrouped(String captureName, ParsingExpression operand)
     {
-        ParsingExpression result = new ParsingExpression(operator);
-        result.setOperand(operand);
+        Capture result = capture(captureName, operand);
+        result.flags |= PEF_CAPTURE_GROUPED;
         return result;
     }
 
-    private static ParsingExpression string(Operator operator, String string)
+    public static Capture captureText(String captureName, ParsingExpression operand)
     {
-        ParsingExpression result = new ParsingExpression(operator);
-        result.setString(string);
+        Capture result = capture(captureName, operand);
+        result.flags |= PEF_CAPTURE_TEXT;
         return result;
+    }
+
+    public static Capture captureTextGrouped(String captureName, ParsingExpression operand)
+    {
+        Capture result = capture(captureName, operand);
+        result.flags |= PEF_CAPTURE_TEXT | PEF_CAPTURE_GROUPED;
+        return result;
+    }
+
+    public static CharRange charRange(char start, char end)
+    {
+        CharRange result = new CharRange();
+        result.start = start;
+        result.end = end;
+        return result;
+    }
+
+    public static CharSet charSet(char[] chars)
+    {
+        CharSet result = new CharSet();
+        result.chars = chars;
+        return result;
+    }
+
+    public static CharSet charSet(String chars)
+    {
+        return charSet(chars.toCharArray());
+    }
+
+    public static Choice choice(ParsingExpression... operands)
+    {
+        Choice result = new Choice();
+        result.operands = operands;
+        return result;
+    }
+
+    public static Cut cut()
+    {
+        return new Cut();
+    }
+
+    public static Dumb dumb(ParsingExpression operand)
+    {
+        Dumb result = new Dumb();
+        result.operand = operand;
+        return result;
+    }
+
+    public static ParsingExpression dumb(ParsingExpression... seq)
+    {
+        return dumb(sequence(seq));
+    }
+
+    public static Literal literal(String string)
+    {
+        Literal result = new Literal();
+        result.string = string;
+        return result;
+    }
+
+    public static LeftRecursive leftAssociative(ParsingExpression operand)
+    {
+        LeftRecursive result = new LeftRecursive();
+        result.operand = operand;
+        result.leftAssociative = true;
+        return result;
+    }
+
+    public static LeftRecursive leftAssociative(ParsingExpression... seq)
+    {
+        return leftAssociative(sequence(seq));
+    }
+
+    public static LeftRecursive leftRecursive(ParsingExpression operand)
+    {
+        LeftRecursive result = new LeftRecursive();
+        result.operand = operand;
+        return result;
+    }
+
+    public static LeftRecursive leftRecursive(ParsingExpression... seq)
+    {
+        return leftRecursive(sequence(seq));
+    }
+
+    public static LongestMatch longestMatch(ParsingExpression... operands)
+    {
+        LongestMatch result = new LongestMatch();
+        result.operands = operands;
+        return result;
+    }
+
+    public static Lookahead lookahead(ParsingExpression operand)
+    {
+        Lookahead result = new Lookahead();
+        result.operand = operand;
+        return result;
+    }
+
+    public static Lookahead lookahead(ParsingExpression... seq)
+    {
+        return lookahead(sequence(seq));
+    }
+
+    public static Memo memo(ParsingExpression operand)
+    {
+        Memo result = new Memo();
+        result.operand = operand;
+        return result;
+    }
+
+    public static ParsingExpression memo(ParsingExpression... seq)
+    {
+        return memo(sequence(seq));
+    }
+
+    public static Not not(ParsingExpression operand)
+    {
+        Not result = new Not();
+        result.operand = operand;
+        return result;
+    }
+
+    public static Not not(ParsingExpression... seq)
+    {
+        return not(sequence(seq));
+    }
+
+    public static Precedence noPrecedence(ParsingExpression operand)
+    {
+        Precedence result = new Precedence();
+        result.precedence = Precedence.NONE;
+        result.operand = operand;
+        return result;
+    }
+
+    public static Precedence noPrecedence(ParsingExpression... seq)
+    {
+        return noPrecedence(sequence(seq));
+    }
+
+    public static OneMore oneMore(ParsingExpression operand)
+    {
+        OneMore result = new OneMore();
+        result.operand = operand;
+        return result;
+    }
+
+    public static OneMore oneMore(ParsingExpression... seq)
+    {
+        return oneMore(sequence(seq));
+    }
+
+    public static Optional optional(ParsingExpression operand)
+    {
+        Optional result = new Optional();
+        result.operand = operand;
+        return result;
+    }
+
+    public static Optional optional(ParsingExpression... seq)
+    {
+        return optional(sequence(seq));
+    }
+
+    public static Precedence precedence(int precedence, ParsingExpression operand)
+    {
+        Precedence result = new Precedence();
+        result.precedence = precedence;
+        result.operand = operand;
+        return result;
+    }
+
+    public static Reference reference(String name)
+    {
+        Reference result = new Reference();
+        result.setName(name);
+        return result;
+    }
+
+    public static Sequence sequence(ParsingExpression... operands)
+    {
+        Sequence result = new Sequence();
+        result.operands = operands;
+        return result;
+    }
+
+    public static Token token(ParsingExpression operand)
+    {
+        Token result = new Token();
+        result.operand = operand;
+        return result;
+    }
+
+    public static Token token(ParsingExpression... seq)
+    {
+        return token(sequence(seq));
+    }
+
+    public static Whitespace whitespace()
+    {
+        return new Whitespace();
+    }
+
+    public static ZeroMore zeroMore(ParsingExpression operand)
+    {
+        ZeroMore result = new ZeroMore();
+        result.operand = operand;
+        return result;
+    }
+
+    public static ZeroMore zeroMore(ParsingExpression... seq)
+    {
+        return zeroMore(sequence(seq));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    // CREATE EXPRESSIONS
-
-    public static ParsingExpression sequence(ParsingExpression... operands)
-    {
-        return operands(OP_SEQUENCE, operands);
-    }
-
-    public static ParsingExpression choice(ParsingExpression... operands)
-    {
-        return cuttable$(operands(OP_CHOICE, operands));
-    }
-
-    public static ParsingExpression lookahead(ParsingExpression operand)
-    {
-        return operand(OP_LOOKAHEAD, operand);
-    }
-
-    public static ParsingExpression not(ParsingExpression operand)
-    {
-        return operand(OP_NOT, operand);
-    }
-
-    public static ParsingExpression optional(ParsingExpression operand)
-    {
-        return cuttable$(operand(OP_OPTIONAL, operand));
-    }
-
-    public static ParsingExpression zeroMore(ParsingExpression operand)
-    {
-        return cuttable$(operand(OP_ZERO_MORE, operand));
-    }
-
-    public static ParsingExpression oneMore(ParsingExpression operand)
-    {
-        return cuttable$(operand(OP_ONE_MORE, operand));
-    }
-
-    public static ParsingExpression literal(String string)
-    {
-        return string(OP_LITERAL, string);
-    }
-
-    public static ParsingExpression charRange(char first, char last)
-    {
-        return string(OP_CHAR_RANGE, "" + first + last);
-    }
-
-    public static ParsingExpression charRange(String string)
-    {
-        if (string.length() != 2)
-        {
-            throw new RuntimeException(
-                "charRange takes a string with the first and last characters only!");
-        }
-
-        return string(OP_CHAR_RANGE, string);
-    }
-
-    public static ParsingExpression charSet(String chars)
-    {
-        return string(OP_CHAR_SET, chars);
-    }
-
-    public static ParsingExpression any()
-    {
-        return new ParsingExpression(OP_ANY);
-    }
-
-    public static ParsingExpression longestMatch(ParsingExpression... operands)
-    {
-        return operands(OP_LONGEST_MATCH, operands);
-    }
-
-    public static ParsingExpression dumb(ParsingExpression operand)
-    {
-        return operand(OP_DUMB, operand);
-    }
-
-    public static ParsingExpression custom(CustomParseOperator function)
-    {
-        ParsingExpression result = new ParsingExpression(OP_CUSTOM);
-        result.setCustom(function);
-        return result;
-    }
-
-    public static ParsingExpression customDumb(CustomDumbParseOperator function)
-    {
-        ParsingExpression result = new ParsingExpression(OP_DUMB_CUSTOM);
-        result.setCustom(function);
-        return result;
-    }
-
-    public static ParsingExpression cut()
-    {
-        return new ParsingExpression(OP_CUT);
-    }
-
-    public static ParsingExpression ref(String name)
-    {
-        ParsingExpression result = new ParsingExpression(OP_REF);
-        result.setString(name);
-        return result;
-    }
-
-    public static ParsingExpression ref(ParsingExpression expr)
-    {
-        ParsingExpression result = new ParsingExpression(OP_REF);
-        result.setOperand(expr);
-        return result;
-    }
-
-    public static ParsingExpression whitespace()
-    {
-        return new ParsingExpression(OP_WHITESPACE);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    // CREATE EXPRESSIONS (SEQUENCE SYNTACTIC SUGAR)
-
-    public static ParsingExpression lookahead(ParsingExpression... operands)
-    {
-        return lookahead(sequence(operands));
-    }
-
-    public static ParsingExpression not(ParsingExpression... operands)
-    {
-        return not(sequence(operands));
-    }
-
-    public static ParsingExpression optional(ParsingExpression... operands)
-    {
-        return optional(sequence(operands));
-    }
-
-    public static ParsingExpression zeroMore(ParsingExpression... operands)
-    {
-        return zeroMore(sequence(operands));
-    }
-
-    public static ParsingExpression oneMore(ParsingExpression... operands)
-    {
-        return oneMore(sequence(operands));
-    }
-
-    public static ParsingExpression dumb(ParsingExpression... operands)
-    {
-        return dumb(sequence(operands));
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    // CREATE EXPRESSIONS (FAKE OPERATORS)
 
     public static ParsingExpression notChars(String chars)
     {
@@ -214,108 +279,15 @@ public final class ParsingExpressionFactory
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // MUTATE EXPRESSIONS (indicated by $ suffix)
-
-    public static ParsingExpression named$(String string, ParsingExpression pe)
+    public static ParsingExpression errorRecording$(String name, ParsingExpression pe)
     {
-        pe.setName(string.intern());
+        pe.setFlags(Registry.PEF_ERROR_RECORDING);
         return pe;
     }
 
-    public static ParsingExpression errorRecording$(ParsingExpression pe)
+    public static ParsingExpression named$(String name, ParsingExpression pe)
     {
-        pe.setFlags(PEF_ERROR_RECORDING);
-        return pe;
-    }
-
-    public static ParsingExpression memoized$(ParsingExpression pe)
-    {
-        pe.setFlags(PEF_MEMOIZE);
-        return pe;
-    }
-
-    public static ParsingExpression cuttable$(ParsingExpression pe)
-    {
-        pe.setFlags(PEF_CUTTABLE);
-        return pe;
-    }
-
-    public static ParsingExpression leftAssociative$(ParsingExpression pe)
-    {
-        pe.setFlags(PEF_LEFT_RECURSIVE | PEF_LEFT_ASSOCIATIVE);
-        return pe;
-    }
-
-    public static ParsingExpression leftRecursive$(ParsingExpression pe)
-    {
-        pe.setFlags(PEF_LEFT_RECURSIVE);
-        return pe;
-    }
-
-    public static ParsingExpression rightAssociative$(ParsingExpression pe)
-    {
-        // Not a mistake, right associativity is the default, we just need to allow left recursion.
-        pe.setFlags(PEF_LEFT_RECURSIVE);
-        return pe;
-    }
-
-    public static ParsingExpression leftRecursive$(String name, ParsingExpression pe)
-    {
-        pe.setFlags(PEF_LEFT_RECURSIVE);
-        return recursive$(name, pe);
-    }
-
-    public static ParsingExpression delimited$(ParsingExpression pe)
-    {
-        pe.setPrecedence(Precedence.ESCAPE_PRECEDENCE);
-        return pe;
-    }
-
-    public static ParsingExpression token$(ParsingExpression pe)
-    {
-        pe.setFlags(PEF_TOKEN);
-        return pe;
-    }
-
-    public static ParsingExpression token(String literal)
-    {
-        return token$(literal(literal));
-    }
-
-    public static ParsingExpression token(ParsingExpression... operands)
-    {
-        return token$(sequence(operands));
-    }
-
-    public static ParsingExpression capture$(String captureName, ParsingExpression pe)
-    {
-        pe.setSingleCapture(captureName);
-        return pe;
-    }
-
-    public static ParsingExpression captureText$(String captureName, ParsingExpression pe)
-    {
-        pe.setSingleCapture(captureName);
-        pe.setFlags(PEF_TEXT_CAPTURE);
-        return pe;
-    }
-
-    public static ParsingExpression captureMultiple$(String captureName, ParsingExpression pe)
-    {
-        pe.setMultipleCapture(captureName);
-        return pe;
-    }
-
-    public static ParsingExpression captureTextMultiple$(String captureName, ParsingExpression pe)
-    {
-        pe.setMultipleCapture(captureName);
-        pe.setFlags(PEF_TEXT_CAPTURE);
-        return pe;
-    }
-
-    public static ParsingExpression withPrecedence$(int precedence, ParsingExpression pe)
-    {
-        pe.setPrecedence(precedence);
+        pe.setName(name);
         return pe;
     }
 
@@ -324,30 +296,6 @@ public final class ParsingExpressionFactory
         pe.setName(name);
         new RecursionResolver(pe).walk(pe);
         return pe;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    // CREATE & MUTATE REFERENCE TO EXPRESSION
-
-    public static ParsingExpression capture(String captureName, ParsingExpression pe)
-    {
-        return capture$(captureName, ref(pe));
-    }
-
-    public static ParsingExpression captureText(String captureName, ParsingExpression pe)
-    {
-        return captureText$(captureName, ref(pe));
-    }
-
-    public static ParsingExpression captureMultiple(String captureName, ParsingExpression pe)
-    {
-        return captureMultiple$(captureName, ref(pe));
-    }
-
-    public static ParsingExpression captureTextMultiple(String captureName, ParsingExpression pe)
-    {
-        return captureTextMultiple$(captureName, ref(pe));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

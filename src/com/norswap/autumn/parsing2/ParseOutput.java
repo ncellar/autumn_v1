@@ -27,7 +27,7 @@ public class ParseOutput
 
     // ---------------------------------------------------------------------------------------------
 
-    ParseOutput(int position, int blackPosition)
+    public ParseOutput(int position, int blackPosition)
     {
         this.position = position;
         this.blackPosition = blackPosition;

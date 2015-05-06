@@ -5,7 +5,7 @@ public final class ParserConfiguration
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * The configuration a Parser will use by default if a configuration is not supplied explicitly.
+     * The configuration a Parser will use by default if a configuration is not set explicitly.
      */
     public static final ParserConfiguration DEFAULT = new ParserConfiguration();
 
@@ -17,13 +17,7 @@ public final class ParserConfiguration
 
     public MemoizationStrategy memoizationStrategy = new DefaultMemoizationStrategy();
 
-    public Tracer tracer;
-
-    public boolean debug = false;
-
     public boolean processLeadingWhitespace = true;
-
-    public int debugCountThreshold = 1000000;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

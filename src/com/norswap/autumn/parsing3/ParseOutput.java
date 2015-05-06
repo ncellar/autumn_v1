@@ -1,25 +1,18 @@
 package com.norswap.autumn.parsing3;
 
+import static com.norswap.autumn.parsing3.Registry.POF_CUT;
+
 public class ParseOutput
 {
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // FLAGS
-
-    /**
-     * Indicates that a cut operator has been encountered while parsing the children of the
-     * parsing expression corresponding to this frame.
-     */
-    private static int PFF_CUT = 1;
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public int position;
     public int blackPosition;
-    private int flags;
+    public int flags;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    static ParseOutput failure()
+    public static ParseOutput failure()
     {
         ParseOutput output = new ParseOutput(-1, -1);
         return output;
@@ -27,7 +20,7 @@ public class ParseOutput
 
     // ---------------------------------------------------------------------------------------------
 
-    ParseOutput(int position, int blackPosition)
+    public ParseOutput(int position, int blackPosition)
     {
         this.position = position;
         this.blackPosition = blackPosition;
@@ -35,14 +28,14 @@ public class ParseOutput
 
     // ---------------------------------------------------------------------------------------------
 
-    ParseOutput(ParseInput input)
+    public ParseOutput(ParseInput input)
     {
         reset(input);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    ParseOutput(ParseOutput output)
+    public ParseOutput(ParseOutput output)
     {
         become(output);
     }
@@ -71,7 +64,7 @@ public class ParseOutput
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    void advance(int n)
+    public void advance(int n)
     {
         this.position += n;
         this.blackPosition += n;
@@ -88,7 +81,7 @@ public class ParseOutput
 
     // ---------------------------------------------------------------------------------------------
 
-    void reset(ParseInput input)
+    public void reset(ParseInput input)
     {
         this.position = input.position;
         this.blackPosition = input.blackPosition;
@@ -101,11 +94,11 @@ public class ParseOutput
     {
         if (input.isCuttable() && !isCut())
         {
-            setFlags(PFF_CUT);
+            setFlags(POF_CUT);
         }
         else if (input.parentCuttable != null)
         {
-            input.parentCuttable.output.setFlags(PFF_CUT);
+            input.parentCuttable.output.setFlags(POF_CUT);
             input.parentCuttable = input.parentCuttable.parentCuttable;
         }
 
@@ -116,7 +109,7 @@ public class ParseOutput
 
     public void unCut()
     {
-        clearFlags(PFF_CUT);
+        clearFlags(POF_CUT);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -126,7 +119,7 @@ public class ParseOutput
      */
     public boolean isCut()
     {
-        return hasFlagsSet(PFF_CUT);
+        return hasFlagsSet(POF_CUT);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,40 +1,36 @@
 package com.norswap.autumn.parsing3.expressions;
 
 import com.norswap.autumn.parsing3.ParseInput;
-import com.norswap.autumn.parsing3.ParseOutput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
 
-public final class Sequence extends ParsingExpression
+public final class Lookahead extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParsingExpression[] operands;
+    public ParsingExpression operand;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        final ParseInput down = new ParseInput(input);
-        final ParseOutput up = down.output;
+        int flags = input.flags;
 
-        for (ParsingExpression operand : operands)
+        input.forbidCapture();
+
+        operand.parse(parser, input);
+
+        if (input.output.succeeded())
         {
-            operand.parse(parser, down);
-
-            if (up.succeeded())
-            {
-                down.advance(up);
-            }
-            else
-            {
-                parser.fail(this, input);
-                return;
-            }
+            input.resetOutput();
+        }
+        else
+        {
+            parser.fail(this, input);
         }
 
-        input.output.become(up);
+        input.flags = flags;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -42,17 +38,9 @@ public final class Sequence extends ParsingExpression
     @Override
     public int parseDumb(CharSequence text, int position)
     {
-        for (ParsingExpression operand: operands)
-        {
-            position = operand.parseDumb(text, position);
-
-            if (position == -1)
-            {
-                break;
-            }
-        }
-
-        return position;
+        return operand.parseDumb(text, position) == -1
+            ? -1
+            : position;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -60,15 +48,8 @@ public final class Sequence extends ParsingExpression
     @Override
     public void appendTo(StringBuilder builder)
     {
-        builder.append("sequence(");
-
-        for (ParsingExpression operand: operands)
-        {
-            operand.toString(builder);
-            builder.append(", ");
-        }
-
-        builder.setLength(builder.length() - 2);
+        builder.append("lookahead(");
+        operand.toString(builder);
         builder.append(")");
     }
 
@@ -77,7 +58,7 @@ public final class Sequence extends ParsingExpression
     @Override
     public ParsingExpression[] children()
     {
-        return operands;
+        return new ParsingExpression[]{operand};
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

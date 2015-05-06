@@ -318,7 +318,7 @@ public final class Parser
 
             case OP_ZERO_MORE:
             {
-                ParseOutput farthestOutput = new ParseOutput(input.position, input.blackPosition);
+                ParseOutput farthestOutput = new ParseOutput(input);
 
                 while (true)
                 {
@@ -353,6 +353,7 @@ public final class Parser
 
                 if (up.failed())
                 {
+                    output.fail();
                     break;
                 }
 

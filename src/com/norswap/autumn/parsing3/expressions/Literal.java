@@ -1,40 +1,38 @@
 package com.norswap.autumn.parsing3.expressions;
 
 import com.norswap.autumn.parsing3.ParseInput;
-import com.norswap.autumn.parsing3.ParseOutput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
 
-public final class Sequence extends ParsingExpression
+public final class Literal extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParsingExpression[] operands;
+    public String string;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        final ParseInput down = new ParseInput(input);
-        final ParseOutput up = down.output;
+        int index = 0;
+        int pos = input.position;
+        final int len = string.length();
 
-        for (ParsingExpression operand : operands)
+        while (index < len && parser.text.charAt(pos) == string.charAt(index))
         {
-            operand.parse(parser, down);
-
-            if (up.succeeded())
-            {
-                down.advance(up);
-            }
-            else
-            {
-                parser.fail(this, input);
-                return;
-            }
+            ++index;
+            ++pos;
         }
 
-        input.output.become(up);
+        if (index == len)
+        {
+            input.output.advance(len);
+        }
+        else
+        {
+            parser.fail(this, input);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -42,17 +40,19 @@ public final class Sequence extends ParsingExpression
     @Override
     public int parseDumb(CharSequence text, int position)
     {
-        for (ParsingExpression operand: operands)
-        {
-            position = operand.parseDumb(text, position);
+        int index = 0;
+        int pos = position;
+        int len = string.length();
 
-            if (position == -1)
-            {
-                break;
-            }
+        while (index < len && text.charAt(pos) == string.charAt(index))
+        {
+            ++index;
+            ++pos;
         }
 
-        return position;
+        return index != string.length()
+            ? -1
+            : pos;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -60,16 +60,9 @@ public final class Sequence extends ParsingExpression
     @Override
     public void appendTo(StringBuilder builder)
     {
-        builder.append("sequence(");
-
-        for (ParsingExpression operand: operands)
-        {
-            operand.toString(builder);
-            builder.append(", ");
-        }
-
-        builder.setLength(builder.length() - 2);
-        builder.append(")");
+        builder.append("\"");
+        builder.append(string);
+        builder.append("\"");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -77,7 +70,7 @@ public final class Sequence extends ParsingExpression
     @Override
     public ParsingExpression[] children()
     {
-        return operands;
+        return new ParsingExpression[0];
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

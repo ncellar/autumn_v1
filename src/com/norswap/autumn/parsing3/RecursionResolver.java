@@ -1,27 +1,31 @@
 package com.norswap.autumn.parsing3;
 
+import com.norswap.autumn.parsing3.expressions.Reference;
+import com.norswap.autumn.util.Caster;
+
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Set;
-
-import static com.norswap.autumn.parsing.Operator.OP_REF;
-import static com.norswap.autumn.parsing.ParsingExpressionFlags.PEF_RESOLVED;
-
 
 class RecursionResolver
 {
-    private ParsingExpression ref;
-    private Set<ParsingExpression> visited;
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    RecursionResolver(ParsingExpression ref)
+    private ParsingExpression recursive;
+    private HashSet<ParsingExpression> visited;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    RecursionResolver(ParsingExpression recursive)
     {
-        this.ref = ref;
+        this.recursive = recursive;
         this.visited = new HashSet<>();
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     int walk(ParsingExpression pe)
     {
-        if (pe.hasFlagsSet(PEF_RESOLVED) || visited.contains(pe))
+        if (pe.hasFlagsSet(Registry.PEF_RESOLVED) || visited.contains(pe))
         {
             return 0;
         }
@@ -30,55 +34,51 @@ class RecursionResolver
 
         int nUnresolved = 0;
 
-        if (pe.operator() == OP_REF && pe.string() != null)
+        if (pe instanceof Reference && pe.name() != null)
         {
-            if (ref.name().equals(pe.string()))
-            {
-                ParsingExpression[] toProcess = pe.operands();
+            Reference ref = Caster.cast(pe);
+            ParsingExpression[] toProcess = ref.nestedReferences;
 
-                pe.setOperands(null);
-                pe.setString(null);
-                pe.setOperand(ref);
+            if (recursive.name().equals(pe.name()))
+            {
+                ref.nestedReferences = null;
+                ref.operand = recursive;
 
                 if (toProcess != null)
                 {
                     for (ParsingExpression tp: toProcess)
                     {
-                        new RecursionResolver(tp).walk(ref);
+                        new RecursionResolver(tp).walk(recursive);
                     }
                 }
             }
             else
             {
-                ParsingExpression[] toProcess = pe.operands();
-
                 toProcess = toProcess == null
                     ? new ParsingExpression[1]
                     : Arrays.copyOf(toProcess, toProcess.length + 1);
 
-                toProcess[toProcess.length - 1] = ref;
-                pe.setOperands(toProcess);
+                toProcess[toProcess.length - 1] = recursive;
+                ref.nestedReferences = toProcess;
 
                 ++nUnresolved;
             }
         }
-        else if (pe.operand() != null)
+        else
         {
-            nUnresolved += walk(pe.operand());
-        }
-        else if (pe.operands() != null)
-        {
-            for (ParsingExpression operand : pe.operands())
+            for (ParsingExpression child: pe.children())
             {
-                nUnresolved += walk(operand);
+                nUnresolved += walk(child);
             }
         }
 
         if (nUnresolved == 0)
         {
-            pe.setFlags(PEF_RESOLVED);
+            pe.setFlags(Registry.PEF_RESOLVED);
         }
 
         return nUnresolved;
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 }

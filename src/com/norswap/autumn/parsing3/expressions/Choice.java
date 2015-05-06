@@ -5,7 +5,7 @@ import com.norswap.autumn.parsing3.ParseOutput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
 
-public final class Sequence extends ParsingExpression
+public final class Choice extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -18,6 +18,7 @@ public final class Sequence extends ParsingExpression
     {
         final ParseInput down = new ParseInput(input);
         final ParseOutput up = down.output;
+        down.setCuttable();
 
         for (ParsingExpression operand : operands)
         {
@@ -25,16 +26,16 @@ public final class Sequence extends ParsingExpression
 
             if (up.succeeded())
             {
-                down.advance(up);
-            }
-            else
-            {
-                parser.fail(this, input);
+                input.output.become(up);
                 return;
+            }
+            else if (up.isCut())
+            {
+                break;
             }
         }
 
-        input.output.become(up);
+        parser.fail(this, input);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -42,17 +43,17 @@ public final class Sequence extends ParsingExpression
     @Override
     public int parseDumb(CharSequence text, int position)
     {
-        for (ParsingExpression operand: operands)
+        for (ParsingExpression operand : operands)
         {
-            position = operand.parseDumb(text, position);
+            int result = operand.parseDumb(text, position);
 
-            if (position == -1)
+            if (result != - 1)
             {
-                break;
+                return result;
             }
         }
 
-        return position;
+        return -1;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -60,7 +61,7 @@ public final class Sequence extends ParsingExpression
     @Override
     public void appendTo(StringBuilder builder)
     {
-        builder.append("sequence(");
+        builder.append("choice(");
 
         for (ParsingExpression operand: operands)
         {

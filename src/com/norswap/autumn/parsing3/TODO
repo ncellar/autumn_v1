@@ -1,0 +1,16 @@
+TODO
+
+- git commit
+
+- rewrite & run tests
+
+TODO LATER
+
+- rename ParseOutput to ParseOutcome and ParseResult to ParseTree
+- improve choice by passing input directly?
+- improve all by passing input directly! then make the parse input a global structure of some kind
+
+NOTES
+
+- precedence is an extremely blunt tool: it precludes memoization!
+    - it also increases complexity (??)

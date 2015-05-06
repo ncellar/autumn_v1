@@ -1,6 +1,9 @@
 package com.norswap.autumn.parsing3;
 
 import com.norswap.autumn.parsing.Source;
+import com.norswap.autumn.parsing3.expressions.Capture;
+import com.norswap.autumn.parsing3.expressions.LeftRecursive;
+import com.norswap.autumn.util.Array;
 
 public final class Parser
 {
@@ -8,13 +11,13 @@ public final class Parser
 
     private Source source;
 
-    private CharSequence text;
+    public CharSequence text;
 
-    private ParserConfiguration configuration;
+    public ParserConfiguration configuration;
 
     private ParseResult result;
 
-    private int depth = 0;
+    private Array<LeftRecursive> leftAssociatives;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -40,11 +43,20 @@ public final class Parser
      * If the result is a failure ({@code result().failed() == true}) or a partial match ({@code
      * matchedWholeSource() == false}), errors can be reported with {@link #reportErrors()}.
      */
-    public void parse(ParsingExpression pe)
+    public void parse(Capture pe)
     {
+        this.leftAssociatives = new Array<>();
         ParseInput rootInput = ParseInput.root();
         rootInput.result = result = new ParseResult(pe, 0);
-        parse(pe, rootInput);
+
+        if (configuration.processLeadingWhitespace)
+        {
+            int pos = configuration.whitespace.parseDumb(text, 0);
+            rootInput.position = pos;
+            rootInput.output.position = pos;
+        }
+
+        pe.parse(this, rootInput);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -70,6 +82,49 @@ public final class Parser
     public boolean matchedWholeSource()
     {
         return !result.failed() && result.endPosition() == source.length();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public void fail(ParsingExpression pe, ParseInput input)
+    {
+        input.output.fail();
+
+        if (!input.isErrorRecordingForbidden())
+        {
+            configuration.errorHandler.handle(pe, input.position);
+        }
+
+        input.resetResultChildren();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public boolean isLeftAssociative(LeftRecursive lr)
+    {
+        for (LeftRecursive la: leftAssociatives)
+        {
+            if (lr == la)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    public void pushLeftAssociative(LeftRecursive lr)
+    {
+        leftAssociatives.push(lr);
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    public void popLeftAssociative()
+    {
+        leftAssociatives.pop();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

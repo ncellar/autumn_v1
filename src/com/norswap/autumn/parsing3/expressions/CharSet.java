@@ -1,40 +1,33 @@
 package com.norswap.autumn.parsing3.expressions;
 
 import com.norswap.autumn.parsing3.ParseInput;
-import com.norswap.autumn.parsing3.ParseOutput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
+import com.norswap.autumn.util.StringEscape;
 
-public final class Sequence extends ParsingExpression
+public final class CharSet extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParsingExpression[] operands;
+    public char[] chars;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        final ParseInput down = new ParseInput(input);
-        final ParseOutput up = down.output;
+        char c = parser.text.charAt(input.position);
 
-        for (ParsingExpression operand : operands)
+        for (char d : chars)
         {
-            operand.parse(parser, down);
-
-            if (up.succeeded())
+            if (c == d)
             {
-                down.advance(up);
-            }
-            else
-            {
-                parser.fail(this, input);
+                input.output.advance(1);
                 return;
             }
         }
 
-        input.output.become(up);
+        parser.fail(this, input);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -42,17 +35,17 @@ public final class Sequence extends ParsingExpression
     @Override
     public int parseDumb(CharSequence text, int position)
     {
-        for (ParsingExpression operand: operands)
-        {
-            position = operand.parseDumb(text, position);
+        char c = text.charAt(position);
 
-            if (position == -1)
+        for (char d : chars)
+        {
+            if (c == d)
             {
-                break;
+                return position + 1;
             }
         }
 
-        return position;
+        return -1;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -60,16 +53,9 @@ public final class Sequence extends ParsingExpression
     @Override
     public void appendTo(StringBuilder builder)
     {
-        builder.append("sequence(");
-
-        for (ParsingExpression operand: operands)
-        {
-            operand.toString(builder);
-            builder.append(", ");
-        }
-
-        builder.setLength(builder.length() - 2);
-        builder.append(")");
+        builder.append("charSet(\"");
+        builder.append(StringEscape.escape(new String(chars)));
+        builder.append("\")");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -77,7 +63,7 @@ public final class Sequence extends ParsingExpression
     @Override
     public ParsingExpression[] children()
     {
-        return operands;
+        return new ParsingExpression[0];
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
