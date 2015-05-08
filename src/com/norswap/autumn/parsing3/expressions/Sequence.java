@@ -5,6 +5,9 @@ import com.norswap.autumn.parsing3.ParseOutput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public final class Sequence extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -78,6 +81,14 @@ public final class Sequence extends ParsingExpression
     public ParsingExpression[] children()
     {
         return operands;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void setChild(int position, ParsingExpression expr)
+    {
+        operands[position] = expr;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

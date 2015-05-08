@@ -52,13 +52,5 @@ public final class CharRange extends ParsingExpression
         builder.append(")");
     }
 
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ParsingExpression[] children()
-    {
-        return new ParsingExpression[0];
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

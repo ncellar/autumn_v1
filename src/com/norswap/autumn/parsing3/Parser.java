@@ -1,9 +1,9 @@
 package com.norswap.autumn.parsing3;
 
 import com.norswap.autumn.parsing.Source;
-import com.norswap.autumn.parsing3.expressions.Capture;
 import com.norswap.autumn.parsing3.expressions.LeftRecursive;
 import com.norswap.autumn.util.Array;
+import com.norswap.autumn.util.HandleMap;
 
 public final class Parser
 {
@@ -18,6 +18,8 @@ public final class Parser
     private ParseResult result;
 
     private Array<LeftRecursive> leftAssociatives;
+    
+    public HandleMap ext = new HandleMap();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -41,9 +43,9 @@ public final class Parser
      * After calling this method, the result of the parse can be retrieved via {@link #result()}.
      *
      * If the result is a failure ({@code result().failed() == true}) or a partial match ({@code
-     * matchedWholeSource() == false}), errors can be reported with {@link #reportErrors()}.
+     * matchedWholeSource() == false}), errors can be reported with {@link #report()}.
      */
-    public void parse(Capture pe)
+    public void parse(ParsingExpression pe)
     {
         this.leftAssociatives = new Array<>();
         ParseInput rootInput = ParseInput.root();
@@ -57,17 +59,40 @@ public final class Parser
         }
 
         pe.parse(this, rootInput);
+        result.finalize(rootInput.output);
     }
 
     //----------------------------------------------------------------------------------------------
 
     /**
-     * Report the errors recorded during the parse. The reporting method is up to the {@link
-     * ErrorHandler}.
+     * Report the outcome of the parse (success or failure) on System.err and in case of failure,
+     * the errors recorded during the parse. The reporting method for the errors is up to the
+     * {@link ErrorHandler}.
      */
-    public void reportErrors()
+    public void report()
     {
-        configuration.errorHandler.report(source);
+        if (matchedWholeSource())
+        {
+            System.err.println("The parse succeeded, matching the whole source.");
+        }
+        else if (result.succeeded())
+        {
+            System.err.println("The parse succeeded, matching a prefix of the source, up to "
+                + source.position(result.endPosition()));
+        }
+        else
+        {
+            System.err.println("The parse failed.");
+            configuration.errorHandler.reportErrors(this);
+        }
+
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    public Source source()
+    {
+        return source;
     }
 
     //----------------------------------------------------------------------------------------------

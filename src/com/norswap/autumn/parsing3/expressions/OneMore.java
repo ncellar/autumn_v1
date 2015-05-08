@@ -27,6 +27,11 @@ public final class OneMore extends ParsingExpression
             parser.fail(this, input);
             return;
         }
+        else
+        {
+            down.advance(up);
+            up.unCut();
+        }
 
         ParseOutput farthestOutput = new ParseOutput(up);
 
@@ -94,6 +99,15 @@ public final class OneMore extends ParsingExpression
     {
         return new ParsingExpression[]{operand};
     }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void setChild(int position, ParsingExpression expr)
+    {
+        operand = expr;
+    }
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

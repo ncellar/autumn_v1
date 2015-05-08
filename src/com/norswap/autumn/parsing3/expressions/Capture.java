@@ -30,11 +30,19 @@ public final class Capture extends ParsingExpression
         newResult.name = name;
         newResult.grouped = isCaptureGrouped();
 
+        input.result = newResult;
         operand.parse(parser, input);
-
         input.result = oldResult;
+
         newResult.finalize(input.output);
         input.merge(newResult);
+
+        if (shouldCaptureText() && newResult.succeeded())
+        {
+            newResult.value = parser.text
+                .subSequence(newResult.position, newResult.blackEndPosition())
+                .toString();
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -55,6 +63,14 @@ public final class Capture extends ParsingExpression
     public ParsingExpression[] children()
     {
         return new ParsingExpression[]{operand};
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void setChild(int position, ParsingExpression expr)
+    {
+        operand = expr;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

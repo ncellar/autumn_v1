@@ -15,7 +15,7 @@ public final class Whitespace extends ParsingExpression
 
         if (pos > 0)
         {
-            input.output.position += (pos - input.output.position);
+            input.output.position = pos;
         }
     }
 
@@ -25,14 +25,6 @@ public final class Whitespace extends ParsingExpression
     public void appendTo(StringBuilder builder)
     {
         builder.append("whitespace");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ParsingExpression[] children()
-    {
-        return new ParsingExpression[0];
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

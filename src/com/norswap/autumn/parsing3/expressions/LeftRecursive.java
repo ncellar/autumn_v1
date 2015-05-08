@@ -17,7 +17,15 @@ public final class LeftRecursive extends ParsingExpression
     {
         ParseResult seed = input.getSeed(this);
 
-        if (seed == null && leftAssociative && parser.isLeftAssociative(this))
+        if (seed != null)
+        {
+            // There is a seed, use it.
+
+            input.output.become(seed.output);
+            input.merge(seed);
+            return;
+        }
+        else if (leftAssociative && parser.isLeftAssociative(this))
         {
             // Recursion is blocked in a left-associative expression when not in left
             // position (if we were in left position, there would have been a seed).
@@ -25,14 +33,6 @@ public final class LeftRecursive extends ParsingExpression
             // We bypass error handling: it is not expected that the input matches this expression.
 
             input.output.fail();
-            return;
-        }
-        else if (seed != null)
-        {
-            // There is a seed, use it.
-
-            input.output.become(seed.output);
-            input.merge(seed);
             return;
         }
 
@@ -116,6 +116,14 @@ public final class LeftRecursive extends ParsingExpression
     public ParsingExpression[] children()
     {
         return new ParsingExpression[]{operand};
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void setChild(int position, ParsingExpression expr)
+    {
+        operand = expr;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

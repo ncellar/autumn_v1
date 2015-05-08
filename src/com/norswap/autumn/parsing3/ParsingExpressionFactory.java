@@ -11,7 +11,7 @@ public final class ParsingExpressionFactory
 
     public static Any any()
     {
-        return null;
+        return new Any();
     }
 
     public static Capture capture(String captureName, ParsingExpression operand)

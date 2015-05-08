@@ -15,6 +15,8 @@ public final class Registry
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    public static final HandleFactory ParserHandleFactory = new HandleFactory();
+
     public static final HandleFactory ParsingExpressionHandleFactory = new HandleFactory();
 
     public static final FlagFactory ParsingExpressionFlagsFactory = new FlagFactory();
@@ -22,6 +24,15 @@ public final class Registry
     public static final FlagFactory ParsingInputFlagsFactory = new FlagFactory();
 
     public static final FlagFactory ParsingOutputFlagsFactory = new FlagFactory();
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // PARSER HANDLES (PH)
+
+    /**
+     * Fetches the recursion depth (number of {@code Trace} expression traversed).
+     */
+    public static final int PH_DEPTH
+        = ParserHandleFactory.next();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // PARSING EXPRESSION HANDLES (PEH)

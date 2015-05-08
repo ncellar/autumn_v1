@@ -93,5 +93,13 @@ public final class LongestMatch extends ParsingExpression
         return operands;
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void setChild(int position, ParsingExpression expr)
+    {
+        operands[position] = expr;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

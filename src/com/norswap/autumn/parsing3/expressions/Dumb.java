@@ -17,7 +17,7 @@ public final class Dumb extends ParsingExpression
     {
         int pos = operand.parseDumb(parser.text, input.position);
 
-        if (pos > 0)
+        if (pos >= 0)
         {
             input.output.advance(pos - input.position);
         }
@@ -43,6 +43,14 @@ public final class Dumb extends ParsingExpression
     public ParsingExpression[] children()
     {
         return new ParsingExpression[]{operand};
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void setChild(int position, ParsingExpression expr)
+    {
+        operand = expr;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

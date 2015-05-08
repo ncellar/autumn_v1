@@ -58,7 +58,7 @@ public final class DefaultMemoizationStrategy implements MemoizationStrategy
 
         int index = getIndex(result.position);
 
-        if (index > 0)
+        if (index >= 0)
         {
             result.next = store[index];
             store[index] = result;
@@ -77,7 +77,7 @@ public final class DefaultMemoizationStrategy implements MemoizationStrategy
     {
         int index = getIndex(position);
 
-        ParseResult result = index > 0
+        ParseResult result = index >= 0
             ? store[index]
             : null;
 

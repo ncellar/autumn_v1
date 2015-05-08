@@ -103,7 +103,9 @@ public class ParseInput
 
     static ParseInput root()
     {
-        return new ParseInput();
+        ParseInput input = new ParseInput();
+        input.output = new ParseOutput(0, 0);
+        return input;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -227,7 +229,10 @@ public class ParseInput
      */
     public void resetResultChildren()
     {
-        result.children.truncate(resultChildrenCount);
+        if (result.children != null)
+        {
+            result.children.truncate(resultChildrenCount);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

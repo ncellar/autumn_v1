@@ -66,8 +66,11 @@ public class ParseOutput
 
     public void advance(int n)
     {
-        this.position += n;
-        this.blackPosition += n;
+        if (n != 0)
+        {
+            this.position += n;
+            this.blackPosition = this.position;
+        }
     }
 
     // ---------------------------------------------------------------------------------------------

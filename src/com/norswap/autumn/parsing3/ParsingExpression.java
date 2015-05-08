@@ -37,8 +37,9 @@ public abstract class ParsingExpression
     @Override
     public String toString()
     {
-        // TODO
-        return null;
+        StringBuilder builder = new StringBuilder();
+        toString(builder);
+        return builder.toString();
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -63,7 +64,20 @@ public abstract class ParsingExpression
 
     // ---------------------------------------------------------------------------------------------
 
-    public abstract ParsingExpression[] children();
+    public ParsingExpression[] children()
+    {
+        return new ParsingExpression[0];
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void setChild(int position, ParsingExpression expr)
+    {
+        throw new UnsupportedOperationException(
+            "Parsing expression class "
+            + this.getClass().getSimpleName()
+            + " doesn't have children or doesn't support setting them.");
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

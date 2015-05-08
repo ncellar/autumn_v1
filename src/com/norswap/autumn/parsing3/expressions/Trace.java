@@ -4,7 +4,9 @@ import com.norswap.autumn.parsing3.ParseInput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
 
-public final class Not extends ParsingExpression
+import static com.norswap.autumn.parsing3.Registry.PH_DEPTH;
+
+public final class Trace extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -15,36 +17,26 @@ public final class Not extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        int flags = input.flags;
-        ParseInput parentCuttable = input.parentCuttable;
+        Integer depth = parser.ext.get(PH_DEPTH);
 
-        input.forbidCapture();
-        input.forbidErrorRecording();
-        input.isolateCuts();
+        if (depth == null)
+        {
+            depth = 0;
+            parser.ext.set(PH_DEPTH, 0);
+        }
 
+        System.err.println(new String(new char[depth]).replace("\0", "-|") + operand);
+
+        parser.ext.set(PH_DEPTH, depth + 1);
         operand.parse(parser, input);
-
-        if (input.output.succeeded())
-        {
-            parser.fail(this, input);
-        }
-        else
-        {
-            input.resetOutput();
-        }
-
-        input.flags = flags;
-        input.parentCuttable = parentCuttable;
+        parser.ext.set(PH_DEPTH, depth);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    @Override
     public int parseDumb(CharSequence text, int position)
     {
-        return operand.parseDumb(text, position) == -1
-            ? position
-            : -1;
+        return operand.parseDumb(text, position);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -52,9 +44,7 @@ public final class Not extends ParsingExpression
     @Override
     public void appendTo(StringBuilder builder)
     {
-        builder.append("not(");
         operand.toString(builder);
-        builder.append(")");
     }
 
     // ---------------------------------------------------------------------------------------------

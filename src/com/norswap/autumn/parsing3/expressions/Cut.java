@@ -25,13 +25,5 @@ public final class Cut extends ParsingExpression
         builder.append("cut");
     }
 
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ParsingExpression[] children()
-    {
-        return new ParsingExpression[0];
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

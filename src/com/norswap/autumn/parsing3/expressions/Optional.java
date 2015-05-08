@@ -58,5 +58,13 @@ public final class Optional extends ParsingExpression
         return new ParsingExpression[]{operand};
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void setChild(int position, ParsingExpression expr)
+    {
+        operand = expr;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

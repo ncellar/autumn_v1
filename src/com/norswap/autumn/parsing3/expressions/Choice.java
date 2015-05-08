@@ -33,6 +33,10 @@ public final class Choice extends ParsingExpression
             {
                 break;
             }
+            else
+            {
+                up.reset(down);
+            }
         }
 
         parser.fail(this, input);
@@ -69,7 +73,11 @@ public final class Choice extends ParsingExpression
             builder.append(", ");
         }
 
-        builder.setLength(builder.length() - 2);
+        if (operands.length > 0)
+        {
+            builder.setLength(builder.length() - 2);
+        }
+
         builder.append(")");
     }
 
@@ -79,6 +87,14 @@ public final class Choice extends ParsingExpression
     public ParsingExpression[] children()
     {
         return operands;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void setChild(int position, ParsingExpression expr)
+    {
+        operands[position] = expr;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

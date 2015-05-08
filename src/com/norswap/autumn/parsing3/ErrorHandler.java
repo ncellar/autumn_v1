@@ -13,11 +13,7 @@ public interface ErrorHandler
 
     // ---------------------------------------------------------------------------------------------
 
-    /**
-     * Record some information if the parse has failed.
-     * @param source
-     */
-    void report(Source source);
+    void reportErrors(Parser parser);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

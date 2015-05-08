@@ -1,16 +1,15 @@
 package com.norswap.autumn.test.parsing;
 
-import com.norswap.autumn.parsing.ParseOutput;
-import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing3.ParseResult;
+import com.norswap.autumn.parsing3.Parser;
+import com.norswap.autumn.parsing3.ParsingExpression;
 import com.norswap.autumn.test.Ensure;
-import com.norswap.autumn.test.ParserProvider;
+import com.norswap.autumn.test.TestConfiguration;
 import com.norswap.autumn.test.TestRunner;
 import com.norswap.autumn.util.Array;
 
-import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
+import static com.norswap.autumn.parsing3.ParsingExpressionFactory.*;
 
-// TODO fix
 public class FeatureTests
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -34,6 +33,11 @@ public class FeatureTests
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    public static void main(String[] args)
+    {
+        run();
+    }
+
     public static void run()
     {
         new FeatureTests().doRun();
@@ -50,7 +54,7 @@ public class FeatureTests
 
     public void testToken()
     {
-        ParsingExpression expr = oneMore(token$(literal("*")));
+        ParsingExpression expr = oneMore(token(literal("*")));
 
         Ensure.match("*", expr);
         Ensure.match("* \n\t", expr);
@@ -59,7 +63,7 @@ public class FeatureTests
         Ensure.match("* /* is diz real life? */", expr);
         Ensure.match("* /* nested /* amazing innit? */ lol */", expr);
         Ensure.fails(" ", expr);
-        Ensure.fails(" *", expr);
+        Ensure.match(" *", expr);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -67,7 +71,7 @@ public class FeatureTests
     public void testLeftRecursive()
     {
         ParsingExpression expr = recursive$("expr", choice(
-            leftRecursive$(sequence(ref("expr"), literal("*"))),
+            leftRecursive(sequence(reference("expr"), literal("*"))),
             num));
 
         Ensure.match("1", expr);
@@ -80,8 +84,8 @@ public class FeatureTests
     public void testLeftAssociative()
     {
         ParsingExpression expr = recursive$("expr", choice(
-            leftAssociative$(sequence(ref("expr"), literal("+"), ref("expr"))),
-            leftAssociative$(sequence(ref("expr"), literal("*"), ref("expr"))),
+            leftAssociative(sequence(reference("expr"), literal("+"), reference("expr"))),
+            leftAssociative(sequence(reference("expr"), literal("*"), reference("expr"))),
             num));
 
         Ensure.match("1", expr);
@@ -96,18 +100,17 @@ public class FeatureTests
 
     public void testCapture()
     {
-        ParsingExpression expr = sequence(
-            captureText("a", oneMore(literal("a"))));
+        ParsingExpression expr = captureText("a", oneMore(literal("a")));
 
-        Parser parser = ParserProvider.parser("aaa");
+        Parser parser = TestConfiguration.parser("aaa");
         parser.parse(expr);
 
-        ParseOutput result = parser.result();
-        ParseOutput aResult = result.get("a");
+        ParseResult result = parser.result();
+        ParseResult aResult = result.get("a");
 
-        Ensure.equals(aResult.startPosition(), 0);
+        Ensure.equals(aResult.position, 0);
         Ensure.equals(aResult.endPosition(), 3);
-        Ensure.equals(aResult.value(), "aaa");
+        Ensure.equals(aResult.value, "aaa");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -115,21 +118,21 @@ public class FeatureTests
     public void testMultipleCapture()
     {
         ParsingExpression expr = sequence(
-            oneMore(captureTextMultiple("a", literal("a"))));
+            oneMore(captureTextGrouped("a", literal("a"))));
 
-        Parser parser = ParserProvider.parser("aaa");
+        Parser parser = TestConfiguration.parser("aaa");
         parser.parse(expr);
 
-        ParseOutput result = parser.result();
-        Array<ParseOutput> aResults = result.get("a").children();
+        ParseResult result = parser.result();
+        Array<ParseResult> aResults = result.get("a").children;
 
         Ensure.equals(aResults.size(), 3);
 
         for (int i = 0; i < 3; ++i)
         {
-            Ensure.equals(aResults.get(i).startPosition(), i);
+            Ensure.equals(aResults.get(i).position, i);
             Ensure.equals(aResults.get(i).endPosition(), i + 1);
-            Ensure.equals(aResults.get(i).value(), "a");
+            Ensure.equals(aResults.get(i).value, "a");
         }
     }
 
@@ -137,22 +140,33 @@ public class FeatureTests
 
     public void testRightAssociativity()
     {
-        ParsingExpression expr = recursive$("expr", choice(
-            capture("plus", rightAssociative$(sequence(
-                capture$("left", ref("expr")),
+        ParsingExpression expr1 = recursive$("expr", choice(
+            leftRecursive(capture("plus", sequence(
+                capture("left", reference("expr")),
                 literal("+"),
-                capture$("right", ref("expr"))))),
-            capture("num", ref(num))));
+                capture("right", reference("expr"))))),
+            capture("num", num)));
 
-        Parser parser = ParserProvider.parser("1+1+1");
-        parser.parse(expr);
-        Ensure.equals(parser.result().endPosition(), 5);
+        ParsingExpression expr2 = recursive$("expr", leftRecursive(choice(
+            capture("plus", sequence(
+                capture("left", reference("expr")),
+                literal("+"),
+                capture("right", reference("expr")))),
+            capture("num", num))));
 
-        ParseOutput result = parser.result();
-        ParseOutput plus = result.get("plus");
-        Ensure.different(plus.get("left").get("num"), null);
-        Ensure.different(plus.get("right").get("plus").get("left").get("num"), null);
-        Ensure.different(plus.get("right").get("plus").get("right").get("num"), null);
+        for (ParsingExpression expr: new ParsingExpression[]{expr1, expr2})
+        {
+            Parser parser = TestConfiguration.parser("1+1+1");
+            parser.parse(expr);
+            Ensure.equals(parser.result().endPosition(), 5);
+
+            ParseResult result = parser.result();
+            ParseResult plus = result.get("plus");
+
+            Ensure.different(plus.get("left").get("num"), null);
+            Ensure.different(plus.get("right").get("plus").get("left").get("num"), null);
+            Ensure.different(plus.get("right").get("plus").get("right").get("num"), null);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -160,18 +174,18 @@ public class FeatureTests
     public void testLeftAssociativity()
     {
         ParsingExpression expr = recursive$("expr", choice(
-            capture("plus", leftAssociative$(sequence(
-                capture("left", ref("expr")),
+            capture("plus", leftAssociative(sequence(
+                capture("left", reference("expr")),
                 literal("+"),
-                capture("right", ref("expr"))))),
-            capture("num", ref(num))));
+                capture("right", reference("expr"))))),
+            capture("num", num)));
 
-        Parser parser = ParserProvider.parser("1+1+1");
+        Parser parser = TestConfiguration.parser("1+1+1");
         parser.parse(expr);
-        ParseOutput result = parser.result();
+        ParseResult result = parser.result();
         Ensure.equals(result.endPosition(), 5);
 
-        ParseOutput plus = result.get("plus");
+        ParseResult plus = result.get("plus");
         Ensure.different(plus.get("right").get("num"), null);
         Ensure.different(plus.get("left").get("plus").get("right").get("num"), null);
         Ensure.different(plus.get("left").get("plus").get("left").get("num"), null);
@@ -183,33 +197,33 @@ public class FeatureTests
     {
         ParsingExpression expr = recursive$("expr", choice(
 
-            withPrecedence$(1, capture("+", leftAssociative$(sequence(
-                capture("left", ref("expr")),
+            precedence(1, capture("+", leftAssociative(sequence(
+                capture("left", reference("expr")),
                 literal("+"),
-                capture("right", ref("expr")))))),
+                capture("right", reference("expr")))))),
 
-            withPrecedence$(2, capture("*", leftAssociative$(sequence(
-                capture("left", ref("expr")),
+            precedence(2, capture("*", leftAssociative(sequence(
+                capture("left", reference("expr")),
                 literal("*"),
-                capture("right", ref("expr")))))),
+                capture("right", reference("expr")))))),
 
-            withPrecedence$(3, capture("^", leftAssociative$(sequence(
-                capture("left", ref("expr")),
+            precedence(3, capture("^", leftAssociative(sequence(
+                capture("left", reference("expr")),
                 literal("^"),
-                capture("right", ref("expr")))))),
+                capture("right", reference("expr")))))),
 
-            capture("num", ref(num))));
+            capture("num", num)));
 
-        Parser parser = ParserProvider.parser("1+1*1");
+        Parser parser = TestConfiguration.parser("1+1*1");
         parser.parse(expr);
-        ParseOutput result = parser.result();
+        ParseResult result = parser.result();
         Ensure.equals(result.endPosition(), 5);
 
         Ensure.different(result.get("+").get("left").get("num"), null);
         Ensure.different(result.get("+").get("right").get("*").get("left").get("num"), null);
         Ensure.different(result.get("+").get("right").get("*").get("right").get("num"), null);
 
-        parser = ParserProvider.parser("1*1+1");
+        parser = TestConfiguration.parser("1*1+1");
         parser.parse(expr);
         result = parser.result();
         Ensure.equals(result.endPosition(), 5);

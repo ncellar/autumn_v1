@@ -1,7 +1,7 @@
 package com.norswap.autumn.test;
 
-import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing3.Parser;
+import com.norswap.autumn.parsing3.ParsingExpression;
 import com.norswap.autumn.parsing.Source;
 
 /**
@@ -53,8 +53,9 @@ public final class Ensure
 
     public static void match(Source src, ParsingExpression pe)
     {
-        Parser parser = ParserProvider.parser(src);
-        equals(parser.parse(pe), src.length());
+        Parser parser = TestConfiguration.parser(src);
+        parser.parse(pe);
+        equals(parser.result().endPosition(), src.length());
     }
 
     public static void match(String src, ParsingExpression pe)
@@ -64,8 +65,9 @@ public final class Ensure
 
     public static void succeeds(Source src, ParsingExpression pe)
     {
-        Parser parser = ParserProvider.parser(src);
-        greaterThan(parser.parse(pe), -1);
+        Parser parser = TestConfiguration.parser(src);
+        parser.parse(pe);
+        ensure(parser.result().succeeded());
     }
 
     public static void succeeds(String src, ParsingExpression pe)
@@ -75,8 +77,9 @@ public final class Ensure
 
     public static void fails(Source src, ParsingExpression pe)
     {
-        Parser parser = ParserProvider.parser(src);
-        int pos = parser.parse(pe);
+        Parser parser = TestConfiguration.parser(src);
+        parser.parse(pe);
+        int pos = parser.result().endPosition();
 
         if (pos != -1)
         {

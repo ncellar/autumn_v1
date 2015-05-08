@@ -1,15 +1,5 @@
-package com.norswap.autumn.test;
+PARSER PROVIDER
 
-import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParserConfiguration;
-import com.norswap.autumn.parsing.Source;
-import com.norswap.autumn.parsing.Tracer;
-
-/**
- * TODO Just make a default config available.
- */
-public final class ParserProvider
-{
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     private static Tracer tracer = null;
@@ -23,7 +13,7 @@ public final class ParserProvider
 
     public static void setTracer(Tracer tracer)
     {
-        ParserProvider.tracer = tracer;
+        TestConfiguration.tracer = tracer;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -54,4 +44,3 @@ public final class ParserProvider
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-}

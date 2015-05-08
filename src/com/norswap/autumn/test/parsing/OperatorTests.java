@@ -1,11 +1,11 @@
 package com.norswap.autumn.test.parsing;
 
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing3.ParsingExpression;
 import com.norswap.autumn.parsing.Source;
 import com.norswap.autumn.test.Ensure;
 import com.norswap.autumn.test.TestRunner;
 
-import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
+import static com.norswap.autumn.parsing3.ParsingExpressionFactory.*;
 
 public class OperatorTests
 {
@@ -32,12 +32,15 @@ public class OperatorTests
         this::testLookahead,
         this::testNot,
         this::testLongestMatch,
-        this::testCustom,
-        this::testDumbCustom,
         this::testCut
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static void main(String[] args)
+    {
+        run();
+    }
 
     public static void run()
     {
@@ -141,6 +144,8 @@ public class OperatorTests
         src = Source.fromString("a");
         Ensure.match(src, pe);
 
+        // pe = new InstrumentExpression().trace(pe);
+
         src = Source.fromString("");
         Ensure.match(src, pe);
     }
@@ -199,28 +204,6 @@ public class OperatorTests
     {
         pe = pe(longestMatch(literal("a"), literal("ab"), literal("z"), literal("abc")));
         src = Source.fromString("abc");
-        Ensure.match(src, pe);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public void testCustom()
-    {
-        boolean oldTestDumb = testDumb;
-        testDumb = false;
-        pe = pe(custom((pe, pf) -> {pf.setPosition(4);} ));
-        testDumb = oldTestDumb;
-
-        src = Source.fromString("1234");
-        Ensure.match(src, pe);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public void testDumbCustom()
-    {
-        pe = pe(customDumb((pe, pos) -> 4));
-        src = Source.fromString("1234");
         Ensure.match(src, pe);
     }
 

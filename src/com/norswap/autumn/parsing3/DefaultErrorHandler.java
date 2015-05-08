@@ -47,10 +47,10 @@ public class DefaultErrorHandler implements ErrorHandler
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void report(Source source)
+    public void reportErrors(Parser parser)
     {
-        System.err.println("Parse failed at position " + source.position(farthestErrorPosition));
-        System.err.println("The parser failed to match any of the following expressions:");
+        System.err.println("The parser failed to match any of the following expressions at " +
+            "position " + parser.source().position(farthestErrorPosition) + ":");
 
         for (ParsingExpression pe: farthestExpressions)
         {

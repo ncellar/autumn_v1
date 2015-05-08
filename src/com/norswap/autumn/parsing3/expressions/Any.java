@@ -39,13 +39,5 @@ public final class Any extends ParsingExpression
         builder.append("any");
     }
 
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ParsingExpression[] children()
-    {
-        return new ParsingExpression[0];
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

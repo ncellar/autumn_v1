@@ -1,15 +1,14 @@
 package com.norswap.autumn.test.parsing;
 
-import com.norswap.autumn.parsing.ParseOutput;
-import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParserConfiguration;
-import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.Source;
-import com.norswap.autumn.parsing.Tracer;
+import com.norswap.autumn.parsing3.ParseResult;
+import com.norswap.autumn.parsing3.Parser;
+import com.norswap.autumn.parsing3.ParserConfiguration;
+import com.norswap.autumn.parsing3.ParsingExpression;
 
 import java.io.IOException;
 
-import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
+import static com.norswap.autumn.parsing3.ParsingExpressionFactory.*;
 
 public class MouseGrammar
 {
@@ -72,22 +71,22 @@ public class MouseGrammar
 
     public static ParsingExpression
 
-    and         = token("&"),
-    bang        = token("!"),
-    equal       = token("="),
-    plus        = token("+"),
-    qMark       = token("?"),
-    semi        = token(";"),
-    slash       = token("/"),
-    star        = token("*"),
-    tilda       = token("_"),
-    lBrace      = token("{"),
-    rBrace      = token("}"),
-    lParen      = token("("),
-    rParen      = token(")"),
-    underscore  = token("_"),
-    until       = token("*+"),
-    aloUntil    = token("++"),
+    and         = token(literal("&")),
+    bang        = token(literal("!")),
+    equal       = token(literal("=")),
+    plus        = token(literal("+")),
+    qMark       = token(literal("?")),
+    semi        = token(literal(";")),
+    slash       = token(literal("/")),
+    star        = token(literal("*")),
+    tilda       = token(literal("_")),
+    lBrace      = token(literal("{")),
+    rBrace      = token(literal("}")),
+    lParen      = token(literal("(")),
+    rParen      = token(literal(")")),
+    underscore  = token(literal("_")),
+    until       = token(literal("*+")),
+    aloUntil    = token(literal("++")),
 
     EOT         = named$("EOT", not(any())),
     EOL         = named$("EOL", choice(literal("\n"), EOT)),
@@ -95,9 +94,9 @@ public class MouseGrammar
     comment     = named$("comment", sequence(literal("//"), zeroMore(not(EOL), any()), EOL)),
     whitespace  = named$("whitespace", zeroMore(choice(charSet(" \n\t"), comment))),
 
-    digit       = charRange("09"),
-    hexDigit    = choice(digit, charRange("af"), charRange("AF")),
-    letter      = choice(charRange("az"), charRange("AZ")),
+    digit       = charRange('0', '9'),
+    hexDigit    = choice(digit, charRange('a', 'f'), charRange('A', 'F')),
+    letter      = choice(charRange('a', 'z'), charRange('A', 'Z')),
 
     escape = named$("escape", choice(
         sequence(literal("\\u"), hexDigit, hexDigit, hexDigit, hexDigit),
@@ -144,7 +143,7 @@ public class MouseGrammar
         rBrace))),
 
     primary = named$("primary", choice(
-        sequence(lParen, ref("choice"), rParen),
+        sequence(lParen, reference("choice"), rParen),
         captureText("ref", name),
         capture("any", underscore),
         capture("charRange", range),
@@ -165,18 +164,18 @@ public class MouseGrammar
         capture("not", sequence(bang, suffixed)),
         suffixed)),
 
-    sequence    = named$("sequence", capture$("seq", oneMore(prefixed))),
+    sequence    = named$("sequence", capture("seq", oneMore(prefixed))),
     choice      = recursive$("choice", aloSeparated(sequence, slash)),
 
     ruleRhs = named$("ruleRhs", aloSeparated(
-        captureMultiple("alts", sequence(sequence, optional(onSucc), optional(onFail))),
+        captureGrouped("alts", sequence(sequence, optional(onSucc), optional(onFail))),
         slash)),
 
     rule = named$("rule",
         sequence(captureText("ruleName", name), equal, ruleRhs, optional(diagName), semi)),
 
     grammar = named$("grammar",
-        sequence(whitespace(), aloUntil(captureMultiple("rules", rule), EOT)))
+        sequence(whitespace(), aloUntil(captureGrouped("rules", rule), EOT)))
 
     ;
 
@@ -185,15 +184,13 @@ public class MouseGrammar
     static ParserConfiguration config = new ParserConfiguration();
     static {
         config.whitespace = whitespace;
-        config.debug = true;
-        config.tracer = null;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    static void emitGrammar(ParseOutput output)
+    static void emitGrammar(ParseResult result)
     {
-        System.out.println(output.toString());
+        System.out.println(result.toTreeString());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -207,9 +204,13 @@ public class MouseGrammar
         {
             Source source = Source.fromFile(filename);
             Parser parser = new Parser(source, config);
+            //grammar = InstrumentExpression.trace(grammar);
             parser.parse(grammar);
-            parser.reportErrors();
-            emitGrammar(parser.result());
+            parser.report();
+            if (parser.result().succeeded())
+            {
+                emitGrammar(parser.result());
+            }
         }
         catch (IOException e)
         {

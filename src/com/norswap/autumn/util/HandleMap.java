@@ -23,7 +23,7 @@ public final class HandleMap
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private Entry[] array;
+    private Entry[] array = new Entry[INITIAL_SIZE];
     private int load;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -55,7 +55,7 @@ public final class HandleMap
     {
         int index = getIndex(handle);
 
-        return index > 0
+        return index >= 0
             ? Caster.cast(array[index].value)
             : null;
     }
@@ -66,7 +66,7 @@ public final class HandleMap
     {
         int index = getIndex(handle);
 
-        if (index > 0)
+        if (index >= 0)
         {
             array[index].value = value;
         }
@@ -93,7 +93,7 @@ public final class HandleMap
     {
         int index = getIndex(handle);
 
-        if (index > 0)
+        if (index >= 0)
         {
             array[index] = null;
             --load;
