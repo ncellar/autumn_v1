@@ -15,11 +15,7 @@ public final class Optional extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        int oldFlags = input.flags;
-
         operand.parse(parser, input);
-
-        input.flags = oldFlags;
 
         if (input.output.failed())
         {

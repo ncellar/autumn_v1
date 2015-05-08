@@ -2,11 +2,10 @@ package com.norswap.autumn.parsing3.expressions;
 
 import com.norswap.autumn.parsing3.ParseInput;
 import com.norswap.autumn.parsing3.ParseOutput;
+import com.norswap.autumn.parsing3.ParseResult;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
-
-import java.util.ArrayList;
-import java.util.Arrays;
+import com.norswap.autumn.util.Array;
 
 public final class Sequence extends ParsingExpression
 {
@@ -16,6 +15,7 @@ public final class Sequence extends ParsingExpression
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /*
     @Override
     public void parse(Parser parser, ParseInput input)
     {
@@ -39,6 +39,46 @@ public final class Sequence extends ParsingExpression
 
         input.output.become(up);
     }
+    //*/
+
+    //*
+    @Override
+    public void parse(Parser parser, ParseInput input)
+    {
+        Array<ParseResult> oldSeeds = input.seeds;
+        int oldFlags = input.flags;
+        int oldCount = input.resultChildrenCount;
+        int oldPos = input.position;
+        int oldBPos = input.blackPosition;
+
+        for (ParsingExpression operand : operands)
+        {
+            operand.parse(parser, input);
+
+            if (input.output.succeeded())
+            {
+                input.advance(input.output);
+            }
+            else
+            {
+                input.seeds = oldSeeds;
+                input.flags = oldFlags;
+                input.resultChildrenCount = oldCount;
+                input.position = oldPos;
+                input.blackPosition = oldBPos;
+                parser.fail(this, input);
+                return;
+            }
+        }
+
+        input.seeds = oldSeeds;
+        input.flags = oldFlags;
+        input.resultChildrenCount = oldCount;
+        input.resultChildrenCount = oldCount;
+        input.position = oldPos;
+        input.blackPosition = oldBPos;
+    }
+    //*/
 
     // ---------------------------------------------------------------------------------------------
 

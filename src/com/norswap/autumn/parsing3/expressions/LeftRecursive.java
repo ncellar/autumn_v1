@@ -54,26 +54,30 @@ public final class LeftRecursive extends ParsingExpression
 
         // Keep parsing the operand, as long as the seed keeps growing.
 
-        final ParseInput down = new ParseInput(input);
-        final ParseOutput up = down.output;
+        ParseResult oldResult = input.result;
+        int oldFlags = input.flags;
+        int oldCount = input.resultChildrenCount;
 
-        down.result = new ParseResult(this, input.position);
+        input.result = new ParseResult(this, input.position);
 
         // If we're in a left-recursive position, relying on memoized values will prevent
         // the expansion of the seed, so don't do it. This is cleared when advancing input position
         // with {@link ParseInput#advance()}.
-        down.forbidMemoization();
+        input.forbidMemoization();
 
         while (true)
         {
-            operand.parse(parser, down);
-            ParseResult oldSeed = down.seeds.pop();
+            operand.parse(parser, input);
+            ParseResult oldSeed = input.seeds.pop();
 
-            if (oldSeed.endPosition() >= up.position)
+            if (oldSeed.endPosition() >= input.output.position)
             {
                 // In case of either failure or no progress (no left-recursion or left-recursion
                 // consuming 0 input), revert to the previous seed.
 
+                input.result = oldResult;
+                input.resultChildrenCount = oldCount;
+                input.flags = oldFlags;
                 input.load(oldSeed);
                 break;
             }
@@ -81,11 +85,11 @@ public final class LeftRecursive extends ParsingExpression
             {
                 // Update the seed and retry the rule.
 
-                down.result.finalize(up);
-                down.seeds.push(down.result);
+                input.result.finalize(input.output);
+                input.seeds.push(input.result);
 
-                down.resetOutput();
-                down.setResult(new ParseResult(this, input.position));
+                input.resetOutput();
+                input.setResult(new ParseResult(this, input.position));
             }
         }
 

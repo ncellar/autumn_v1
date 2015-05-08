@@ -2,8 +2,10 @@ package com.norswap.autumn.parsing3.expressions;
 
 import com.norswap.autumn.parsing3.ParseInput;
 import com.norswap.autumn.parsing3.ParseOutput;
+import com.norswap.autumn.parsing3.ParseResult;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
+import com.norswap.autumn.util.Array;
 
 public final class OneMore extends ParsingExpression
 {
@@ -16,38 +18,46 @@ public final class OneMore extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        final ParseInput down = new ParseInput(input);
-        final ParseOutput up = down.output;
+        Array<ParseResult> oldSeeds = input.seeds;
+        int oldFlags = input.flags;
+        int oldCount = input.resultChildrenCount;
+        int oldPos = input.position;
+        int oldBPos = input.blackPosition;
 
-        operand.parse(parser, down);
+        operand.parse(parser, input);
 
-        if (up.failed())
+        if (input.output.failed())
         {
             parser.fail(this, input);
             return;
         }
         else
         {
-            down.advance(up);
+            input.advance(input.output);
         }
 
-        ParseOutput farthestOutput = new ParseOutput(up);
+        ParseOutput farthestOutput = new ParseOutput(input.output);
 
         while (true)
         {
-            operand.parse(parser, down);
+            operand.parse(parser, input);
 
-            if (up.failed())
+            if (input.output.failed())
             {
                 break;
             }
 
-            down.advance(up);
-            farthestOutput.become(up);
+            input.advance(input.output);
+            farthestOutput.become(input.output);
         }
 
         input.output.become(farthestOutput);
-
+        input.seeds = oldSeeds;
+        input.flags = oldFlags;
+        input.resultChildrenCount = oldCount;
+        input.resultChildrenCount = oldCount;
+        input.position = oldPos;
+        input.blackPosition = oldBPos;
     }
 
     // ---------------------------------------------------------------------------------------------
