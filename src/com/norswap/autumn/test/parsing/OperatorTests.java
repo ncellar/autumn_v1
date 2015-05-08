@@ -2,6 +2,8 @@ package com.norswap.autumn.test.parsing;
 
 import com.norswap.autumn.parsing3.ParsingExpression;
 import com.norswap.autumn.parsing.Source;
+import com.norswap.autumn.parsing3.expressions.Literal;
+import com.norswap.autumn.parsing3.expressions.Sequence;
 import com.norswap.autumn.test.Ensure;
 import com.norswap.autumn.test.TestRunner;
 
@@ -213,7 +215,7 @@ public class OperatorTests
     {
         boolean oldTestDumb = testDumb;
         testDumb = false;
-        pe = pe(choice(sequence(cut(), literal("a")), literal("b")));
+        pe = pe(cuttable("test", sequence(cut("test"), literal("a")), literal("b")));
         testDumb = oldTestDumb;
 
         src = Source.fromString("a");

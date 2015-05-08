@@ -8,13 +8,14 @@ public final class Cut extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    public String name;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        if (input.output.cut(input))
-        {
-            parser.configuration.memoizationStrategy.cut(input.position);
-        }
+        input.cuts.add(name);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -22,7 +23,9 @@ public final class Cut extends ParsingExpression
     @Override
     public void appendTo(StringBuilder builder)
     {
-        builder.append("cut");
+        builder.append("cut(\"");
+        builder.append(name);
+        builder.append("\")");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

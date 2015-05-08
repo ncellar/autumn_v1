@@ -1,7 +1,6 @@
 package com.norswap.autumn.parsing3.expressions;
 
 import com.norswap.autumn.parsing3.ParseInput;
-import com.norswap.autumn.parsing3.ParseOutput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
 
@@ -16,26 +15,17 @@ public final class Choice extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        final ParseInput down = new ParseInput(input);
-        final ParseOutput up = down.output;
-        down.setCuttable();
-
         for (ParsingExpression operand : operands)
         {
-            operand.parse(parser, down);
+            operand.parse(parser, input);
 
-            if (up.succeeded())
+            if (input.output.succeeded())
             {
-                input.output.become(up);
                 return;
-            }
-            else if (up.isCut())
-            {
-                break;
             }
             else
             {
-                up.reset(down);
+                input.resetOutput();
             }
         }
 

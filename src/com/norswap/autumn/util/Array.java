@@ -160,5 +160,41 @@ public final class Array<T> implements Iterable<T>
         };
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    public Iterable<T> reverseIterable()
+    {
+        return new Iterable<T>()
+        {
+            @Override
+            public Iterator<T> iterator()
+            {
+                return reverseIterator();
+            }
+        };
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public Iterator<T> reverseIterator()
+    {
+        return new Iterator<T>()
+        {
+            private int index = next - 1;
+
+            @Override
+            public boolean hasNext()
+            {
+                return index >= 0;
+            }
+
+            @Override
+            public T next()
+            {
+                return Caster.cast(array[index--]);
+            }
+        };
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

@@ -2,6 +2,8 @@ package com.norswap.autumn.parsing3;
 
 import com.norswap.autumn.util.Array;
 
+import java.util.HashSet;
+
 import static com.norswap.autumn.parsing3.Registry.*; // PIF_*
 
 /**
@@ -43,11 +45,12 @@ import static com.norswap.autumn.parsing3.Registry.*; // PIF_*
  * during the call, but they need to be restored to their initial values before completing the
  * call.</p>
  *
- * <p>The only exception is {@link #parentCuttable}, which indicates the innermost parent expression
+ * <p>The only exception is {+@link #parentCuttable}, which indicates the innermost parent
+ * expression
  * that can be cut. Since, by definition, a cut inhibits backtracking, undoing its effects is
- * tricky and generally not needed. One can use {@link #isolateCuts()} in order to prevent a
- * sub-expression from cutting parent expressions. Note that {@link #isolateCuts()} does modify
- * the value of {@link #parentCuttable}.</p>
+ * tricky and generally not needed. One can use {+@link #isolateCuts()} in order to prevent a
+ * sub-expression from cutting parent expressions. Note that {+@link #isolateCuts()} does modify
+ * the value of {+@link #parentCuttable}.</p>
  *
  * <hr/>
  *
@@ -91,13 +94,13 @@ public class ParseInput
 
     public int flags;
     public Array<ParseResult> seeds;
-    public ParseInput parentCuttable;
 
     public int resultChildrenCount;
 
     // output
     public ParseOutput output;
     public ParseResult result;
+    public HashSet<String> cuts;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -105,6 +108,7 @@ public class ParseInput
     {
         ParseInput input = new ParseInput();
         input.output = new ParseOutput(0, 0);
+        input.cuts = new HashSet<>();
         return input;
     }
 
@@ -128,10 +132,7 @@ public class ParseInput
         this.resultChildrenCount = result.childrenCount();
 
         this.output = new ParseOutput(parent);
-
-        this.parentCuttable = parent.isCuttable()
-            ? parent
-            : parent.parentCuttable;
+        this.cuts = parent.cuts;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -277,33 +278,6 @@ public class ParseInput
     public boolean isCaptureForbidden()
     {
         return hasFlagsSet(PIF_DONT_CAPTURE);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Prevent cuts on the output or child outputs to cut enclosing choices.
-     * This modifies {@link #parentCuttable}.
-     */
-    public void isolateCuts()
-    {
-        // This causes {@link ParseOutput#cut()} to always cut the current output and never
-        // any of the ancestor cuttable outputs.
-        this.parentCuttable = this;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public boolean isCuttable()
-    {
-        return hasFlagsSet(PIF_CUTTABLE);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public void setCuttable()
-    {
-        setFlags(PIF_CUTTABLE);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

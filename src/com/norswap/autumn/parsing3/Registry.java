@@ -84,12 +84,6 @@ public final class Registry
         = ParsingInputFlagsFactory.next();
 
     /**
-     * Indicates that the expression associated to this parse input can be cut.
-     */
-    public static final int PIF_CUTTABLE
-        = ParsingInputFlagsFactory.next();
-
-    /**
      * Indicates that we shouldn't memoize any of the sub-expressions of the expression
      * associated with this parse input.
      */

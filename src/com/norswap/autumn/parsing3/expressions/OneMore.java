@@ -18,7 +18,6 @@ public final class OneMore extends ParsingExpression
     {
         final ParseInput down = new ParseInput(input);
         final ParseOutput up = down.output;
-        down.setCuttable();
 
         operand.parse(parser, down);
 
@@ -30,7 +29,6 @@ public final class OneMore extends ParsingExpression
         else
         {
             down.advance(up);
-            up.unCut();
         }
 
         ParseOutput farthestOutput = new ParseOutput(up);
@@ -46,18 +44,10 @@ public final class OneMore extends ParsingExpression
 
             down.advance(up);
             farthestOutput.become(up);
-            up.unCut();
         }
 
-        if (up.isCut())
-        {
-            parser.fail(this, input);
-            input.output.fail();
-        }
-        else
-        {
-            input.output.become(farthestOutput);
-        }
+        input.output.become(farthestOutput);
+
     }
 
     // ---------------------------------------------------------------------------------------------

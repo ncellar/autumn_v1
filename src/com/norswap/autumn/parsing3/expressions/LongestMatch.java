@@ -19,8 +19,6 @@ public final class LongestMatch extends ParsingExpression
         final ParseInput down = new ParseInput(input);
         final ParseOutput up = down.output;
 
-        down.isolateCuts();
-
         ParseOutput farthestOutput = ParseOutput.failure();
         ParseResult longestResult = null;
 

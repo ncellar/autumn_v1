@@ -18,7 +18,6 @@ public final class ZeroMore extends ParsingExpression
     {
         final ParseInput down = new ParseInput(input);
         final ParseOutput up = down.output;
-        down.setCuttable();
 
         ParseOutput farthestOutput = new ParseOutput(input);
 
@@ -33,17 +32,9 @@ public final class ZeroMore extends ParsingExpression
 
             down.advance(up);
             farthestOutput.become(up);
-            up.unCut();
         }
 
-        if (up.isCut())
-        {
-            parser.fail(this, input);
-        }
-        else
-        {
-            input.output.become(farthestOutput);
-        }
+        input.output.become(farthestOutput);
     }
 
     // ---------------------------------------------------------------------------------------------

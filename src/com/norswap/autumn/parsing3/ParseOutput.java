@@ -8,7 +8,6 @@ public class ParseOutput
 
     public int position;
     public int blackPosition;
-    public int flags;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -79,7 +78,6 @@ public class ParseOutput
     {
         this.position = output.position;
         this.blackPosition = output.blackPosition;
-        this.flags = output.flags;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -88,63 +86,6 @@ public class ParseOutput
     {
         this.position = input.position;
         this.blackPosition = input.blackPosition;
-        this.flags = 0;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public boolean cut(ParseInput input)
-    {
-        if (input.isCuttable() && !isCut())
-        {
-            setFlags(POF_CUT);
-        }
-        else if (input.parentCuttable != null)
-        {
-            input.parentCuttable.output.setFlags(POF_CUT);
-            input.parentCuttable = input.parentCuttable.parentCuttable;
-        }
-
-        return input.parentCuttable == null;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public void unCut()
-    {
-        clearFlags(POF_CUT);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Indicates if the choice tied to this frame has been cut.
-     */
-    public boolean isCut()
-    {
-        return hasFlagsSet(POF_CUT);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public boolean hasAnyFlagsSet(int flagsToCheck)
-    {
-        return (flags & flagsToCheck) != 0;
-    }
-
-    public boolean hasFlagsSet(int flagsToCheck)
-    {
-        return (flags & flagsToCheck) == flagsToCheck ;
-    }
-
-    public void setFlags(int flagsToAdd)
-    {
-        flags |= flagsToAdd;
-    }
-
-    public void clearFlags(int flagsToClear)
-    {
-        flags &= ~flagsToClear;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

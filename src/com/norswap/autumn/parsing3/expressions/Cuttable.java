@@ -4,34 +4,38 @@ import com.norswap.autumn.parsing3.ParseInput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
 
-public final class Not extends ParsingExpression
+public final class Cuttable extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParsingExpression operand;
+    public String name;
+    public ParsingExpression[] operands;
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        int flags = input.flags;
-
-        input.forbidCapture();
-        input.forbidErrorRecording();
-
-        operand.parse(parser, input);
-
-        if (input.output.succeeded())
+        for (ParsingExpression operand : operands)
         {
-            parser.fail(this, input);
-        }
-        else
-        {
-            input.resetOutput();
+            operand.parse(parser, input);
+
+            if (input.output.succeeded())
+            {
+                return;
+            }
+            else if (input.cuts.remove(name))
+            {
+                break;
+            }
+            else
+            {
+                input.resetOutput();
+            }
         }
 
-        input.flags = flags;
+        parser.fail(this, input);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -39,9 +43,17 @@ public final class Not extends ParsingExpression
     @Override
     public int parseDumb(CharSequence text, int position)
     {
-        return operand.parseDumb(text, position) == -1
-            ? position
-            : -1;
+        for (ParsingExpression operand : operands)
+        {
+            int result = operand.parseDumb(text, position);
+
+            if (result != - 1)
+            {
+                return result;
+            }
+        }
+
+        return -1;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -49,8 +61,19 @@ public final class Not extends ParsingExpression
     @Override
     public void appendTo(StringBuilder builder)
     {
-        builder.append("not(");
-        operand.toString(builder);
+        builder.append("cuttable(");
+        builder.append("\"");
+        builder.append(name);
+        builder.append("\", ");
+
+        for (ParsingExpression operand: operands)
+        {
+            operand.toString(builder);
+            builder.append(", ");
+        }
+
+        builder.setLength(builder.length() - 2);
+
         builder.append(")");
     }
 
@@ -59,7 +82,7 @@ public final class Not extends ParsingExpression
     @Override
     public ParsingExpression[] children()
     {
-        return new ParsingExpression[]{operand};
+        return operands;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -67,7 +90,7 @@ public final class Not extends ParsingExpression
     @Override
     public void setChild(int position, ParsingExpression expr)
     {
-        operand = expr;
+        operands[position] = expr;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
