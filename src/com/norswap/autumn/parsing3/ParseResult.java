@@ -11,16 +11,16 @@ import com.norswap.autumn.util.Array;
 public final class ParseResult
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public final ParsingExpression expression;
-    public final int position;
-
+    
     public String name;
     public String value;
-    public ParseOutput output;
     public Array<ParseResult> children;
     public boolean grouped;
     public ParseResult next;
+
+    public final ParsingExpression expression;
+    public final int position;
+    public ParseOutput output;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

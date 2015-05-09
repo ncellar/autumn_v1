@@ -1,7 +1,7 @@
 package com.norswap.autumn.parsing3.expressions;
 
-import com.norswap.autumn.parsing3.ParseResult;
 import com.norswap.autumn.parsing3.ParseInput;
+import com.norswap.autumn.parsing3.ParseResult;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
 
@@ -44,6 +44,39 @@ public final class Capture extends ParsingExpression
                 .toString();
         }
     }
+
+    /*
+    public void parse(Parser parser, ParseInput input)
+    {
+        operand.parse(parser, input);
+
+        if (input.isCaptureForbidden())
+        {
+            return;
+        }
+
+        ParseOutput2 output = input.output2;
+
+        if (output.succeeded())
+        {
+            if (shouldCaptureText())
+            {
+                int end = output.position == output.trailingWhitespacePosition
+                    ? output.position - output.trailingWhitespace
+                    : output.position;
+
+                output.tree.value = parser.text
+                    .subSequence(input.position, end)
+                    .toString();
+            }
+
+            ParseTree tree = new ParseTree();
+            tree.add(output.tree);
+            tree.children.add(output.tree);
+            output.tree = tree;
+        }
+    }
+    */
 
     // ---------------------------------------------------------------------------------------------
 
