@@ -14,8 +14,6 @@ public class FeatureTests
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    boolean stopOnFirst = true;
-
     Runnable[] tests = {
         this::testToken,
         this::testLeftRecursive,
@@ -108,8 +106,6 @@ public class FeatureTests
         ParseResult result = parser.result();
         ParseResult aResult = result.get("a");
 
-        Ensure.equals(aResult.position, 0);
-        Ensure.equals(aResult.endPosition(), 3);
         Ensure.equals(aResult.value, "aaa");
     }
 
@@ -130,8 +126,6 @@ public class FeatureTests
 
         for (int i = 0; i < 3; ++i)
         {
-            Ensure.equals(aResults.get(i).position, i);
-            Ensure.equals(aResults.get(i).endPosition(), i + 1);
             Ensure.equals(aResults.get(i).value, "a");
         }
     }
@@ -158,11 +152,12 @@ public class FeatureTests
         {
             Parser parser = TestConfiguration.parser("1+1+1");
             parser.parse(expr);
-            Ensure.equals(parser.result().endPosition(), 5);
+            Ensure.equals(parser.finalPosition(), 5);
 
             ParseResult result = parser.result();
             ParseResult plus = result.get("plus");
 
+            Ensure.equals(result.childrenCount(), 1);
             Ensure.different(plus.get("left").get("num"), null);
             Ensure.different(plus.get("right").get("plus").get("left").get("num"), null);
             Ensure.different(plus.get("right").get("plus").get("right").get("num"), null);
@@ -182,8 +177,8 @@ public class FeatureTests
 
         Parser parser = TestConfiguration.parser("1+1+1");
         parser.parse(expr);
+        Ensure.ensure(parser.matchedWholeSource());
         ParseResult result = parser.result();
-        Ensure.equals(result.endPosition(), 5);
 
         ParseResult plus = result.get("plus");
         Ensure.different(plus.get("right").get("num"), null);
@@ -216,8 +211,8 @@ public class FeatureTests
 
         Parser parser = TestConfiguration.parser("1+1*1");
         parser.parse(expr);
+        Ensure.ensure(parser.matchedWholeSource());
         ParseResult result = parser.result();
-        Ensure.equals(result.endPosition(), 5);
 
         Ensure.different(result.get("+").get("left").get("num"), null);
         Ensure.different(result.get("+").get("right").get("*").get("left").get("num"), null);
@@ -225,8 +220,8 @@ public class FeatureTests
 
         parser = TestConfiguration.parser("1*1+1");
         parser.parse(expr);
+        Ensure.ensure(parser.matchedWholeSource());
         result = parser.result();
-        Ensure.equals(result.endPosition(), 5);
 
         Ensure.different(result.get("+").get("right").get("num"), null);
         Ensure.different(result.get("+").get("left").get("*").get("left").get("num"), null);

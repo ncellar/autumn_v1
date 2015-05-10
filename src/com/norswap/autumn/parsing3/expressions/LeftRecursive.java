@@ -15,14 +15,13 @@ public final class LeftRecursive extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        ParseResult seed = input.getSeed(this);
+        OutputChanges changes = input.getSeedChanges(this);
 
-        if (seed != null)
+        if (changes != null)
         {
             // There is a seed, use it.
 
-            input.output.become(seed.output);
-            input.merge(seed);
+            changes.mergeInto(input);
             return;
         }
         else if (leftAssociative && parser.isLeftAssociative(this))
@@ -43,53 +42,50 @@ public final class LeftRecursive extends ParsingExpression
             input.seeds = new Array<>();
         }
 
-        seed = new ParseResult(this, input.position);
-        seed.output = ParseOutput.failure();
-        input.seeds.push(seed);
+        input.seeds.push(new Seed(this, OutputChanges.failure()));
 
         if (leftAssociative)
         {
             parser.pushLeftAssociative(this);
         }
 
-        // Keep parsing the operand, as long as the seed keeps growing.
-
-        ParseResult oldResult = input.result;
-        int oldFlags = input.flags;
-        int oldCount = input.resultChildrenCount;
-
-        input.result = new ParseResult(this, input.position);
-
         // If we're in a left-recursive position, relying on memoized values will prevent
         // the expansion of the seed, so don't do it. This is cleared when advancing input position
         // with {@link ParseInput#advance()}.
+        int oldFlags = input.flags;
         input.forbidMemoization();
+
+        // Keep parsing the operand, as long as the seed keeps growing.
 
         while (true)
         {
             operand.parse(parser, input);
-            ParseResult oldSeed = input.seeds.pop();
+            OutputChanges oldChanges = input.seeds.pop().changes;
+            // TODO remove
+            //System.err.println("||" + oldChanges.tree);
 
-            if (oldSeed.endPosition() >= input.output.position)
+            if (oldChanges.position >= input.output.position)
             {
                 // In case of either failure or no progress (no left-recursion or left-recursion
                 // consuming 0 input), revert to the previous seed.
 
-                input.result = oldResult;
-                input.resultChildrenCount = oldCount;
                 input.flags = oldFlags;
-                input.load(oldSeed);
+
+                input.resetOutput();
+                input.resetResultChildren();
+                // TODO reset cuts
+
+                oldChanges.mergeInto(input);
                 break;
             }
             else
             {
                 // Update the seed and retry the rule.
 
-                input.result.finalize(input.output);
-                input.seeds.push(input.result);
-
+                input.seeds.push(new Seed(this, new OutputChanges(input)));
                 input.resetOutput();
-                input.setResult(new ParseResult(this, input.position));
+                input.resetResultChildren();
+                // TODO reset cuts
             }
         }
 

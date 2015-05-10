@@ -207,7 +207,7 @@ public class MouseGrammar
             //grammar = InstrumentExpression.trace(grammar);
             parser.parse(grammar);
             parser.report();
-            if (parser.result().succeeded())
+            if (parser.succeeded())
             {
                 emitGrammar(parser.result());
             }

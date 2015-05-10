@@ -18,6 +18,8 @@ public final class Parser
     private ParseResult result;
 
     private Array<LeftRecursive> leftAssociatives;
+
+    private int finalPosition;
     
     public HandleMap ext = new HandleMap();
 
@@ -49,7 +51,7 @@ public final class Parser
     {
         this.leftAssociatives = new Array<>();
         ParseInput rootInput = ParseInput.root();
-        rootInput.result = result = new ParseResult(pe, 0);
+        rootInput.result = result = new ParseResult();
 
         if (configuration.processLeadingWhitespace)
         {
@@ -59,7 +61,7 @@ public final class Parser
         }
 
         pe.parse(this, rootInput);
-        result.finalize(rootInput.output);
+        this.finalPosition = rootInput.output.position;
     }
 
     //----------------------------------------------------------------------------------------------
@@ -75,10 +77,10 @@ public final class Parser
         {
             System.err.println("The parse succeeded, matching the whole source.");
         }
-        else if (result.succeeded())
+        else if (succeeded())
         {
             System.err.println("The parse succeeded, matching a prefix of the source, up to "
-                + source.position(result.endPosition()));
+                + source.position(finalPosition));
         }
         else
         {
@@ -104,9 +106,30 @@ public final class Parser
 
     //----------------------------------------------------------------------------------------------
 
+    public boolean succeeded()
+    {
+        return finalPosition >= 0;
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    public boolean failed()
+    {
+        return finalPosition < 0;
+    }
+
+    //----------------------------------------------------------------------------------------------
+
     public boolean matchedWholeSource()
     {
-        return !result.failed() && result.endPosition() == source.length();
+        return finalPosition == source.length();
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    public int finalPosition()
+    {
+        return finalPosition;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

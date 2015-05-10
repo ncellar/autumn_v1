@@ -2,9 +2,9 @@ package com.norswap.autumn.parsing3.expressions;
 
 import com.norswap.autumn.parsing3.ParseInput;
 import com.norswap.autumn.parsing3.ParseOutput;
-import com.norswap.autumn.parsing3.ParseResult;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
+import com.norswap.autumn.parsing3.Seed;
 import com.norswap.autumn.util.Array;
 
 public final class OneMore extends ParsingExpression
@@ -18,7 +18,7 @@ public final class OneMore extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        Array<ParseResult> oldSeeds = input.seeds;
+        Array<Seed> oldSeeds = input.seeds;
         int oldFlags = input.flags;
         int oldCount = input.resultChildrenCount;
         int oldPos = input.position;

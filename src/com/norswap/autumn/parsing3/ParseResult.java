@@ -3,65 +3,20 @@ package com.norswap.autumn.parsing3;
 import com.norswap.autumn.util.Array;
 
 /**
- * - name != null && expression != null >> result of a capture
- * - name != null && expression == null >> grouped capture (also position == 0)
- * - name == null && expression != null >> root & seeds
- * - name == null && expression == null >> container (used to save results of sub-expressions)
+ * - name != null && !grouped : normal node
+ * - name != null && grouped  : group capture
+ * - name == null             : container
  */
 public final class ParseResult
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    
+
     public String name;
     public String value;
     public Array<ParseResult> children;
     public boolean grouped;
-    public ParseResult next;
-
-    public final ParsingExpression expression;
-    public final int position;
-    public ParseOutput output;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public static ParseResult container()
-    {
-        ParseResult result = new ParseResult(null, 0);
-        return result;
-    }
-
-    public ParseResult(ParsingExpression expression, int position)
-    {
-        this.expression = expression;
-        this.position = position;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public int endPosition()
-    {
-        return output.position;
-    }
-
-    public int blackEndPosition()
-    {
-        return output.blackPosition;
-    }
-
-    public boolean succeeded()
-    {
-        return output.succeeded();
-    }
-
-    public boolean failed()
-    {
-        return output.failed();
-    }
-
-    public void finalize(ParseOutput output)
-    {
-        this.output = new ParseOutput(output);
-    }
 
     public int childrenCount()
     {
@@ -93,25 +48,31 @@ public final class ParseResult
         }
         else
         {
-            if (child.grouped)
-            {
-                ParseResult container = get(child.name);
-
-                if (container == null)
-                {
-                    container = container();
-                    container.name = child.name;
-                    container.children = new Array<>();
-                    children.add(container);
-                }
-
-                container.children.add(child);
-            }
-            else
-            {
-                children.add(child);
-            }
+            children.add(child);
         }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void addGrouped(ParseResult child)
+    {
+        if (children == null)
+        {
+            children = new Array<>();
+        }
+
+        ParseResult container = get(child.name);
+
+        if (container == null)
+        {
+            container = new ParseResult();
+            container.grouped = true;
+            container.name = child.name;
+            container.children = new Array<>();
+            children.add(container);
+        }
+
+        container.children.add(child);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -147,7 +108,7 @@ public final class ParseResult
             builder.append(": ");
         }
 
-        if (children != null) // TODO && !children.isEmpty()
+        if (children != null && !children.isEmpty())
         {
             builder.append("[");
 
@@ -174,6 +135,10 @@ public final class ParseResult
         {
             builder.setLength(builder.length() - 2);
         }
+        else
+        {
+            builder.append("[]");
+        }
 
         return builder.toString();
     }
@@ -195,7 +160,7 @@ public final class ParseResult
         builder.append(name != null ? name : "container");
         builder.append("\n");
 
-        if (expression == null)
+        if (grouped)
         {
             int i = 0;
             for (ParseResult child: children)

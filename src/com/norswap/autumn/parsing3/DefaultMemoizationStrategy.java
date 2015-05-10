@@ -1,11 +1,11 @@
 package com.norswap.autumn.parsing3;
 
 /**
- * The default memoization strategy memoizes every parse result that it is asked to.
+ * The default memoization strategy memoizes every output changes that it is asked to.
  *
- * It is implement an open-addressing (position -> parse result) map. Multiple results for the same
- * position are linked together using their {@code next} field. Recent results are put at the front
- * of this list.
+ * It is implement an open-addressing (position -> node) map. Each node includes the position and
+ * memoized expression. Multiple nodes results for the same position are linked together using
+ * their {@code next} field. Recent results are put at the front of this list.
  */
 public final class DefaultMemoizationStrategy implements MemoizationStrategy
 {
@@ -21,7 +21,17 @@ public final class DefaultMemoizationStrategy implements MemoizationStrategy
 
     private int load = 0;
 
-    private ParseResult[] store = new ParseResult[INITIAL_SIZE];
+    private MemoNode[] store = new MemoNode[INITIAL_SIZE];
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private static class MemoNode
+    {
+        int position;
+        ParsingExpression pe;
+        OutputChanges changes;
+        MemoNode next;
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -29,19 +39,19 @@ public final class DefaultMemoizationStrategy implements MemoizationStrategy
     {
         int index = position % store.length;
 
-        ParseResult result = store[index];
+        MemoNode node = store[index];
 
-        while (result != null && result.position != position)
+        while (node != null && node.position != position)
         {
             if (++index == store.length)
             {
                 index = 0;
             }
 
-            result = store[index];
+            node = store[index];
         }
 
-        return result == null
+        return node == null
             ? -index - 1
             : index;
     }
@@ -49,56 +59,68 @@ public final class DefaultMemoizationStrategy implements MemoizationStrategy
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void memoize(ParseResult result)
+    public void memoize(ParsingExpression pe, ParseInput input, OutputChanges changes)
+    {
+        MemoNode node = new MemoNode();
+        node.position = input.position;
+        node.pe = pe;
+        node.changes = changes;
+
+        memoize(node);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private void memoize(MemoNode node)
     {
         if (store.length * LOAD_FACTOR < load + 1)
         {
             grow();
         }
 
-        int index = getIndex(result.position);
+        int index = getIndex(node.position);
 
         if (index >= 0)
         {
-            result.next = store[index];
-            store[index] = result;
+            node.next = store[index];
+            store[index] = node;
         }
         else
         {
             index = -index - 1;
-            store[index] = result;
+            store[index] = node;
         }
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public ParseResult get(ParsingExpression pe, int position)
+    public OutputChanges get(ParsingExpression pe, ParseInput input)
     {
-        int index = getIndex(position);
+        int index = getIndex(input.position);
 
-        ParseResult result = index >= 0
+        MemoNode node = index >= 0
             ? store[index]
             : null;
 
-        while (result != null && result.expression != pe)
+        while (node != null && node.pe != pe)
         {
-            result = result.next;
+            node = node.next;
         }
 
-        return result;
+        return node == null ? null : node.changes;
     }
 
     // ---------------------------------------------------------------------------------------------
 
     private void grow()
     {
-        ParseResult[] oldStore = store;
-        this.store = new ParseResult[(int) (store.length * GROWTH_FACTOR)];
+        MemoNode[] oldStore = store;
+        this.store = new MemoNode[(int) (store.length * GROWTH_FACTOR)];
 
-        for (ParseResult output: oldStore)
+        for (MemoNode node: oldStore)
         {
-            memoize(output);
+            memoize(node);
         }
     }
 
@@ -107,9 +129,9 @@ public final class DefaultMemoizationStrategy implements MemoizationStrategy
     @Override
     public void cut(int position)
     {
-        // Delete all memoized outputs for positions in [earliestPosition, position[.
+        // Delete all memoized changes for positions in [earliestPosition, position[.
 
-        // 1. Delete all outputs in the usual slots. This step suffices if there was never any
+        // 1. Delete all changes in the usual slots. This step suffices if there was never any
         //    collisions in the store.
 
         for (int i = earliestPosition; i < position; ++i)
@@ -123,16 +145,17 @@ public final class DefaultMemoizationStrategy implements MemoizationStrategy
             }
         }
 
-        // 2. Delete the outputs that have "ran over" due to open addressing.
+        // 2. Delete the chnages that have "ran over" due to open addressing.
         //    For this we need to scan entries from the insertion point of the position
         //    (assuming no collision) up to the first empty slot.
 
         int index = position % store.length;
-        ParseResult output;
-        int pos;
+        MemoNode node;
 
-        while ((output = store[index]) != null && (pos = output.position) != position)
+        while ((node = store[index]) != null)
         {
+            int pos = node.position;
+
             if (earliestPosition <= pos && pos < position)
             {
                 store[index] = null;

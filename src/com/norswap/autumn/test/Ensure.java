@@ -51,11 +51,11 @@ public final class Ensure
         }
     }
 
-    public static void match(Source src, ParsingExpression pe)
+    public static void  match(Source src, ParsingExpression pe)
     {
         Parser parser = TestConfiguration.parser(src);
         parser.parse(pe);
-        equals(parser.result().endPosition(), src.length());
+        equals(parser.finalPosition(), src.length());
     }
 
     public static void match(String src, ParsingExpression pe)
@@ -67,7 +67,7 @@ public final class Ensure
     {
         Parser parser = TestConfiguration.parser(src);
         parser.parse(pe);
-        ensure(parser.result().succeeded());
+        ensure(parser.succeeded());
     }
 
     public static void succeeds(String src, ParsingExpression pe)
@@ -79,7 +79,7 @@ public final class Ensure
     {
         Parser parser = TestConfiguration.parser(src);
         parser.parse(pe);
-        int pos = parser.result().endPosition();
+        int pos = parser.finalPosition();
 
         if (pos != -1)
         {

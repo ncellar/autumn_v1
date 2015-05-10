@@ -16,31 +16,23 @@ public final class LongestMatch extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        ParseResult oldResult = input.result;
-        int oldCount = input.resultChildrenCount;
-
-        ParseOutput farthestOutput = ParseOutput.failure();
-        ParseResult longestResult = null;
+        OutputChanges farthestChanges = OutputChanges.failure();
 
         for (ParsingExpression operand : operands)
         {
-            input.setResult(ParseResult.container());
-
             operand.parse(parser, input);
 
-            if (input.output.position > farthestOutput.position)
+            if (input.output.position > farthestChanges.position)
             {
-                farthestOutput.become(input.output);
-                longestResult = input.result;
+                farthestChanges = new OutputChanges(input);
             }
 
             input.resetOutput();
+            input.resetResultChildren();
+            // TODO reset cuts
         }
 
-        input.result = oldResult;
-        input.resultChildrenCount = oldCount;
-        input.output.become(farthestOutput);
-        input.merge(longestResult);
+        farthestChanges.mergeInto(input);
 
         if (input.output.failed())
         {

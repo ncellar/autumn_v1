@@ -11,7 +11,6 @@ public final class Cuttable extends ParsingExpression
     public String name;
     public ParsingExpression[] operands;
 
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
@@ -25,7 +24,7 @@ public final class Cuttable extends ParsingExpression
             {
                 return;
             }
-            else if (input.cuts.remove(name))
+            else if (input.cuts.removeFromEnd(name))
             {
                 break;
             }

@@ -4,14 +4,14 @@ public interface MemoizationStrategy
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    void memoize(ParseResult result);
+    void memoize(ParsingExpression pe, ParseInput input, OutputChanges changes);
 
     // ---------------------------------------------------------------------------------------------
 
     /**
      * Return a memoized result; or null if no such result has been memoized.
      */
-    ParseResult get(ParsingExpression pe, int position);
+    OutputChanges get(ParsingExpression pe, ParseInput input);
 
     // ---------------------------------------------------------------------------------------------
 

@@ -26,57 +26,37 @@ public final class Capture extends ParsingExpression
         }
 
         ParseResult oldResult = input.result;
-        ParseResult newResult = new ParseResult(this, input.position);
+        ParseResult newResult = new ParseResult();
+        int oldCount = input.resultChildrenCount;
         newResult.name = name;
-        newResult.grouped = isCaptureGrouped();
 
         input.result = newResult;
+        input.resultChildrenCount = 0;
         operand.parse(parser, input);
         input.result = oldResult;
+        input.resultChildrenCount = oldCount;
 
-        newResult.finalize(input.output);
-        input.merge(newResult);
-
-        if (shouldCaptureText() && newResult.succeeded())
+        if (input.output.succeeded())
         {
-            newResult.value = parser.text
-                .subSequence(newResult.position, newResult.blackEndPosition())
-                .toString();
-        }
-    }
+            if (isCaptureGrouped())
+            {
+                input.result.addGrouped(newResult);
+            }
+            else
+            {
+                input.result.add(newResult);
+            }
 
-    /*
-    public void parse(Parser parser, ParseInput input)
-    {
-        operand.parse(parser, input);
-
-        if (input.isCaptureForbidden())
-        {
-            return;
-        }
-
-        ParseOutput2 output = input.output2;
-
-        if (output.succeeded())
-        {
             if (shouldCaptureText())
             {
-                int end = output.position == output.trailingWhitespacePosition
-                    ? output.position - output.trailingWhitespace
-                    : output.position;
+                int end = input.output.blackPosition;
 
-                output.tree.value = parser.text
+                newResult.value = parser.text
                     .subSequence(input.position, end)
                     .toString();
             }
-
-            ParseTree tree = new ParseTree();
-            tree.add(output.tree);
-            tree.children.add(output.tree);
-            output.tree = tree;
         }
     }
-    */
 
     // ---------------------------------------------------------------------------------------------
 

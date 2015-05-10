@@ -19,24 +19,16 @@ public final class Memo extends ParsingExpression
             return;
         }
 
-        ParseResult memoed = parser.configuration.memoizationStrategy.get(this, input.position);
+        OutputChanges changes = parser.configuration.memoizationStrategy.get(this, input);
 
-        if (memoed != null)
+        if (changes != null)
         {
-            input.load(memoed);
+            changes.mergeInto(input);
             return;
         }
 
-        ParseResult oldResult = input.result;
-        ParseResult newResult = ParseResult.container();
-        input.result = newResult;
-
         operand.parse(parser, input);
-
-        input.result = oldResult;
-        newResult.finalize(input.output);
-        input.merge(newResult);
-        parser.configuration.memoizationStrategy.memoize(newResult);
+        parser.configuration.memoizationStrategy.memoize(operand, input, new OutputChanges(input));
     }
 
     // ---------------------------------------------------------------------------------------------

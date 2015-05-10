@@ -139,6 +139,50 @@ public final class Array<T> implements Iterable<T>
 
     // ---------------------------------------------------------------------------------------------
 
+    public void remove(int index)
+    {
+        for (int i = index + 1; i < next; ++i)
+        {
+            array[i - 1] = array[i];
+        }
+
+        --next;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public boolean remove(T t)
+    {
+        for (int i = 0; i < next; ++i)
+        {
+            if (array[i].equals(t))
+            {
+                remove(i);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public boolean removeFromEnd(T t)
+    {
+        for (int i = next - 1; i >= 0; --i)
+        {
+            if (array[i].equals(t))
+            {
+                remove(i);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     @Override
     public Iterator<T> iterator()
     {
