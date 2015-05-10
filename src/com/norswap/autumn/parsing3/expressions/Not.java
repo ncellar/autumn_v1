@@ -15,14 +15,13 @@ public final class Not extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        int flags = input.flags;
+        int oldFlags = input.flags;
 
-        input.forbidCapture();
         input.forbidErrorRecording();
 
         operand.parse(parser, input);
 
-        if (input.output.succeeded())
+        if (input.succeeded())
         {
             parser.fail(this, input);
         }
@@ -31,7 +30,7 @@ public final class Not extends ParsingExpression
             input.resetOutput();
         }
 
-        input.flags = flags;
+        input.flags = oldFlags;
     }
 
     // ---------------------------------------------------------------------------------------------

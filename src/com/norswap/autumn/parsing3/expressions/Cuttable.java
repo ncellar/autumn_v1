@@ -20,7 +20,7 @@ public final class Cuttable extends ParsingExpression
         {
             operand.parse(parser, input);
 
-            if (input.output.succeeded())
+            if (input.succeeded())
             {
                 return;
             }

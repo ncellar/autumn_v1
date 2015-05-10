@@ -1,7 +1,6 @@
 package com.norswap.autumn.parsing3.expressions;
 
 import com.norswap.autumn.parsing3.*;
-import com.norswap.autumn.parsing3.ParseOutput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
 
@@ -22,19 +21,17 @@ public final class LongestMatch extends ParsingExpression
         {
             operand.parse(parser, input);
 
-            if (input.output.position > farthestChanges.position)
+            if (input.end > farthestChanges.end)
             {
                 farthestChanges = new OutputChanges(input);
             }
 
-            input.resetOutput();
-            input.resetResultChildren();
-            // TODO reset cuts
+            input.resetAllOutput();
         }
 
         farthestChanges.mergeInto(input);
 
-        if (input.output.failed())
+        if (input.failed())
         {
             parser.fail(this, input);
         }

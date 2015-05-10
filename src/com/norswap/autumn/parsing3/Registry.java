@@ -77,13 +77,6 @@ public final class Registry
     // PARSING INPUT FLAGS (PIF)
 
     /**
-     * Indicates we should not perform any capture on the sub-expressions of the expression
-     * associated with this parse input.
-     */
-    public static final int PIF_DONT_CAPTURE
-        = ParsingInputFlagsFactory.next();
-
-    /**
      * Indicates that we shouldn't memoize any of the sub-expressions of the expression
      * associated with this parse input.
      */

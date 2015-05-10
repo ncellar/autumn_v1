@@ -6,8 +6,8 @@ public final class OutputChanges
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public int position;
-    public int blackPosition;
+    public int end;
+    public int blackEnd;
     public ParseResult tree;
     public Array<String> cuts;
 
@@ -16,8 +16,8 @@ public final class OutputChanges
     public static OutputChanges failure()
     {
         OutputChanges changes = new OutputChanges();
-        changes.position = -1;
-        changes.blackPosition = -1;
+        changes.end = -1;
+        changes.blackEnd = -1;
         return changes;
     }
 
@@ -31,8 +31,8 @@ public final class OutputChanges
 
     public OutputChanges(ParseInput input)
     {
-        this.position = input.output.position;
-        this.blackPosition = input.output.blackPosition;
+        this.end = input.end;
+        this.blackEnd = input.blackEnd;
         this.tree = new ParseResult();
         this.cuts = new Array<>();
 
@@ -51,8 +51,8 @@ public final class OutputChanges
 
     public void mergeInto(ParseInput input)
     {
-        input.output.position = position;
-        input.output.blackPosition = blackPosition;
+        input.end = end;
+        input.blackEnd = blackEnd;
 
         if (tree != null)
         {

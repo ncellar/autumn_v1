@@ -11,9 +11,9 @@ public final class Any extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        if (parser.text.charAt(input.position) != 0)
+        if (parser.text.charAt(input.start) != 0)
         {
-            input.output.advance(1);
+            input.advance(1);
         }
         else
         {

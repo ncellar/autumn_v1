@@ -15,13 +15,9 @@ public final class Lookahead extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        int flags = input.flags;
-
-        input.forbidCapture();
-
         operand.parse(parser, input);
 
-        if (input.output.succeeded())
+        if (input.succeeded())
         {
             input.resetOutput();
         }
@@ -29,8 +25,6 @@ public final class Lookahead extends ParsingExpression
         {
             parser.fail(this, input);
         }
-
-        input.flags = flags;
     }
 
     // ---------------------------------------------------------------------------------------------

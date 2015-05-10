@@ -23,7 +23,9 @@ public final class Precedence extends ParsingExpression
     {
         if (precedence > 0 && precedence < input.precedence)
         {
-            input.output.fail();
+            // We bypass error handling: it is not expected that the input matches this expression.
+
+            input.fail();
         }
         else
         {

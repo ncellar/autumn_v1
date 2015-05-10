@@ -11,11 +11,11 @@ public final class Whitespace extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        int pos = parser.configuration.whitespace.parseDumb(parser.text, input.output.position);
+        int end = parser.configuration.whitespace.parseDumb(parser.text, input.end);
 
-        if (pos > 0)
+        if (end > 0)
         {
-            input.output.position = pos;
+            input.end = end;
         }
     }
 

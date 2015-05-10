@@ -19,7 +19,7 @@ public final class Parser
 
     private Array<LeftRecursive> leftAssociatives;
 
-    private int finalPosition;
+    private int endPosition;
     
     public HandleMap ext = new HandleMap();
 
@@ -56,12 +56,16 @@ public final class Parser
         if (configuration.processLeadingWhitespace)
         {
             int pos = configuration.whitespace.parseDumb(text, 0);
-            rootInput.position = pos;
-            rootInput.output.position = pos;
+            rootInput.start = pos;
+            rootInput.end = pos;
         }
 
         pe.parse(this, rootInput);
-        this.finalPosition = rootInput.output.position;
+
+        if ((this.endPosition = rootInput.end) < 0)
+        {
+            rootInput.resetAllOutput();
+        }
     }
 
     //----------------------------------------------------------------------------------------------
@@ -80,7 +84,7 @@ public final class Parser
         else if (succeeded())
         {
             System.err.println("The parse succeeded, matching a prefix of the source, up to "
-                + source.position(finalPosition));
+                + source.position(endPosition));
         }
         else
         {
@@ -108,42 +112,40 @@ public final class Parser
 
     public boolean succeeded()
     {
-        return finalPosition >= 0;
+        return endPosition >= 0;
     }
 
     //----------------------------------------------------------------------------------------------
 
     public boolean failed()
     {
-        return finalPosition < 0;
+        return endPosition < 0;
     }
 
     //----------------------------------------------------------------------------------------------
 
     public boolean matchedWholeSource()
     {
-        return finalPosition == source.length();
+        return endPosition == source.length();
     }
 
     //----------------------------------------------------------------------------------------------
 
-    public int finalPosition()
+    public int endPosition()
     {
-        return finalPosition;
+        return endPosition;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void fail(ParsingExpression pe, ParseInput input)
     {
-        input.output.fail();
+        input.fail();
 
         if (!input.isErrorRecordingForbidden())
         {
-            configuration.errorHandler.handle(pe, input.position);
+            configuration.errorHandler.handle(pe, input.start);
         }
-
-        input.resetResultChildren();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

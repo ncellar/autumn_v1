@@ -152,7 +152,7 @@ public class FeatureTests
         {
             Parser parser = TestConfiguration.parser("1+1+1");
             parser.parse(expr);
-            Ensure.equals(parser.finalPosition(), 5);
+            Ensure.equals(parser.endPosition(), 5);
 
             ParseResult result = parser.result();
             ParseResult plus = result.get("plus");

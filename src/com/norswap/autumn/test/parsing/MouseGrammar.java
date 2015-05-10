@@ -204,7 +204,7 @@ public class MouseGrammar
         {
             Source source = Source.fromFile(filename);
             Parser parser = new Parser(source, config);
-            //grammar = InstrumentExpression.trace(grammar);
+            // grammar = InstrumentExpression.trace(grammar);
             parser.parse(grammar);
             parser.report();
             if (parser.succeeded())

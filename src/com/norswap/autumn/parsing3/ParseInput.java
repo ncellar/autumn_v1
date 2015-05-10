@@ -8,29 +8,31 @@ public class ParseInput
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public int position;
-    public int blackPosition;
+    public int start;
+    public int blackStart;
     public int precedence;
 
     public int flags;
     public Array<Seed> seeds;
 
-    public int resultChildrenCount;
-    public int cutsCount;
-
     // output
-    public ParseOutput output;
+    public int end;
+    public int blackEnd;
     public ParseResult result;
     public Array<String> cuts;
+
+    public int resultChildrenCount;
+    public int cutsCount;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     static ParseInput root()
     {
-        ParseInput input = new ParseInput();
-        input.output = new ParseOutput(0, 0);
-        input.cuts = new Array<>();
-        return input;
+        ParseInput root = new ParseInput();
+        root.end = 0;
+        root.blackEnd = 0;
+        root.cuts = new Array<>();
+        return root;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -43,17 +45,17 @@ public class ParseInput
 
     public ParseInput(ParseInput parent)
     {
-        this.position = parent.position;
-        this.blackPosition = parent.blackPosition;
+        this.start = parent.start;
+        this.blackStart = parent.blackStart;
         this.precedence = parent.precedence;
         this.seeds = parent.seeds;
-        this.flags = parent.flags & (PIF_DONT_CAPTURE | PIF_DONT_MEMOIZE | PIF_DONT_RECORD_ERRORS);
-
+        this.flags = parent.flags;
+        this.end = parent.end;
+        this.blackEnd = parent.blackEnd;
         this.result = parent.result;
-        this.resultChildrenCount = result.childrenCount();
-
-        this.output = new ParseOutput(parent);
+        this.resultChildrenCount = parent.resultChildrenCount;
         this.cuts = parent.cuts;
+        this.cutsCount = parent.cutsCount;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -78,45 +80,80 @@ public class ParseInput
 
     // ---------------------------------------------------------------------------------------------
 
-    /**
-     * Advance the position (and related fields) of this parse input up to position pointed to
-     * by the passed output. Also updates the fields that records the number of children of the
-     * result instance.
-     */
-    public void advance(ParseOutput up)
+    public void advance()
     {
-        if (up.position > this.position)
+        if (end > start)
         {
-            this.seeds = null;
-            this.clearFlags(PIF_DONT_MEMOIZE);
+            seeds = null;
+            clearFlags(PIF_DONT_MEMOIZE);
         }
 
-        this.position = up.position;
-        this.blackPosition = up.blackPosition;
-        this.resultChildrenCount = result.childrenCount();
-        this.cutsCount = cuts.size();
+        start = end;
+        blackStart = blackEnd;
+        resultChildrenCount = result.childrenCount();
+        cutsCount = cuts.size();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void advance(int n)
+    {
+        if (n != 0)
+        {
+            end += n;
+            blackEnd = end;
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public void resetOutput()
     {
-        output.reset(this);
-    }
+        end = start;
+        blackEnd = blackStart;
 
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Discard captures in the result that are newer than the time where the field tracking the
-     * number of children was last updated (most often at the time the frame was create, although
-     * {@link #setResult} and {@link #advance} also modify that field).
-     */
-    public void resetResultChildren()
-    {
         if (result.children != null)
         {
             result.children.truncate(resultChildrenCount);
         }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void resetAllOutput()
+    {
+        resetOutput();
+        cuts.truncate(cutsCount);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void fail()
+    {
+        this.end = -1;
+        this.blackEnd = -1;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public boolean succeeded()
+    {
+        return end != -1;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public boolean failed()
+    {
+        return end == -1;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void merge(ParseInput child)
+    {
+        this.end = child.end;
+        this.blackEnd = child.blackEnd;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -147,20 +184,6 @@ public class ParseInput
     public boolean isErrorRecordingForbidden()
     {
         return hasFlagsSet(PIF_DONT_RECORD_ERRORS);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public void forbidCapture()
-    {
-        setFlags(PIF_DONT_CAPTURE);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public boolean isCaptureForbidden()
-    {
-        return hasFlagsSet(PIF_DONT_CAPTURE);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

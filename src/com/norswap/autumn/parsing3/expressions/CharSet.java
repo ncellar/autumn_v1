@@ -16,13 +16,13 @@ public final class CharSet extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        char c = parser.text.charAt(input.position);
+        char c = parser.text.charAt(input.start);
 
         for (char d : chars)
         {
             if (c == d)
             {
-                input.output.advance(1);
+                input.advance(1);
                 return;
             }
         }

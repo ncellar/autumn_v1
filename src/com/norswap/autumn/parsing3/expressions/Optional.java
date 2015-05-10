@@ -17,7 +17,7 @@ public final class Optional extends ParsingExpression
     {
         operand.parse(parser, input);
 
-        if (input.output.failed())
+        if (input.failed())
         {
             input.resetOutput();
         }

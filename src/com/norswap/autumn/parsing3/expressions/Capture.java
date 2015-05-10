@@ -19,24 +19,20 @@ public final class Capture extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        if (input.isCaptureForbidden())
-        {
-            operand.parse(parser, input);
-            return;
-        }
-
         ParseResult oldResult = input.result;
         ParseResult newResult = new ParseResult();
-        int oldCount = input.resultChildrenCount;
         newResult.name = name;
+        int oldCount = input.resultChildrenCount;
 
         input.result = newResult;
         input.resultChildrenCount = 0;
+
         operand.parse(parser, input);
+
         input.result = oldResult;
         input.resultChildrenCount = oldCount;
 
-        if (input.output.succeeded())
+        if (input.succeeded())
         {
             if (isCaptureGrouped())
             {
@@ -49,10 +45,10 @@ public final class Capture extends ParsingExpression
 
             if (shouldCaptureText())
             {
-                int end = input.output.blackPosition;
+                int end = input.blackEnd;
 
                 newResult.value = parser.text
-                    .subSequence(input.position, end)
+                    .subSequence(input.start, end)
                     .toString();
             }
         }

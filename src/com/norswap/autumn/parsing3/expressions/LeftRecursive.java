@@ -31,7 +31,7 @@ public final class LeftRecursive extends ParsingExpression
 
             // We bypass error handling: it is not expected that the input matches this expression.
 
-            input.output.fail();
+            input.fail();
             return;
         }
 
@@ -64,17 +64,13 @@ public final class LeftRecursive extends ParsingExpression
             // TODO remove
             //System.err.println("||" + oldChanges.tree);
 
-            if (oldChanges.position >= input.output.position)
+            if (oldChanges.end >= input.end)
             {
                 // In case of either failure or no progress (no left-recursion or left-recursion
                 // consuming 0 input), revert to the previous seed.
 
                 input.flags = oldFlags;
-
-                input.resetOutput();
-                input.resetResultChildren();
-                // TODO reset cuts
-
+                input.resetAllOutput();
                 oldChanges.mergeInto(input);
                 break;
             }
@@ -83,13 +79,11 @@ public final class LeftRecursive extends ParsingExpression
                 // Update the seed and retry the rule.
 
                 input.seeds.push(new Seed(this, new OutputChanges(input)));
-                input.resetOutput();
-                input.resetResultChildren();
-                // TODO reset cuts
+                input.resetAllOutput();
             }
         }
 
-        if (input.output.failed())
+        if (input.failed())
         {
             parser.fail(this, input);
         }

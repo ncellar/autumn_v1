@@ -15,15 +15,15 @@ public final class Dumb extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        int pos = operand.parseDumb(parser.text, input.position);
+        int pos = operand.parseDumb(parser.text, input.start);
 
         if (pos >= 0)
         {
-            input.output.advance(pos - input.position);
+            input.advance(pos - input.start);
         }
         else
         {
-            input.output.fail();
+            parser.fail(this, input);
         }
     }
 

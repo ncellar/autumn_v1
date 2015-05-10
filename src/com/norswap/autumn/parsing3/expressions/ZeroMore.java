@@ -1,7 +1,6 @@
 package com.norswap.autumn.parsing3.expressions;
 
 import com.norswap.autumn.parsing3.ParseInput;
-import com.norswap.autumn.parsing3.ParseOutput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
 import com.norswap.autumn.parsing3.Seed;
@@ -18,34 +17,22 @@ public final class ZeroMore extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        Array<Seed> oldSeeds = input.seeds;
-        int oldFlags = input.flags;
-        int oldCount = input.resultChildrenCount;
-        int oldPos = input.position;
-        int oldBPos = input.blackPosition;
-
-        ParseOutput farthestOutput = new ParseOutput(input);
+        final ParseInput down = new ParseInput(input);
 
         while (true)
         {
-            operand.parse(parser, input);
+            operand.parse(parser, down);
 
-            if (input.output.failed())
+            if (down.failed())
             {
+                down.resetOutput();
                 break;
             }
 
-            input.advance(input.output);
-            farthestOutput.become(input.output);
+            down.advance();
         }
 
-        input.output.become(farthestOutput);
-        input.seeds = oldSeeds;
-        input.flags = oldFlags;
-        input.resultChildrenCount = oldCount;
-        input.resultChildrenCount = oldCount;
-        input.position = oldPos;
-        input.blackPosition = oldBPos;
+        input.merge(down);
     }
 
     // ---------------------------------------------------------------------------------------------

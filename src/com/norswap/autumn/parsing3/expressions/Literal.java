@@ -16,7 +16,7 @@ public final class Literal extends ParsingExpression
     public void parse(Parser parser, ParseInput input)
     {
         int index = 0;
-        int pos = input.position;
+        int pos = input.start;
         final int len = string.length();
 
         while (index < len && parser.text.charAt(pos) == string.charAt(index))
@@ -27,7 +27,7 @@ public final class Literal extends ParsingExpression
 
         if (index == len)
         {
-            input.output.advance(len);
+            input.advance(len);
         }
         else
         {

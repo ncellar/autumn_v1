@@ -55,7 +55,7 @@ public final class Ensure
     {
         Parser parser = TestConfiguration.parser(src);
         parser.parse(pe);
-        equals(parser.finalPosition(), src.length());
+        equals(parser.endPosition(), src.length());
     }
 
     public static void match(String src, ParsingExpression pe)
@@ -79,7 +79,7 @@ public final class Ensure
     {
         Parser parser = TestConfiguration.parser(src);
         parser.parse(pe);
-        int pos = parser.finalPosition();
+        int pos = parser.endPosition();
 
         if (pos != -1)
         {

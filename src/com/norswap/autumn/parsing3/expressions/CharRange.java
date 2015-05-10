@@ -16,11 +16,11 @@ public final class CharRange extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        char c = parser.text.charAt(input.position);
+        char c = parser.text.charAt(input.start);
 
         if (start <= c && c <= end)
         {
-            input.output.advance(1);
+            input.advance(1);
         }
         else
         {

@@ -62,7 +62,7 @@ public final class DefaultMemoizationStrategy implements MemoizationStrategy
     public void memoize(ParsingExpression pe, ParseInput input, OutputChanges changes)
     {
         MemoNode node = new MemoNode();
-        node.position = input.position;
+        node.position = input.start;
         node.pe = pe;
         node.changes = changes;
 
@@ -97,7 +97,7 @@ public final class DefaultMemoizationStrategy implements MemoizationStrategy
     @Override
     public OutputChanges get(ParsingExpression pe, ParseInput input)
     {
-        int index = getIndex(input.position);
+        int index = getIndex(input.start);
 
         MemoNode node = index >= 0
             ? store[index]

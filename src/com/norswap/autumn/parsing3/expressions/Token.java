@@ -17,16 +17,16 @@ public final class Token extends ParsingExpression
     {
         operand.parse(parser, input);
 
-        if (input.output.failed())
+        if (input.failed())
         {
             return;
         }
 
-        int pos = parser.configuration.whitespace.parseDumb(parser.text, input.output.position);
+        int pos = parser.configuration.whitespace.parseDumb(parser.text, input.end);
 
         if (pos > 0)
         {
-            input.output.position = pos;
+            input.end = pos;
         }
     }
 
