@@ -1,14 +1,14 @@
 package com.norswap.autumn.test.parsing;
 
-import com.norswap.autumn.parsing3.ParseResult;
-import com.norswap.autumn.parsing3.Parser;
-import com.norswap.autumn.parsing3.ParsingExpression;
+import com.norswap.autumn.parsing.ParseResult;
+import com.norswap.autumn.parsing.Parser;
+import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.test.Ensure;
 import com.norswap.autumn.test.TestConfiguration;
 import com.norswap.autumn.test.TestRunner;
 import com.norswap.autumn.util.Array;
 
-import static com.norswap.autumn.parsing3.ParsingExpressionFactory.*;
+import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
 
 public class FeatureTests
 {

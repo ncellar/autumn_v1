@@ -1,7 +1,7 @@
 package com.norswap.autumn.test.parsing;
 
-import com.norswap.autumn.parsing3.ParsingExpression;
-import com.norswap.autumn.parsing3.expressions.Trace;
+import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.Trace;
 
 import java.util.HashSet;
 

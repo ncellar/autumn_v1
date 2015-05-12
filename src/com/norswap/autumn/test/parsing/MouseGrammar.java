@@ -1,14 +1,14 @@
 package com.norswap.autumn.test.parsing;
 
-import com.norswap.autumn.parsing3.Source;
-import com.norswap.autumn.parsing3.ParseResult;
-import com.norswap.autumn.parsing3.Parser;
-import com.norswap.autumn.parsing3.ParserConfiguration;
-import com.norswap.autumn.parsing3.ParsingExpression;
+import com.norswap.autumn.parsing.Source;
+import com.norswap.autumn.parsing.ParseResult;
+import com.norswap.autumn.parsing.Parser;
+import com.norswap.autumn.parsing.ParserConfiguration;
+import com.norswap.autumn.parsing.ParsingExpression;
 
 import java.io.IOException;
 
-import static com.norswap.autumn.parsing3.ParsingExpressionFactory.*;
+import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
 
 public class MouseGrammar
 {

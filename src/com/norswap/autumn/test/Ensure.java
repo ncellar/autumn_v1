@@ -1,8 +1,8 @@
 package com.norswap.autumn.test;
 
-import com.norswap.autumn.parsing3.Parser;
-import com.norswap.autumn.parsing3.ParsingExpression;
-import com.norswap.autumn.parsing3.Source;
+import com.norswap.autumn.parsing.Parser;
+import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.Source;
 
 /**
  * A bunch of static assertion method to express expectations on test outcomes.

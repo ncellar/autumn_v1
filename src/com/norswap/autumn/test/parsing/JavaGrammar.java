@@ -1,6 +1,6 @@
 package com.norswap.autumn.test.parsing;
 
-import com.norswap.autumn.parsing3.ParsingExpression;
+import com.norswap.autumn.parsing.ParsingExpression;
 
 /**
  * A grammar for the Java language.
