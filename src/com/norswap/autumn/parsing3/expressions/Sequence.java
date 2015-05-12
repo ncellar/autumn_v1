@@ -3,9 +3,15 @@ package com.norswap.autumn.parsing3.expressions;
 import com.norswap.autumn.parsing3.ParseInput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
-import com.norswap.autumn.parsing3.Seed;
-import com.norswap.autumn.util.Array;
 
+/**
+ * Invokes all its operands sequentially over the input, until one fails. Each operand is
+ * invoked at the end position of the previous one.
+ *
+ * Succeeds iff all operands succeed.
+ *
+ * On success, its end position is that of its last operand.
+ */
 public final class Sequence extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////

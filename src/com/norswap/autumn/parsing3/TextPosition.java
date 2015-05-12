@@ -1,4 +1,4 @@
-package com.norswap.autumn.parsing;
+package com.norswap.autumn.parsing3;
 
 /**
  * Denotes a position in a file by both its character position in the file and a (line, column)

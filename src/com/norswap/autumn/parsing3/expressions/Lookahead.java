@@ -4,6 +4,13 @@ import com.norswap.autumn.parsing3.ParseInput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
 
+/**
+ * Invokes its operand on the input, then resets the input to its initial position.
+ *
+ * Succeeds iff its operand succeeds.
+ *
+ * On success, its end position is its start position.
+ */
 public final class Lookahead extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////

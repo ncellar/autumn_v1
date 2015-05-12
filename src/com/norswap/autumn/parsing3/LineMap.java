@@ -1,6 +1,4 @@
-package com.norswap.autumn.parsing;
-
-import com.norswap.autumn.parsing.TextPosition;
+package com.norswap.autumn.parsing3;
 
 import java.util.Arrays;
 

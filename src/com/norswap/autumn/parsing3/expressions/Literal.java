@@ -4,6 +4,13 @@ import com.norswap.autumn.parsing3.ParseInput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
 
+/**
+ * Attempt to match a literal string to the input.
+ *
+ * Succeeds if the begin of the input matches the string.
+ *
+ * On success, its end position is the start position + the size of the string.
+ */
 public final class Literal extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,5 +1,7 @@
 package com.norswap.autumn.parsing;
 
+import com.norswap.autumn.parsing3.Source;
+
 import java.util.ArrayList;
 import java.util.Collection;
 

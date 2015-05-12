@@ -3,9 +3,15 @@ package com.norswap.autumn.parsing3.expressions;
 import com.norswap.autumn.parsing3.ParseInput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
-import com.norswap.autumn.parsing3.Seed;
-import com.norswap.autumn.util.Array;
 
+/**
+ * Repeatedly invokes its operand over the input, until it fails.
+ *
+ * Succeeds if its operand succeeded at least once.
+ *
+ * On success, its end position is the end position of the last successful
+ * invocation of its operand.
+ */
 public final class OneMore extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////

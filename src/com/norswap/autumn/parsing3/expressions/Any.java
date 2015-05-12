@@ -4,6 +4,13 @@ import com.norswap.autumn.parsing3.ParseInput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
 
+/**
+ * Matches any character.
+ *
+ * Succeeds if the end of the input has not been reached.
+ *
+ * On success, the end position is start position + 1.
+ */
 public final class Any extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////

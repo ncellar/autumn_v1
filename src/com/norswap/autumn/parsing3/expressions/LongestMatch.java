@@ -4,6 +4,14 @@ import com.norswap.autumn.parsing3.*;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
 
+/**
+ * Invokes all its operands at its initial input position.
+ *
+ * Succeeds if at least one of its operands succeeds.
+ *
+ * On success, its end position is the largest amongst the end positions of its
+ * successful operands.
+ */
 public final class LongestMatch extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////

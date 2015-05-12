@@ -4,6 +4,14 @@ import com.norswap.autumn.parsing3.ParseInput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
 
+/**
+ * Attempts to match the next input character to a range of characters.
+ *
+ * Succeeds if the next input character is the range.
+ *
+ * On success, the end position is start position + 1.
+ *
+ */
 public final class CharRange extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -5,6 +5,13 @@ import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
 import com.norswap.autumn.util.StringEscape;
 
+/**
+ * Attempts to match the next input character to a range of characters.
+ *
+ * Succeeds if the next input character is the set.
+ *
+ * On success, the end position is start position + 1.
+ */
 public final class CharSet extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////

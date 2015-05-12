@@ -1,6 +1,5 @@
 package com.norswap.autumn.parsing3;
 
-import com.norswap.autumn.parsing.Source;
 import com.norswap.autumn.parsing3.expressions.Token;
 import com.norswap.autumn.util.Array;
 

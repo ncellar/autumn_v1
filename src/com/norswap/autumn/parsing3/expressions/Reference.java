@@ -3,7 +3,22 @@ package com.norswap.autumn.parsing3.expressions;
 import com.norswap.autumn.parsing3.ParseInput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
+import com.norswap.autumn.parsing3.RecursionResolver;
 
+
+/**
+ * A reference to another expression. A reference can be resolved or unresolved.
+ *
+ * Resolved references have the PEF_RESOLVED flag set, and the referenced expression as operand.
+ *
+ * For details on unresolved reference, see {@link RecursionResolver}.
+ *
+ * TODO
+ * It's debatable whether references are really necessary. They could be eliminated from the graph;
+ * but they do provide a nice no-op on which flags and names can be set.
+ *
+ * A resolved reference simply invokes its operand at its start position.
+ */
 public final class Reference extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////

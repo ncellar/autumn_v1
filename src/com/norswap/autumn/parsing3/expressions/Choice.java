@@ -4,6 +4,13 @@ import com.norswap.autumn.parsing3.ParseInput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
 
+/**
+ * Invokes all its operands at its initial input position, until one succeeds.
+ *
+ * Succeeds iff one operand succeeds.
+ *
+ * On success, its end position is that of the operand that succeeded.
+ */
 public final class Choice extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////

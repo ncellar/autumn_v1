@@ -12,3 +12,4 @@ NOTES
 
 - precedence is an extremely blunt tool: it precludes memoization!
     - it also increases complexity (??)
+- overhead of making everything potentially left-recursive

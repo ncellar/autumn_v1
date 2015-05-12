@@ -6,7 +6,7 @@ import com.norswap.autumn.util.Caster;
 import java.util.Arrays;
 import java.util.HashSet;
 
-class RecursionResolver
+public class RecursionResolver
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

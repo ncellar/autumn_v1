@@ -4,6 +4,14 @@ import com.norswap.autumn.parsing3.ParseInput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
 
+/**
+ * Invokes its operand on the input.
+ *
+ * Always succeeds.
+ *
+ * On success, its end position is the end position of it operand if it
+ * succeeded, or its start position otherwise.
+ */
 public final class Optional extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////

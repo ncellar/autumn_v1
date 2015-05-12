@@ -3,7 +3,15 @@ package com.norswap.autumn.parsing3.expressions;
 import com.norswap.autumn.parsing3.ParseInput;
 import com.norswap.autumn.parsing3.Parser;
 import com.norswap.autumn.parsing3.ParsingExpression;
+import com.norswap.autumn.parsing3.ParserConfiguration;
 
+/**
+ * Invokes {@link ParserConfiguration#whitespace} at its start position.
+ *
+ * Always succeeds.
+ *
+ * On success, its end position is the end position of the whitespace expression.
+ */
 public final class Whitespace extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
