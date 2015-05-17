@@ -110,6 +110,13 @@
 //    2013-04-23 Updated Mouse version in the comment.
 //               Corrected spelling in a comment to IdentifierSuffix.
 //
+//---------------------------------------------------------------------------
+// Updates by Nicolas "Norswap" Laurent
+//---------------------------------------------------------------------------
+//
+// Escaped stray backslashes in a few locations ([+\-]); as well as unescaped
+// quotes.
+//
 //===========================================================================
 
 //-------------------------------------------------------------------------
@@ -985,7 +992,7 @@ DecimalFloat
     ;
 
 Exponent
-    = [eE] [+\-]? Digits
+    = [eE] [+\\-]? Digits
     ;
 
 HexFloat
@@ -998,7 +1005,7 @@ HexSignificand
     ;
 
 BinaryExponent
-    = [pP] [+\-]? Digits
+    = [pP] [+\\-]? Digits
     ;
 
 Digits
@@ -1018,11 +1025,11 @@ CharLiteral
     ;
 
 StringLiteral
-    = "\"" (Escape / !["\\\n\r] _)* "\""                   // this " keeps the editor happy
+    = "\"" (Escape / ![\"\\\n\r] _)* "\""                   // this " keeps the editor happy
     ;
 
 Escape
-    = "\\" ([btnfr"'\\] / OctalEscape / UnicodeEscape)     // this " keeps the editor happy
+    = "\\" ([btnfr\"'\\] / OctalEscape / UnicodeEscape)     // this " keeps the editor happy
     ;
 
 OctalEscape
@@ -1066,7 +1073,7 @@ LPAR            =   "("       Spacing;
 LPOINT          =   "<"       Spacing;
 LT              =   "<"![=<]  Spacing;
 LWING           =   "{"       Spacing;
-MINUS           =   "-"![=\-] Spacing;
+MINUS           =   "-"![=\\-] Spacing;
 MINUSEQU        =   "-="      Spacing;
 MOD             =   "%"!"="   Spacing;
 MODEQU          =   "%="      Spacing;

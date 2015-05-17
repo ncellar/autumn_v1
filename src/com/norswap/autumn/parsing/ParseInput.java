@@ -4,7 +4,7 @@ import com.norswap.autumn.util.Array;
 
 import static com.norswap.autumn.parsing.Registry.*; // PIF_*
 
-public class ParseInput
+public final class ParseInput
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

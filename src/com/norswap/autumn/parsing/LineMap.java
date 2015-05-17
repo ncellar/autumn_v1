@@ -8,7 +8,7 @@ import java.util.Arrays;
  *
  * Following the tradition, lines start at 1, while file positions and columns start at 0.
  */
-public class LineMap
+public final class LineMap
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

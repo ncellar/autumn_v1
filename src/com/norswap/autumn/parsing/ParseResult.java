@@ -127,7 +127,7 @@ public final class ParseResult
         }
         else if (value != null)
         {
-            builder.append(": \"");
+            builder.append("\"");
             builder.append(value);
             builder.append("\"");
         }

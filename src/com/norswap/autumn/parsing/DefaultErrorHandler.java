@@ -13,7 +13,7 @@ import static com.norswap.autumn.parsing.Registry.PEF_ERROR_RECORDING;
  * This strategy only considers errors that result from a failure to match a parsing expression
  * marked as "error-recording" or as a token.
  */
-public class DefaultErrorHandler implements ErrorHandler
+public final class DefaultErrorHandler implements ErrorHandler
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

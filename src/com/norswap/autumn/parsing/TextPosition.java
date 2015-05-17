@@ -6,7 +6,7 @@ package com.norswap.autumn.parsing;
  *
  * Following the tradition, lines start at 1, while file positions and columns start at 0.
  */
-public class TextPosition
+public final class TextPosition
 {
     public final int position;
     public final int line;

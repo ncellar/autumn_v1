@@ -3,43 +3,32 @@ package com.norswap.autumn.parsing.expressions;
 import com.norswap.autumn.parsing.ParseInput;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
-import com.norswap.autumn.parsing.RecursionResolver;
+import com.norswap.autumn.parsing.SingleReferenceResolver;
+import com.norswap.autumn.util.Array;
 
 
 /**
- * A reference to another expression. A reference can be resolved or unresolved.
+ * A reference to another expression. A reference is a temporary operator that is meant to be
+ * pruned from the expression graph via a resolution process.
  *
- * Resolved references have the PEF_RESOLVED flag set, and the referenced expression as operand.
- *
- * For details on unresolved reference, see {@link RecursionResolver}.
- *
- * TODO
- * It's debatable whether references are really necessary. They could be eliminated from the graph;
- * but they do provide a nice no-op on which flags and names can be set.
- *
- * A resolved reference simply invokes its operand at its start position.
+ * A reference holds the name of its target, which is the an expression with that name ({@link
+ * ParsingExpression#name()}).
  */
 public final class Reference extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParsingExpression operand;
-    public ParsingExpression[] nestedReferences;
+    public String target;
+
+    /** See {@link SingleReferenceResolver}. */
+    public Array<ParsingExpression> nestedReferences;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        operand.parse(parser, input);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public int parseDumb(CharSequence text, int position)
-    {
-        return operand.parseDumb(text, position);
+        throw new RuntimeException("Trying to parse an unresolved reference.");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -47,23 +36,7 @@ public final class Reference extends ParsingExpression
     @Override
     public void appendTo(StringBuilder builder)
     {
-        operand.toString(builder);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ParsingExpression[] children()
-    {
-        return new ParsingExpression[]{operand};
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void setChild(int position, ParsingExpression expr)
-    {
-        operand = expr;
+        builder.append(target);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

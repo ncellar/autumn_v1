@@ -217,10 +217,10 @@ public final class ParsingExpressionFactory
         return result;
     }
 
-    public static Reference reference(String name)
+    public static Reference reference(String target)
     {
         Reference result = new Reference();
-        result.setName(name);
+        result.target = target;
         return result;
     }
 
@@ -304,7 +304,7 @@ public final class ParsingExpressionFactory
     public static ParsingExpression recursive$(String name, ParsingExpression pe)
     {
         pe.setName(name);
-        new RecursionResolver(pe).walk(pe);
+        new SingleReferenceResolver(pe).walk(pe);
         return pe;
     }
 

@@ -114,17 +114,17 @@ public class MouseGrammar
 
     charSet = named$("charSet", token(
         literal("["),
-        capture("charSet", oneMore(not(literal("]")), character)),
+        captureText("charSet", oneMore(not(literal("]")), character)),
         literal("]"))),
 
     notCharSet = named$("notCharSet", token(
         literal("^["),
-        capture("notCharSet", oneMore(not(literal("]"), character))),
+        captureText("notCharSet", oneMore(not(literal("]"), character))),
         literal("]"))),
 
     stringLit = named$("stringLit", token(
         literal("\""),
-        capture("literal", oneMore(not(literal("\"")), character)),
+        captureText("literal", oneMore(not(literal("\"")), character)),
         literal("\""))),
 
     diagName    = named$("diagName", token(literal("<"), until(character, literal(">")))),
@@ -147,9 +147,9 @@ public class MouseGrammar
         captureText("ref", name),
         capture("any", underscore),
         capture("charRange", range),
-        stringLit,
-        charSet,
-        notCharSet)),
+        captureText("stringLit", stringLit),
+        captureText("charSet", charSet),
+        captureText("notCharSet", notCharSet))),
 
     suffixed = named$("suffixed", choice(
         capture("until", sequence(primary, until, primary)),
@@ -164,8 +164,8 @@ public class MouseGrammar
         capture("not", sequence(bang, suffixed)),
         suffixed)),
 
-    sequence    = named$("sequence", capture("seq", oneMore(prefixed))),
-    choice      = recursive$("choice", aloSeparated(sequence, slash)),
+    sequence    = named$("sequence", capture("sequence", oneMore(prefixed))),
+    choice      = recursive$("choice", capture("choice", aloSeparated(sequence, slash))),
 
     ruleRhs = named$("ruleRhs", aloSeparated(
         captureGrouped("alts", sequence(sequence, optional(onSucc), optional(onFail))),
@@ -190,7 +190,11 @@ public class MouseGrammar
 
     static void emitGrammar(ParseResult result)
     {
-        System.out.println(result.toTreeString());
+        MouseToJava mtj = new MouseToJava();
+        mtj.emitGrammar(result);
+        System.out.println(mtj.b);
+
+        //System.out.println(result.toTreeString());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

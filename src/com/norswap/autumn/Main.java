@@ -2,7 +2,7 @@ package com.norswap.autumn;
 
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.Source;
-import com.norswap.autumn.test.parsing.JavaGrammar;
+import com.norswap.autumn.test.parsing.OldJavaGrammar;
 
 import java.io.IOException;
 
@@ -16,7 +16,7 @@ public class Main
         {
             Source source = Source.fromFile(filename);
             Parser parser = new Parser(source);
-            parser.parse(JavaGrammar.root);
+            parser.parse(OldJavaGrammar.root);
         }
         catch (IOException e)
         {
