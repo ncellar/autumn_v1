@@ -1,15 +1,15 @@
-package com.norswap.autumn.test.parsing;
+package com.norswap.autumn.test.mouse;
 
-import com.norswap.autumn.parsing.Source;
-import com.norswap.autumn.parsing.ParseTree;
-import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParserConfiguration;
 import com.norswap.autumn.parsing.ParsingExpression;
-
-import java.io.IOException;
 
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
 
+/**
+ * A grammar for Mouse grammars.
+ * Not used for anything, but keeping it around just in case.
+ *
+ * Currently, vast overlap with {@link com.norswap.autumn.parsing.support.GrammarGrammar}.
+ */
 public final class MouseGrammar
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -178,49 +178,6 @@ public final class MouseGrammar
         sequence(whitespace(), aloUntil(captureGrouped("rules", rule), EOT)))
 
     ;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    static ParserConfiguration config = new ParserConfiguration();
-    static {
-        config.whitespace = whitespace;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    static void emitGrammar(ParseTree tree)
-    {
-        MouseToJava mtj = new MouseToJava();
-        mtj.emitGrammar(tree);
-        System.out.println(mtj.b);
-
-        //System.out.println(tree.toTreeString());
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public static void main(String[] args)
-    {
-        //String filename = args[0];
-        String filename = "src/com/norswap/autumn/test/parsing/Java7.mouse";
-
-        try
-        {
-            Source source = Source.fromFile(filename);
-            Parser parser = new Parser(source, config);
-            // grammar = InstrumentExpression.trace(grammar);
-            parser.parse(grammar);
-            parser.report();
-            if (parser.succeeded())
-            {
-                emitGrammar(parser.tree());
-            }
-        }
-        catch (IOException e)
-        {
-            System.out.println("Could not read file: " + filename);
-        }
-    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

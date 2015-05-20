@@ -1,54 +1,14 @@
-//===========================================================================
-//
-//  Parsing Expression Grammar of Java 1.8 for Mouse 1.6.
-//  Based on Java Language Specification, Java SE8 Edition, dated 2014-03-03,
-//  obtained from http://docs.oracle.com/javase/specs/jls/se8/jls8-diffs.pdf
-//  and parser code from openjdk.8b132.2014.03.03.
-//
-//---------------------------------------------------------------------------
-//
-//  Copyright (C) 2014
-//  by Roman R Redziejowski(www.romanredz.se).
-//
-//  The author gives unlimited permission to copy and distribute
-//  this file, with or without modifications, as long as this notice
-//  is preserved, and any changes are properly documented.
-//
-//  This file is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-//
-//---------------------------------------------------------------------------
-//
-//  Latest update 2014-12-11
-//
-//---------------------------------------------------------------------------
-//  Change log
-//---------------------------------------------------------------------------
-//
-//    2014-10-27 Posted on Internet.
-//    2014-11-01 Corrected NormalInterfaceDeclaration.
-//    2014-11-02 Corrected title comments to JLS 3.10.1 and 3.10.2.
-//               Replaced SimpleQualIdent by Identifier
-//               in ConstructorDeclarator (JLS 8.8).
-//    2014-12-11 Commented out unused definitions: ArrayAccess, FieldAccess,
-//               ClassInstanceCreationExpression, MethodInvocation.
-//
-//---------------------------------------------------------------------------
-// Updates by Nicolas "Norswap" Laurent
-//---------------------------------------------------------------------------
-//
-// Escaped stray backslashes in a few locations ([+\-]); as well as unescaped
-// quotes (in char classes in StringLiteral and Escape).
-//
-//===========================================================================
+// - Originally from Mouse's Java 7 grammar.
+// - Escaped stray backslashes in a few locations ([+\-]); as well as unescaped
+//   quotes (in char classes in StringLiteral and Escape).
+// - Marked a bunch of places as tokens (:=) and removed leading spacing.
 
 //=========================================================================
 //  Compilation
 //=========================================================================
 
 Compilation
-    = Spacing CompilationUnit SUB? EOT;
+    = CompilationUnit SUB? EOT;
 
 
 //=========================================================================
@@ -78,7 +38,7 @@ EOT = !_ ;
 //-------------------------------------------------------------------------
 
 Spacing
-    = ( [ \t\r\n\u000C]+  // WhiteSpace
+    = ( [ \t\r\n\f]+  // WhiteSpace
       / "/*" _*+ "*/"     // TraditionalComment
       / "//" _*+ [\r\n]   // EndOfLineComment
       )* ;
@@ -87,7 +47,7 @@ Spacing
 //  JLS 3.8  Identifiers
 //-------------------------------------------------------------------------
 
-Identifier  = !Keyword Letter LetterOrDigit* Spacing ;
+Identifier  := !Keyword Letter LetterOrDigit* ;
 
 Letter = [a-z] / [A-Z] / [_$] ;
 
@@ -163,57 +123,57 @@ Keyword
       ) !LetterOrDigit
     ;
 
-ABSTRACT     = "abstract"     !LetterOrDigit Spacing ;
-ASSERT       = "assert"       !LetterOrDigit Spacing ;
-BOOLEAN      = "boolean"      !LetterOrDigit Spacing ;
-BREAK        = "break"        !LetterOrDigit Spacing ;
-BYTE         = "byte"         !LetterOrDigit Spacing ;
-CASE         = "case"         !LetterOrDigit Spacing ;
-CATCH        = "catch"        !LetterOrDigit Spacing ;
-CHAR         = "char"         !LetterOrDigit Spacing ;
-CLASS        = "class"        !LetterOrDigit Spacing ;
-CONTINUE     = "continue"     !LetterOrDigit Spacing ;
-DEFAULT      = "default"      !LetterOrDigit Spacing ;
-DOUBLE       = "double"       !LetterOrDigit Spacing ;
-DO           = "do"           !LetterOrDigit Spacing ;
-ELSE         = "else"         !LetterOrDigit Spacing ;
-ENUM         = "enum"         !LetterOrDigit Spacing ;
-EXTENDS      = "extends"      !LetterOrDigit Spacing ;
-FALSE        = "false"        !LetterOrDigit Spacing ;
-FINALLY      = "finally"      !LetterOrDigit Spacing ;
-FINAL        = "final"        !LetterOrDigit Spacing ;
-FLOAT        = "float"        !LetterOrDigit Spacing ;
-FOR          = "for"          !LetterOrDigit Spacing ;
-IF           = "if"           !LetterOrDigit Spacing ;
-IMPLEMENTS   = "implements"   !LetterOrDigit Spacing ;
-IMPORT       = "import"       !LetterOrDigit Spacing ;
-INTERFACE    = "interface"    !LetterOrDigit Spacing ;
-INT          = "int"          !LetterOrDigit Spacing ;
-INSTANCEOF   = "instanceof"   !LetterOrDigit Spacing ;
-LONG         = "long"         !LetterOrDigit Spacing ;
-NATIVE       = "native"       !LetterOrDigit Spacing ;
-NEW          = "new"          !LetterOrDigit Spacing ;
-NULL         = "null"         !LetterOrDigit Spacing ;
-PACKAGE      = "package"      !LetterOrDigit Spacing ;
-PRIVATE      = "private"      !LetterOrDigit Spacing ;
-PROTECTED    = "protected"    !LetterOrDigit Spacing ;
-PUBLIC       = "public"       !LetterOrDigit Spacing ;
-RETURN       = "return"       !LetterOrDigit Spacing ;
-SHORT        = "short"        !LetterOrDigit Spacing ;
-STATIC       = "static"       !LetterOrDigit Spacing ;
-STRICTFP     = "strictfp"     !LetterOrDigit Spacing ;
-SUPER        = "super"        !LetterOrDigit Spacing ;
-SWITCH       = "switch"       !LetterOrDigit Spacing ;
-SYNCHRONIZED = "synchronized" !LetterOrDigit Spacing ;
-THIS         = "this"         !LetterOrDigit Spacing ;
-THROWS       = "throws"       !LetterOrDigit Spacing ;
-THROW        = "throw"        !LetterOrDigit Spacing ;
-TRANSIENT    = "transient"    !LetterOrDigit Spacing ;
-TRUE         = "true"         !LetterOrDigit Spacing ;
-TRY          = "try"          !LetterOrDigit Spacing ;
-VOID         = "void"         !LetterOrDigit Spacing ;
-VOLATILE     = "volatile"     !LetterOrDigit Spacing ;
-WHILE        = "while"        !LetterOrDigit Spacing ;
+ABSTRACT     := "abstract"     !LetterOrDigit  ;
+ASSERT       := "assert"       !LetterOrDigit  ;
+BOOLEAN      := "boolean"      !LetterOrDigit  ;
+BREAK        := "break"        !LetterOrDigit  ;
+BYTE         := "byte"         !LetterOrDigit  ;
+CASE         := "case"         !LetterOrDigit  ;
+CATCH        := "catch"        !LetterOrDigit  ;
+CHAR         := "char"         !LetterOrDigit  ;
+CLASS        := "class"        !LetterOrDigit  ;
+CONTINUE     := "continue"     !LetterOrDigit  ;
+DEFAULT      := "default"      !LetterOrDigit  ;
+DOUBLE       := "double"       !LetterOrDigit  ;
+DO           := "do"           !LetterOrDigit  ;
+ELSE         := "else"         !LetterOrDigit  ;
+ENUM         := "enum"         !LetterOrDigit  ;
+EXTENDS      := "extends"      !LetterOrDigit  ;
+FALSE        := "false"        !LetterOrDigit  ;
+FINALLY      := "finally"      !LetterOrDigit  ;
+FINAL        := "final"        !LetterOrDigit  ;
+FLOAT        := "float"        !LetterOrDigit  ;
+FOR          := "for"          !LetterOrDigit  ;
+IF           := "if"           !LetterOrDigit  ;
+IMPLEMENTS   := "implements"   !LetterOrDigit  ;
+IMPORT       := "import"       !LetterOrDigit  ;
+INTERFACE    := "interface"    !LetterOrDigit  ;
+INT          := "int"          !LetterOrDigit  ;
+INSTANCEOF   := "instanceof"   !LetterOrDigit  ;
+LONG         := "long"         !LetterOrDigit  ;
+NATIVE       := "native"       !LetterOrDigit  ;
+NEW          := "new"          !LetterOrDigit  ;
+NULL         := "null"         !LetterOrDigit  ;
+PACKAGE      := "package"      !LetterOrDigit  ;
+PRIVATE      := "private"      !LetterOrDigit  ;
+PROTECTED    := "protected"    !LetterOrDigit  ;
+PUBLIC       := "public"       !LetterOrDigit  ;
+RETURN       := "return"       !LetterOrDigit  ;
+SHORT        := "short"        !LetterOrDigit  ;
+STATIC       := "static"       !LetterOrDigit  ;
+STRICTFP     := "strictfp"     !LetterOrDigit  ;
+SUPER        := "super"        !LetterOrDigit  ;
+SWITCH       := "switch"       !LetterOrDigit  ;
+SYNCHRONIZED := "synchronized" !LetterOrDigit  ;
+THIS         := "this"         !LetterOrDigit  ;
+THROWS       := "throws"       !LetterOrDigit  ;
+THROW        := "throw"        !LetterOrDigit  ;
+TRANSIENT    := "transient"    !LetterOrDigit  ;
+TRUE         := "true"         !LetterOrDigit  ;
+TRY          := "try"          !LetterOrDigit  ;
+VOID         := "void"         !LetterOrDigit  ;
+VOLATILE     := "volatile"     !LetterOrDigit  ;
+WHILE        := "while"        !LetterOrDigit  ;
 
 //-------------------------------------------------------------------------
 //  JLS 3.10  Literals
@@ -233,11 +193,11 @@ Literal
 //-------------------------------------------------------------------------
 
 IntegerLiteral
-    = ( HexNumeral
+    := ( HexNumeral
       / BinaryNumeral
       / OctalNumeral            // May be a prefix of HexNumeral or BinaryNumeral
       / DecimalNumeral          // May be a prefix of OctalNumeral
-      ) [lL]? Spacing
+      ) [lL]?
     ;
 
 DecimalNumeral
@@ -259,9 +219,9 @@ BinaryNumeral
 //-------------------------------------------------------------------------
 
 FloatLiteral
-    = ( HexadecimalFloatingPointLiteral
+    := ( HexadecimalFloatingPointLiteral
       / DecimalFloatingPointLiteral   // May be a prefix of above
-      ) Spacing
+      )
     ;
 
 DecimalFloatingPointLiteral
@@ -308,7 +268,7 @@ BooleanLiteral
 //-------------------------------------------------------------------------
 
 CharLiteral
-    = "'" (Escape / !['\\\n\r] _) "'" Spacing            // this " keeps the editor happy
+    := "'" (Escape / !['\\\n\r] _) "'"
     ;
 
 //-------------------------------------------------------------------------
@@ -316,11 +276,11 @@ CharLiteral
 //-------------------------------------------------------------------------
 
 StringLiteral
-    = "\"" (Escape / ![\"\\\n\r] _)* "\"" Spacing         // this " keeps the editor happy
+    := "\"" (Escape / ![\"\\\n\r] _)* "\""
     ;
 
 Escape
-    = "\\" ([btnfr\"'\\] / OctalEscape / UnicodeEscape)   // this " keeps the editor happy
+    := "\\" ([btnfr\"'\\] / OctalEscape / UnicodeEscape)
     ;
 
 OctalEscape
@@ -342,18 +302,18 @@ NullLiteral = NULL ;
 //  JLS 3.11  Separators
 //-------------------------------------------------------------------------
 
-AT              =   "@"       Spacing ;
-COLONCOLON      =   "::"      Spacing ;
-COMMA           =   ","       Spacing ;
-DOT             =   "."       Spacing ;
-ELLIPSIS        =   "..."     Spacing ;
-LPAR            =   "("       Spacing ;
-LBRK            =   "["       Spacing ;
-RBRK            =   "]"       Spacing ;
-RPAR            =   ")"       Spacing ;
-LWING           =   "{"       Spacing ;
-RWING           =   "}"       Spacing ;
-SEMI            =   ";"       Spacing ;
+AT              :=   "@"        ;
+COLONCOLON      :=   "::"       ;
+COMMA           :=   ","        ;
+DOT             :=   "."        ;
+ELLIPSIS        :=   "..."      ;
+LPAR            :=   "("        ;
+LBRK            :=   "["        ;
+RBRK            :=   "]"        ;
+RPAR            :=   ")"        ;
+LWING           :=   "{"        ;
+RWING           :=   "}"        ;
+SEMI            :=   ";"        ;
 
 //-------------------------------------------------------------------------
 //  JLS 3.12  Operators
@@ -363,46 +323,46 @@ SEMI            =   ";"       Spacing ;
 //  rule given in JLS 3.2.
 //-------------------------------------------------------------------------
 
-AND             =   "&"![=&]  Spacing ;
-ANDAND          =   "&&"      Spacing ;
-ANDEQU          =   "&="      Spacing ;
-ARROW           =   "->"      Spacing ;
-BANG            =   "!" ![=]  Spacing ;
-BSR             =   ">>>"![=] Spacing ;
-BSREQU          =   ">>>="    Spacing ;
-COLON           =   ":" ![:]  Spacing ;
-DEC             =   "--"      Spacing ;
-DIV             =   "/" ![=]  Spacing ;
-DIVEQU          =   "/="      Spacing ;
-EQU             =   "=" ![=]  Spacing ;
-EQUAL           =   "=="      Spacing ;
-GE              =   ">="      Spacing ;
-GT              =   ">"![=>]  Spacing ;
-HAT             =   "^"![=]   Spacing ;
-HATEQU          =   "^="      Spacing ;
-INC             =   "++"      Spacing ;
-LE              =   "<="      Spacing ;
-LPOINT          =   "<"       Spacing ;
-LT              =   "<"![=<]  Spacing ;
-MINUS           =   "-"![=\->]Spacing ;
-MINUSEQU        =   "-="      Spacing ;
-MOD             =   "%"![=]   Spacing ;
-MODEQU          =   "%="      Spacing ;
-NOTEQUAL        =   "!="      Spacing ;
-OR              =   "|"![=|]  Spacing ;
-OREQU           =   "|="      Spacing ;
-OROR            =   "||"      Spacing ;
-PLUS            =   "+"![=+]  Spacing ;
-PLUSEQU         =   "+="      Spacing ;
-QUERY           =   "?"       Spacing ;
-RPOINT          =   ">"       Spacing ;
-SL              =   "<<"![=]  Spacing ;
-SLEQU           =   "<<="     Spacing ;
-SR              =   ">>"![=>] Spacing ;
-SREQU           =   ">>="     Spacing ;
-STAR            =   "*"![=]   Spacing ;
-STAREQU         =   "*="      Spacing ;
-TILDE           =   "~"       Spacing ;
+AND             :=   "&" ![=&]   ;
+ANDAND          :=   "&&"        ;
+ANDEQU          :=   "&="        ;
+ARROW           :=   "->"        ;
+BANG            :=   "!" ![=]    ;
+BSR             :=   ">>>" ![=]  ;
+BSREQU          :=   ">>>="      ;
+COLON           :=   ":" ![:]    ;
+DEC             :=   "--"        ;
+DIV             :=   "/" ![=]    ;
+DIVEQU          :=   "/="        ;
+EQU             :=   "=" ![=]    ;
+EQUAL           :=   "=="        ;
+GE              :=   ">="        ;
+GT              :=   ">" ![=>]   ;
+HAT             :=   "^" ![=]    ;
+HATEQU          :=   "^="        ;
+INC             :=   "++"        ;
+LE              :=   "<="        ;
+LPOINT          :=   "<"         ;
+LT              :=   "<" ![=<]   ;
+MINUS           :=   "-" ![=\->] ;
+MINUSEQU        :=   "-="        ;
+MOD             :=   "%" ![=]    ;
+MODEQU          :=   "%="        ;
+NOTEQUAL        :=   "!="        ;
+OR              :=   "|" ![=|]   ;
+OREQU           :=   "|="        ;
+OROR            :=   "||"        ;
+PLUS            :=   "+" ![=+]   ;
+PLUSEQU         :=   "+="        ;
+QUERY           :=   "?"         ;
+RPOINT          :=   ">"         ;
+SL              :=   "<<" ![=]   ;
+SLEQU           :=   "<<="       ;
+SR              :=   ">>" ![=>]  ;
+SREQU           :=   ">>="       ;
+STAR            :=   "*" ![=]    ;
+STAREQU         :=   "*="        ;
+TILDE           :=   "~"         ;
 
 
 //=========================================================================
@@ -1338,3 +1298,5 @@ LambdaBody
 
 ConstantExpression
     = Expression ;
+
+Test = QualIdent LBRK Expression RBRK;

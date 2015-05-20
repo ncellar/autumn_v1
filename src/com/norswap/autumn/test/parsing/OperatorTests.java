@@ -180,7 +180,7 @@ public final class OperatorTests
     {
         pe = pe(lookahead(literal("test")));
         src = Source.fromString("test");
-        Ensure.succeeds(src, pe);
+        Ensure.noFail(src, pe);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -190,7 +190,7 @@ public final class OperatorTests
         pe = pe(not(literal("test")));
 
         src = Source.fromString("bird");
-        Ensure.succeeds(src, pe);
+        Ensure.noFail(src, pe);
 
         src = Source.fromString("test");
         Ensure.fails(src, pe);

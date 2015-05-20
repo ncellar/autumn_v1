@@ -75,6 +75,18 @@ public final class Ensure
         succeeds(Source.fromString(src), pe);
     }
 
+    public static void noFail(Source src, ParsingExpression pe)
+    {
+        Parser parser = TestConfiguration.parser(src);
+        parser.parse(pe);
+        ensure(parser.endPosition() != -1);
+    }
+
+    public static void noFail(String src, ParsingExpression pe)
+    {
+        noFail(Source.fromString(src), pe);
+    }
+
     public static void fails(Source src, ParsingExpression pe)
     {
         Parser parser = TestConfiguration.parser(src);

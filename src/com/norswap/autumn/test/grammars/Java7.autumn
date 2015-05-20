@@ -1,5 +1,7 @@
-// Originally from Java7.mouse
-// Marked a bunch of places as tokens (:=) and removed leading spacing.
+// - Originally from Mouse's Java 7 grammar.
+// - Escaped stray backslashes in a few locations ([+\-]); as well as unescaped
+//   quotes (in char classes in StringLiteral and Escape).
+// - Marked a bunch of places as tokens (:=) and removed leading spacing.
 
 //-------------------------------------------------------------------------
 //  Compilation Unit

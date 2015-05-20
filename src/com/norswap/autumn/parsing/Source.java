@@ -1,5 +1,6 @@
 package com.norswap.autumn.parsing;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -43,7 +44,7 @@ public final class Source
     public static Source fromFile(String filename) throws IOException
     {
         File file = new File(filename);
-        FileInputStream stream = new FileInputStream(file);
+        BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file));
         byte[] data = new byte[(int) file.length() + 1];
         stream.read(data);
         stream.close();

@@ -1,4 +1,4 @@
-package com.norswap.autumn.parsing.support;
+package com.norswap.autumn.test.mouse;
 
 import com.norswap.autumn.parsing.ParseTree;
 import com.norswap.autumn.parsing.ParsingExpression;
@@ -7,7 +7,13 @@ import com.norswap.autumn.util.Streams;
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
 import static com.norswap.autumn.util.StringEscape.unescape;
 
-public final class GrammarCompiler
+/**
+ * Compiles Mouse grammars into parsing expressions.
+ *  Not used for anything, but keeping it around just in case.
+ *
+ * Currently, vast overlap with {@link com.norswap.autumn.parsing.support.GrammarCompiler}.
+ */
+public final class MouseCompiler
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -33,7 +39,7 @@ public final class GrammarCompiler
         String ruleName = rule.value("ruleName");
         ParsingExpression topChoice = compileTopChoice(rule.group("alts"));
 
-        return named$(ruleName, rule.has("token") ? token(topChoice) : topChoice);
+        return named$(ruleName, topChoice);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -167,3 +173,4 @@ public final class GrammarCompiler
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }
+
