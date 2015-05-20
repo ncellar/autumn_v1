@@ -3,8 +3,14 @@ package com.norswap.autumn.parsing.expressions;
 import com.norswap.autumn.parsing.ParseInput;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.util.Array;
 
-public final class Token extends ParsingExpression
+import static com.norswap.autumn.parsing.Registry.PIH_STACK_TRACE;
+
+/**
+ *
+ */
+public class StackTrace extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -15,20 +21,37 @@ public final class Token extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        operand.parse(parser, input);
+        Array<ParsingExpression> stackTrace = input.ext.get(PIH_STACK_TRACE);
 
-        if (input.failed())
+        if (stackTrace == null)
         {
-            parser.fail(this, input);
-            return;
+            stackTrace = new Array<>();
+            input.ext.set(PIH_STACK_TRACE, stackTrace);
         }
 
-        int pos = parser.configuration.whitespace.parseDumb(parser.text, input.end);
+        stackTrace.push(this);
 
-        if (pos > 0)
-        {
-            input.end = pos;
+        try {
+            operand.parse(parser, input);
         }
+        catch (Exception e)
+        {
+            System.err.println(e.getMessage() + " at: ");
+            for (ParsingExpression pe: stackTrace.reverseIterable())
+            {
+                System.err.println(pe);
+            }
+
+            throw new Error(e);
+        }
+        stackTrace.pop();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public int parseDumb(CharSequence text, int position)
+    {
+        return operand.parseDumb(text, position);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -36,9 +59,7 @@ public final class Token extends ParsingExpression
     @Override
     public void appendTo(StringBuilder builder)
     {
-        builder.append("token(");
         operand.toString(builder);
-        builder.append(")");
     }
 
     // ---------------------------------------------------------------------------------------------

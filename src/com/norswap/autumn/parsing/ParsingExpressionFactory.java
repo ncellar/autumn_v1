@@ -262,7 +262,7 @@ public final class ParsingExpressionFactory
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static ParsingExpression notChars(String chars)
+    public static ParsingExpression notCharSet(String chars)
     {
         return sequence(not(charSet(chars)), any());
     }
@@ -304,7 +304,7 @@ public final class ParsingExpressionFactory
     public static ParsingExpression recursive$(String name, ParsingExpression pe)
     {
         pe.setName(name);
-        new SingleReferenceResolver(pe).walk(pe);
+        new IncrementalReferenceResolver(pe).walk(pe);
         return pe;
     }
 

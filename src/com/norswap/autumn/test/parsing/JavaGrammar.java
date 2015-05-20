@@ -1,7 +1,10 @@
 package com.norswap.autumn.test.parsing;
 
-import com.norswap.autumn.parsing.AllReferenceResolver;
+import com.norswap.autumn.parsing.ReferenceResolver;
 import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.util.Exceptions;
+
+import java.util.Arrays;
 
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
 
@@ -9,7 +12,12 @@ public final class JavaGrammar
 {
     public ParsingExpression root()
     {
-        new AllReferenceResolver().walk(CompilationUnit);
+        ParsingExpression[] exprs =
+            Arrays.stream(JavaGrammar.class.getDeclaredFields())
+                .map(Exceptions.rting(field -> field.get(this)))
+                .toArray(ParsingExpression[]::new);
+
+        new ReferenceResolver().resolve(exprs);
         return CompilationUnit;
     }
 
@@ -259,71 +267,73 @@ public final class JavaGrammar
 
     ParsingExpression Keyword = named$("Keyword", sequence(choice(literal("abstract"), literal("assert"), literal("boolean"), literal("break"), literal("byte"), literal("case"), literal("catch"), literal("char"), literal("class"), literal("const"), literal("continue"), literal("default"), literal("double"), literal("do"), literal("else"), literal("enum"), literal("extends"), literal("false"), literal("finally"), literal("final"), literal("float"), literal("for"), literal("goto"), literal("if"), literal("implements"), literal("import"), literal("interface"), literal("int"), literal("instanceof"), literal("long"), literal("native"), literal("new"), literal("null"), literal("package"), literal("private"), literal("protected"), literal("public"), literal("return"), literal("short"), literal("static"), literal("strictfp"), literal("super"), literal("switch"), literal("synchronized"), literal("this"), literal("throws"), literal("throw"), literal("transient"), literal("true"), literal("try"), literal("void"), literal("volatile"), literal("while")), not(reference("LetterOrDigit"))));
 
-    ParsingExpression ASSERT = named$("ASSERT", sequence(literal("assert"), not(reference("LetterOrDigit")), reference("Spacing")));
+    // KEYWORDS
 
-    ParsingExpression BREAK = named$("BREAK", sequence(literal("break"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression ASSERT = named$("ASSERT", token(sequence(literal("assert"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression CASE = named$("CASE", sequence(literal("case"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression BREAK = named$("BREAK", token(sequence(literal("break"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression CATCH = named$("CATCH", sequence(literal("catch"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression CASE = named$("CASE", token(sequence(literal("case"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression CLASS = named$("CLASS", sequence(literal("class"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression CATCH = named$("CATCH", token(sequence(literal("catch"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression CONTINUE = named$("CONTINUE", sequence(literal("continue"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression CLASS = named$("CLASS", token(sequence(literal("class"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression DEFAULT = named$("DEFAULT", sequence(literal("default"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression CONTINUE = named$("CONTINUE", token(sequence(literal("continue"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression DO = named$("DO", sequence(literal("do"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression DEFAULT = named$("DEFAULT", token(sequence(literal("default"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression ELSE = named$("ELSE", sequence(literal("else"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression DO = named$("DO", token(sequence(literal("do"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression ENUM = named$("ENUM", sequence(literal("enum"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression ELSE = named$("ELSE", token(sequence(literal("else"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression EXTENDS = named$("EXTENDS", sequence(literal("extends"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression ENUM = named$("ENUM", token(sequence(literal("enum"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression FINALLY = named$("FINALLY", sequence(literal("finally"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression EXTENDS = named$("EXTENDS", token(sequence(literal("extends"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression FINAL = named$("FINAL", sequence(literal("final"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression FINALLY = named$("FINALLY", token(sequence(literal("finally"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression FOR = named$("FOR", sequence(literal("for"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression FINAL = named$("FINAL", token(sequence(literal("final"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression IF = named$("IF", sequence(literal("if"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression FOR = named$("FOR", token(sequence(literal("for"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression IMPLEMENTS = named$("IMPLEMENTS", sequence(literal("implements"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression IF = named$("IF", token(sequence(literal("if"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression IMPORT = named$("IMPORT", sequence(literal("import"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression IMPLEMENTS = named$("IMPLEMENTS", token(sequence(literal("implements"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression INTERFACE = named$("INTERFACE", sequence(literal("interface"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression IMPORT = named$("IMPORT", token(sequence(literal("import"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression INSTANCEOF = named$("INSTANCEOF", sequence(literal("instanceof"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression INTERFACE = named$("INTERFACE", token(sequence(literal("interface"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression NEW = named$("NEW", sequence(literal("new"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression INSTANCEOF = named$("INSTANCEOF", token(sequence(literal("instanceof"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression PACKAGE = named$("PACKAGE", sequence(literal("package"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression NEW = named$("NEW", token(sequence(literal("new"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression RETURN = named$("RETURN", sequence(literal("return"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression PACKAGE = named$("PACKAGE", token(sequence(literal("package"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression STATIC = named$("STATIC", sequence(literal("static"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression RETURN = named$("RETURN", token(sequence(literal("return"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression SUPER = named$("SUPER", sequence(literal("super"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression STATIC = named$("STATIC", token(sequence(literal("static"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression SWITCH = named$("SWITCH", sequence(literal("switch"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression SUPER = named$("SUPER", token(sequence(literal("super"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression SYNCHRONIZED = named$("SYNCHRONIZED", sequence(literal("synchronized"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression SWITCH = named$("SWITCH", token(sequence(literal("switch"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression THIS = named$("THIS", sequence(literal("this"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression SYNCHRONIZED = named$("SYNCHRONIZED", token(sequence(literal("synchronized"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression THROWS = named$("THROWS", sequence(literal("throws"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression THIS = named$("THIS", token(sequence(literal("this"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression THROW = named$("THROW", sequence(literal("throw"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression THROWS = named$("THROWS", token(sequence(literal("throws"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression TRY = named$("TRY", sequence(literal("try"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression THROW = named$("THROW", token(sequence(literal("throw"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression VOID = named$("VOID", sequence(literal("void"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression TRY = named$("TRY", token(sequence(literal("try"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression WHILE = named$("WHILE", sequence(literal("while"), not(reference("LetterOrDigit")), reference("Spacing")));
+    ParsingExpression VOID = named$("VOID", token(sequence(literal("void"), not(reference("LetterOrDigit")))));
 
-    ParsingExpression Literal = named$("Literal", sequence(choice(reference("FloatLiteral"), reference("IntegerLiteral"), reference("CharLiteral"), reference("StringLiteral"), sequence(literal("true"), not(reference("LetterOrDigit"))), sequence(literal("false"), not(reference("LetterOrDigit"))), sequence(literal("null"), not(reference("LetterOrDigit")))), reference("Spacing")));
+    ParsingExpression WHILE = named$("WHILE", token(sequence(literal("while"), not(reference("LetterOrDigit")))));
+
+    // LEXICAL
 
     ParsingExpression IntegerLiteral = named$("IntegerLiteral", sequence(choice(reference("HexNumeral"), reference("BinaryNumeral"), reference("OctalNumeral"), reference("DecimalNumeral")), optional(charSet("lL"))));
 
@@ -363,105 +373,113 @@ public final class JavaGrammar
 
     ParsingExpression UnicodeEscape = named$("UnicodeEscape", sequence(oneMore(literal("u")), reference("HexDigit"), reference("HexDigit"), reference("HexDigit"), reference("HexDigit")));
 
-    ParsingExpression AT = named$("AT", sequence(literal("@"), reference("Spacing")));
+    // TOKENS
 
-    ParsingExpression AND = named$("AND", sequence(literal("&"), not(charSet("=&")), reference("Spacing")));
+    ParsingExpression Literal = named$("Literal", sequence(choice(reference("FloatLiteral"),
+        reference("IntegerLiteral"), reference("CharLiteral"), reference("StringLiteral"),
+        sequence(literal("true"), not(reference("LetterOrDigit"))), sequence(literal("false"),
+            not(reference("LetterOrDigit"))), sequence(literal("null"), not(reference
+            ("LetterOrDigit")))), reference("Spacing")));
 
-    ParsingExpression ANDAND = named$("ANDAND", sequence(literal("&&"), reference("Spacing")));
+    ParsingExpression AT = named$("AT", token(sequence(literal("@"))));
 
-    ParsingExpression ANDEQU = named$("ANDEQU", sequence(literal("&="), reference("Spacing")));
+    ParsingExpression AND = named$("AND", token(sequence(literal("&"), not(charSet("=&")))));
 
-    ParsingExpression BANG = named$("BANG", sequence(literal("!"), not(literal("=")), reference("Spacing")));
+    ParsingExpression ANDAND = named$("ANDAND", token(sequence(literal("&&"))));
 
-    ParsingExpression BSR = named$("BSR", sequence(literal(">>>"), not(literal("=")), reference("Spacing")));
+    ParsingExpression ANDEQU = named$("ANDEQU", token(sequence(literal("&="))));
 
-    ParsingExpression BSREQU = named$("BSREQU", sequence(literal(">>>="), reference("Spacing")));
+    ParsingExpression BANG = named$("BANG", token(sequence(literal("!"), not(literal("=")))));
 
-    ParsingExpression COLON = named$("COLON", sequence(literal(":"), reference("Spacing")));
+    ParsingExpression BSR = named$("BSR", token(sequence(literal(">>>"), not(literal("=")))));
 
-    ParsingExpression COMMA = named$("COMMA", sequence(literal(","), reference("Spacing")));
+    ParsingExpression BSREQU = named$("BSREQU", token(sequence(literal(">>>="))));
 
-    ParsingExpression DEC = named$("DEC", sequence(literal("--"), reference("Spacing")));
+    ParsingExpression COLON = named$("COLON", token(sequence(literal(":"))));
 
-    ParsingExpression DIV = named$("DIV", sequence(literal("/"), not(literal("=")), reference("Spacing")));
+    ParsingExpression COMMA = named$("COMMA", token(sequence(literal(","))));
 
-    ParsingExpression DIVEQU = named$("DIVEQU", sequence(literal("/="), reference("Spacing")));
+    ParsingExpression DEC = named$("DEC", token(sequence(literal("--"))));
 
-    ParsingExpression DOT = named$("DOT", sequence(literal("."), reference("Spacing")));
+    ParsingExpression DIV = named$("DIV", token(sequence(literal("/"), not(literal("=")))));
 
-    ParsingExpression ELLIPSIS = named$("ELLIPSIS", sequence(literal("..."), reference("Spacing")));
+    ParsingExpression DIVEQU = named$("DIVEQU", token(sequence(literal("/="))));
 
-    ParsingExpression EQU = named$("EQU", sequence(literal("="), not(literal("=")), reference("Spacing")));
+    ParsingExpression DOT = named$("DOT", token(sequence(literal("."))));
 
-    ParsingExpression EQUAL = named$("EQUAL", sequence(literal("=="), reference("Spacing")));
+    ParsingExpression ELLIPSIS = named$("ELLIPSIS", token(sequence(literal("..."))));
 
-    ParsingExpression GE = named$("GE", sequence(literal(">="), reference("Spacing")));
+    ParsingExpression EQU = named$("EQU", token(sequence(literal("="), not(literal("=")))));
 
-    ParsingExpression GT = named$("GT", sequence(literal(">"), not(charSet("=>")), reference("Spacing")));
+    ParsingExpression EQUAL = named$("EQUAL", token(sequence(literal("=="))));
 
-    ParsingExpression HAT = named$("HAT", sequence(literal("^"), not(literal("=")), reference("Spacing")));
+    ParsingExpression GE = named$("GE", token(sequence(literal(">="))));
 
-    ParsingExpression HATEQU = named$("HATEQU", sequence(literal("^="), reference("Spacing")));
+    ParsingExpression GT = named$("GT", token(sequence(literal(">"), not(charSet("=>")))));
 
-    ParsingExpression INC = named$("INC", sequence(literal("++"), reference("Spacing")));
+    ParsingExpression HAT = named$("HAT", token(sequence(literal("^"), not(literal("=")))));
 
-    ParsingExpression LBRK = named$("LBRK", sequence(literal("["), reference("Spacing")));
+    ParsingExpression HATEQU = named$("HATEQU", token(sequence(literal("^="))));
 
-    ParsingExpression LE = named$("LE", sequence(literal("<="), reference("Spacing")));
+    ParsingExpression INC = named$("INC", token(sequence(literal("++"))));
 
-    ParsingExpression LPAR = named$("LPAR", sequence(literal("("), reference("Spacing")));
+    ParsingExpression LBRK = named$("LBRK", token(sequence(literal("["))));
 
-    ParsingExpression LPOINT = named$("LPOINT", sequence(literal("<"), reference("Spacing")));
+    ParsingExpression LE = named$("LE", token(sequence(literal("<="))));
 
-    ParsingExpression LT = named$("LT", sequence(literal("<"), not(charSet("=<")), reference("Spacing")));
+    ParsingExpression LPAR = named$("LPAR", token(sequence(literal("("))));
 
-    ParsingExpression LWING = named$("LWING", sequence(literal("{"), reference("Spacing")));
+    ParsingExpression LPOINT = named$("LPOINT", token(sequence(literal("<"))));
 
-    ParsingExpression MINUS = named$("MINUS", sequence(literal("-"), not(charSet("=\\-")), reference("Spacing")));
+    ParsingExpression LT = named$("LT", token(sequence(literal("<"), not(charSet("=<")))));
 
-    ParsingExpression MINUSEQU = named$("MINUSEQU", sequence(literal("-="), reference("Spacing")));
+    ParsingExpression LWING = named$("LWING", token(sequence(literal("{"))));
 
-    ParsingExpression MOD = named$("MOD", sequence(literal("%"), not(literal("=")), reference("Spacing")));
+    ParsingExpression MINUS = named$("MINUS", token(sequence(literal("-"), not(charSet("=\\-")))));
 
-    ParsingExpression MODEQU = named$("MODEQU", sequence(literal("%="), reference("Spacing")));
+    ParsingExpression MINUSEQU = named$("MINUSEQU", token(sequence(literal("-="))));
 
-    ParsingExpression NOTEQUAL = named$("NOTEQUAL", sequence(literal("!="), reference("Spacing")));
+    ParsingExpression MOD = named$("MOD", token(sequence(literal("%"), not(literal("=")))));
 
-    ParsingExpression OR = named$("OR", sequence(literal("|"), not(charSet("=|")), reference("Spacing")));
+    ParsingExpression MODEQU = named$("MODEQU", token(sequence(literal("%="))));
 
-    ParsingExpression OREQU = named$("OREQU", sequence(literal("|="), reference("Spacing")));
+    ParsingExpression NOTEQUAL = named$("NOTEQUAL", token(sequence(literal("!="))));
 
-    ParsingExpression OROR = named$("OROR", sequence(literal("||"), reference("Spacing")));
+    ParsingExpression OR = named$("OR", token(sequence(literal("|"), not(charSet("=|")))));
 
-    ParsingExpression PLUS = named$("PLUS", sequence(literal("+"), not(charSet("=+")), reference("Spacing")));
+    ParsingExpression OREQU = named$("OREQU", token(sequence(literal("|="))));
 
-    ParsingExpression PLUSEQU = named$("PLUSEQU", sequence(literal("+="), reference("Spacing")));
+    ParsingExpression OROR = named$("OROR", token(sequence(literal("||"))));
 
-    ParsingExpression QUERY = named$("QUERY", sequence(literal("?"), reference("Spacing")));
+    ParsingExpression PLUS = named$("PLUS", token(sequence(literal("+"), not(charSet("=+")))));
 
-    ParsingExpression RBRK = named$("RBRK", sequence(literal("]"), reference("Spacing")));
+    ParsingExpression PLUSEQU = named$("PLUSEQU", token(sequence(literal("+="))));
 
-    ParsingExpression RPAR = named$("RPAR", sequence(literal(")"), reference("Spacing")));
+    ParsingExpression QUERY = named$("QUERY", token(sequence(literal("?"))));
 
-    ParsingExpression RPOINT = named$("RPOINT", sequence(literal(">"), reference("Spacing")));
+    ParsingExpression RBRK = named$("RBRK", token(sequence(literal("]"))));
 
-    ParsingExpression RWING = named$("RWING", sequence(literal("}"), reference("Spacing")));
+    ParsingExpression RPAR = named$("RPAR", token(sequence(literal(")"))));
 
-    ParsingExpression SEMI = named$("SEMI", sequence(literal(";"), reference("Spacing")));
+    ParsingExpression RPOINT = named$("RPOINT", token(sequence(literal(">"))));
 
-    ParsingExpression SL = named$("SL", sequence(literal("<<"), not(literal("=")), reference("Spacing")));
+    ParsingExpression RWING = named$("RWING", token(sequence(literal("}"))));
 
-    ParsingExpression SLEQU = named$("SLEQU", sequence(literal("<<="), reference("Spacing")));
+    ParsingExpression SEMI = named$("SEMI", token(sequence(literal(";"))));
 
-    ParsingExpression SR = named$("SR", sequence(literal(">>"), not(charSet("=>")), reference("Spacing")));
+    ParsingExpression SL = named$("SL", token(sequence(literal("<<"), not(literal("=")))));
 
-    ParsingExpression SREQU = named$("SREQU", sequence(literal(">>="), reference("Spacing")));
+    ParsingExpression SLEQU = named$("SLEQU", token(sequence(literal("<<="))));
 
-    ParsingExpression STAR = named$("STAR", sequence(literal("*"), not(literal("=")), reference("Spacing")));
+    ParsingExpression SR = named$("SR", token(sequence(literal(">>"), not(charSet("=>")))));
 
-    ParsingExpression STAREQU = named$("STAREQU", sequence(literal("*="), reference("Spacing")));
+    ParsingExpression SREQU = named$("SREQU", token(sequence(literal(">>="))));
 
-    ParsingExpression TILDA = named$("TILDA", sequence(literal("~"), reference("Spacing")));
+    ParsingExpression STAR = named$("STAR", token(sequence(literal("*"), not(literal("=")))));
 
-    ParsingExpression EOT = named$("EOT", not(any()));
+    ParsingExpression STAREQU = named$("STAREQU", token(sequence(literal("*="))));
+
+    ParsingExpression TILDA = named$("TILDA", token(sequence(literal("~"))));
+
+    ParsingExpression EOT = named$("EOT", token(not(any())));
 }

@@ -10,7 +10,7 @@ import java.util.Iterator;
  * The idea to to be able to implement functions not implemented by ArrayList, such as {@link
  * #truncate}.
  */
-public final class Array<T> implements Iterable<T>
+public final class Array<T> implements Iterable<T>, Cloneable
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -23,6 +23,18 @@ public final class Array<T> implements Iterable<T>
     private int next;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public Array(T[] array, int next)
+    {
+        this.array = array;
+        this.next = next;
+    }
+
+    public Array(T[] array)
+    {
+        this.array = array;
+        this.next = array.length;
+    }
 
     public Array(int size)
     {
@@ -105,7 +117,14 @@ public final class Array<T> implements Iterable<T>
 
     // ---------------------------------------------------------------------------------------------
 
-    public void addAll(Collection<T> collection)
+    public void clear()
+    {
+        truncate(0);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void addAll(Collection<? extends T> collection)
     {
         for (T t: collection)
         {
@@ -115,7 +134,7 @@ public final class Array<T> implements Iterable<T>
 
     // ---------------------------------------------------------------------------------------------
 
-    public void addAll(Array<T> array)
+    public void addAll(Array<? extends T> array)
     {
         for (int i = 0; i < array.size(); ++i)
         {
@@ -183,6 +202,28 @@ public final class Array<T> implements Iterable<T>
 
     // ---------------------------------------------------------------------------------------------
 
+    public int indexOf(T t)
+    {
+        for (int i = 0; i < next; ++i)
+        {
+            if (t == null ? array[i] == null : t.equals(array[i]))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public boolean contains(T t)
+    {
+        return indexOf(t) >= 0;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     @Override
     public Iterator<T> iterator()
     {
@@ -238,6 +279,37 @@ public final class Array<T> implements Iterable<T>
                 return Caster.cast(array[index--]);
             }
         };
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public String toString()
+    {
+        StringBuilder b = new StringBuilder();
+        b.append("[");
+
+        for (int i = 0; i < next; ++i)
+        {
+            b.append(array[i]);
+            b.append(", ");
+        }
+
+        if (next > 0)
+        {
+            b.setLength(b.length() - 2);
+        }
+
+        b.append("]");
+        return b.toString();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public Array<T> clone()
+    {
+        return new Array(array.clone(), next);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

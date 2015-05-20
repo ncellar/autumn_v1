@@ -1,12 +1,22 @@
 TODO
 
+- debug parsing of own project files
+    - current issue: when removing the star from whitespace, crash with -1 pos when calling
+      literal; try to find where this -1 is set
+    - next: why can't I
+
 - make cutting restorable (memo integration)
+
+- check to-do in sequence
+
+- error handler: check if things need to be reset beforehand?
 
 TODO LATER
 
-- rename ParseOutput to ParseOutcome and ParseResult to ParseTree
-- improve choice by passing input directly?
-- improve all by passing input directly! then make the parse input a global structure of some kind
+- rename ParseInput to ParseState
+- make config purely descriptive (reusable)
+- retool Trace for added flexibility
+- retool InstrumentExpression to extract common pattern
 
 NOTES
 

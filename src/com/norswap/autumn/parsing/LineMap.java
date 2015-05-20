@@ -63,7 +63,7 @@ public final class LineMap
             }
         }
 
-        linePositions = Arrays.copyOf(linePositions, linePositions.length);
+        linePositions = Arrays.copyOf(linePositions, next);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

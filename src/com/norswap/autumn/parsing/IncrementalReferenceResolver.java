@@ -13,7 +13,7 @@ import java.util.HashSet;
  * This is meant to be called by the {@link ParsingExpressionFactory#recursive$}. The point of
  * this resolution method is that it is combinator friendly: you can use the aforementioned
  * method to build a recursive expression in code. For automatically generated expression graphs,
- * use {@link AllReferenceResolver}.
+ * use {@link ReferenceResolver}.
  *
  * As a result of the resolution process, all {@link Reference} nodes that have been resolved are
  * pruned from the expression graph and replaced with edges towards the expression they referenced.
@@ -23,7 +23,7 @@ import java.util.HashSet;
  * once that foreign reference is itself resolved. This guarantees that by running this resolver on
  * every referenced expressions, all references end up resolved.
  */
-public final class SingleReferenceResolver
+public final class IncrementalReferenceResolver
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -32,7 +32,7 @@ public final class SingleReferenceResolver
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public SingleReferenceResolver(ParsingExpression target)
+    public IncrementalReferenceResolver(ParsingExpression target)
     {
         assert(target.name() != null);
         this.recursive = target;
@@ -65,7 +65,7 @@ public final class SingleReferenceResolver
                     if (ref.nestedReferences != null)
                     for (ParsingExpression nr: ref.nestedReferences)
                     {
-                        new SingleReferenceResolver(nr).walk(recursive);
+                        new IncrementalReferenceResolver(nr).walk(recursive);
                     }
                 }
                 else

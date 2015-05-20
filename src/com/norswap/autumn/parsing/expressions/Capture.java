@@ -1,7 +1,7 @@
 package com.norswap.autumn.parsing.expressions;
 
 import com.norswap.autumn.parsing.ParseInput;
-import com.norswap.autumn.parsing.ParseResult;
+import com.norswap.autumn.parsing.ParseTree;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
 
@@ -19,35 +19,35 @@ public final class Capture extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        ParseResult oldResult = input.result;
-        ParseResult newResult = new ParseResult();
-        newResult.name = name;
-        int oldCount = input.resultChildrenCount;
+        ParseTree oldTree = input.tree;
+        ParseTree newTree = new ParseTree();
+        newTree.name = name;
+        int oldCount = input.treeChildrenCount;
 
-        input.result = newResult;
-        input.resultChildrenCount = 0;
+        input.tree = newTree;
+        input.treeChildrenCount = 0;
 
         operand.parse(parser, input);
 
-        input.result = oldResult;
-        input.resultChildrenCount = oldCount;
+        input.tree = oldTree;
+        input.treeChildrenCount = oldCount;
 
         if (input.succeeded())
         {
             if (isCaptureGrouped())
             {
-                input.result.addGrouped(newResult);
+                input.tree.addGrouped(newTree);
             }
             else
             {
-                input.result.add(newResult);
+                input.tree.add(newTree);
             }
 
             if (shouldCaptureText())
             {
                 int end = input.blackEnd;
 
-                newResult.value = parser.text
+                newTree.value = parser.text
                     .subSequence(input.start, end)
                     .toString();
             }

@@ -8,14 +8,20 @@ import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
  */
 public final class Whitespace
 {
-    public static final ParsingExpression lineComment =
+    public static final ParsingExpression
+
+    EOF = named$("EOF", not(any())),
+
+    EOL = named$("EOL", choice(literal("\n"), EOF)),
+
+    lineComment =
         named$("lineComment", sequence(
             literal("//"),
             zeroMore(
-                not(literal("\n")),
-                any())));
+                not(EOL),
+                any()))),
 
-    public static final ParsingExpression blockComment =
+    blockComment =
         recursive$("blockComment", sequence(
             literal("/*"),
             zeroMore(choice(
@@ -23,14 +29,16 @@ public final class Whitespace
                 sequence(
                     not(literal("*/")),
                     any()))),
-            literal("*/")));
+            literal("*/"))),
 
-    public static final ParsingExpression whitespaceChars =
-        named$("whitespaceChars", charSet("  \n\t"));
+    whitespaceChars =
+        named$("whitespaceChars", charSet("  \n\t")),
 
-    public static final ParsingExpression whitespace =
-        zeroMore(choice(
+    whitespace =
+        named$("whitespace", zeroMore(choice(
             whitespaceChars,
             lineComment,
-            blockComment));
+            blockComment)))
+
+    ;
 }

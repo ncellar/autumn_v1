@@ -2,18 +2,21 @@ package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.util.Array;
 
+import java.util.Collections;
+import java.util.Iterator;
+
 /**
  * - name != null && !grouped : normal node
  * - name != null && grouped  : group capture
  * - name == null             : container
  */
-public final class ParseResult
+public final class ParseTree implements Iterable<ParseTree>
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public String name;
     public String value;
-    public Array<ParseResult> children;
+    public Array<ParseTree> children;
     public boolean grouped;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -32,7 +35,7 @@ public final class ParseResult
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void add(ParseResult child)
+    public void add(ParseTree child)
     {
         if (children == null)
         {
@@ -54,18 +57,18 @@ public final class ParseResult
 
     // ---------------------------------------------------------------------------------------------
 
-    public void addGrouped(ParseResult child)
+    public void addGrouped(ParseTree child)
     {
         if (children == null)
         {
             children = new Array<>();
         }
 
-        ParseResult container = get(child.name);
+        ParseTree container = getOrNull(child.name);
 
         if (container == null)
         {
-            container = new ParseResult();
+            container = new ParseTree();
             container.grouped = true;
             container.name = child.name;
             container.children = new Array<>();
@@ -77,14 +80,14 @@ public final class ParseResult
 
     // ---------------------------------------------------------------------------------------------
 
-    public ParseResult get(String name)
+    public ParseTree getOrNull(String name)
     {
         if (children == null)
         {
             return null;
         }
 
-        for (ParseResult child: children)
+        for (ParseTree child: children)
         {
             if (name.equals(child.name))
             {
@@ -93,6 +96,87 @@ public final class ParseResult
         }
 
         return null;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public ParseTree get(String name)
+    {
+        ParseTree node = getOrNull(name);
+
+        if (node == null)
+        {
+            throw new RuntimeException(
+                "Node \"" + this.name + "\" doesn't have a child named \"" + name + "\"");
+        }
+
+        return node;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public String value(String name)
+    {
+        ParseTree node = get(name);
+
+        if (node.value == null)
+        {
+            throw new RuntimeException(
+                "Node \"" + name + "\" under node \"" + this.name + "\" doesn't have a value.");
+        }
+
+        return node.value;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public ParseTree group(String name)
+    {
+        ParseTree node = get(name);
+
+        if (!node.grouped)
+        {
+            throw new RuntimeException(
+                "Node \"" + name + "\" under node \"" + this.name + "\" isn't a group.");
+        }
+
+        return node;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public ParseTree child()
+    {
+        if (children == null || children.size() == 0)
+        {
+            throw new RuntimeException("Node \"" + name + "\" doesn't have children.");
+        }
+        else if (children.size() != 1)
+        {
+            throw new RuntimeException("Node \"" + name + "\" has more than one child.");
+        }
+
+        return children.get(0);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public ParseTree child(int i)
+    {
+        if (children == null || children.size() <= i)
+        {
+            throw new RuntimeException(
+                "Node \"" + name + "\" doesn't have a child with index: " + i);
+        }
+
+        return children.get(i);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public boolean has(String name)
+    {
+        return getOrNull(name) != null;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,7 +196,7 @@ public final class ParseResult
         {
             builder.append("[");
 
-            for (ParseResult child: children)
+            for (ParseTree child: children)
             {
                 builder.append(child);
                 builder.append(", ");
@@ -163,7 +247,7 @@ public final class ParseResult
         if (grouped)
         {
             int i = 0;
-            for (ParseResult child: children)
+            for (ParseTree child: children)
             {
                 builder.append(new String(new char[depth + 1]).replace("\0", "-|"));
                 builder.append(" ");
@@ -171,7 +255,7 @@ public final class ParseResult
                 builder.append("\n");
 
                 if (child.children != null)
-                for (ParseResult grandChild: child.children)
+                for (ParseTree grandChild: child.children)
                 {
                     grandChild.toTreeString(builder, depth + 2);
                 }
@@ -181,11 +265,21 @@ public final class ParseResult
         }
         else if (children != null)
         {
-            for (ParseResult child: children)
+            for (ParseTree child: children)
             {
                 child.toTreeString(builder, depth + 1);
             }
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public Iterator iterator()
+    {
+        return children != null
+            ? children.iterator()
+            : Collections.emptyIterator();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

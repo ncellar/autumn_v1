@@ -7,7 +7,7 @@ import com.norswap.autumn.test.TestRunner;
 
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
 
-public class OperatorTests
+public final class OperatorTests
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

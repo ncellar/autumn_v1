@@ -5,9 +5,9 @@ public interface ErrorHandler
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Indicates that the given expression failed at the given file offset.
+     * Indicates that the given expression failed with the given input.
      */
-    void handle(ParsingExpression expression, int fileOffset);
+    void handle(ParsingExpression expression, ParseInput input);
 
     // ---------------------------------------------------------------------------------------------
 

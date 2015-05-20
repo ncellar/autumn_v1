@@ -19,6 +19,12 @@ public final class HandleMap
             this.handle = handle;
             this.value = value;
         }
+
+        @Override
+        public String toString()
+        {
+            return handle + ": " + value;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

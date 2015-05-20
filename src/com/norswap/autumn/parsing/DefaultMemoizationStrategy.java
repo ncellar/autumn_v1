@@ -1,11 +1,11 @@
 package com.norswap.autumn.parsing;
 
 /**
- * The default memoization strategy memoizes every output changes that it is asked to.
+ * The default memoization strategy memoizes every changeset that it is asked to.
  *
  * It is implement an open-addressing (position -> node) map. Each node includes the position and
- * memoized expression. Multiple nodes results for the same position are linked together using
- * their {@code next} field. Recent results are put at the front of this list.
+ * memoized expression. Multiple nodes changesets for the same position are linked together using
+ * their {@code next} field. New changesets are put at the front of this list.
  */
 public final class DefaultMemoizationStrategy implements MemoizationStrategy
 {

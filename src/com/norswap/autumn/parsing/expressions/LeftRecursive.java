@@ -35,7 +35,7 @@ public final class LeftRecursive extends ParsingExpression
             return;
         }
 
-        // Push a failed parse parse result as initial seed.
+        // Push a failed changeset as initial seed.
 
         if (input.seeds == null)
         {

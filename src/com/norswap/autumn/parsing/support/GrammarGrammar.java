@@ -1,16 +1,10 @@
-package com.norswap.autumn.test.parsing;
+package com.norswap.autumn.parsing.support;
 
-import com.norswap.autumn.parsing.Source;
-import com.norswap.autumn.parsing.ParseTree;
-import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParserConfiguration;
 import com.norswap.autumn.parsing.ParsingExpression;
-
-import java.io.IOException;
 
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
 
-public final class MouseGrammar
+public final class GrammarGrammar
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -87,12 +81,7 @@ public final class MouseGrammar
     underscore  = token(literal("_")),
     until       = token(literal("*+")),
     aloUntil    = token(literal("++")),
-
-    EOT         = named$("EOT", not(any())),
-    EOL         = named$("EOL", choice(literal("\n"), EOT)),
-
-    comment     = named$("comment", sequence(literal("//"), zeroMore(not(EOL), any()), EOL)),
-    whitespace  = named$("whitespace", zeroMore(choice(charSet(" \n\t"), comment))),
+    colEqual    = token(literal(":=")),
 
     digit       = charRange('0', '9'),
     hexDigit    = choice(digit, charRange('a', 'f'), charRange('A', 'F')),
@@ -100,7 +89,7 @@ public final class MouseGrammar
 
     escape = named$("escape", choice(
         sequence(literal("\\u"), hexDigit, hexDigit, hexDigit, hexDigit),
-        sequence(literal("\\"), charSet("tnr")),
+        sequence(literal("\\"), charSet("tn")),
         sequence(not(literal("\\u")), literal("\\"), any()))),
 
     character = named$("character", choice(escape, notCharSet("\n\\"))),
@@ -171,56 +160,12 @@ public final class MouseGrammar
         captureGrouped("alts", sequence(sequence, optional(onSucc), optional(onFail))),
         slash)),
 
-    rule = named$("rule",
-        sequence(captureText("ruleName", name), equal, ruleRhs, optional(diagName), semi)),
+    rule = named$("rule", sequence(
+        captureText("ruleName", name),
+        choice(equal, capture("token", colEqual)),
+        ruleRhs,
+        optional(diagName), semi)),
 
     grammar = named$("grammar",
-        sequence(whitespace(), aloUntil(captureGrouped("rules", rule), EOT)))
-
-    ;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    static ParserConfiguration config = new ParserConfiguration();
-    static {
-        config.whitespace = whitespace;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    static void emitGrammar(ParseTree tree)
-    {
-        MouseToJava mtj = new MouseToJava();
-        mtj.emitGrammar(tree);
-        System.out.println(mtj.b);
-
-        //System.out.println(tree.toTreeString());
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public static void main(String[] args)
-    {
-        //String filename = args[0];
-        String filename = "src/com/norswap/autumn/test/parsing/Java7.mouse";
-
-        try
-        {
-            Source source = Source.fromFile(filename);
-            Parser parser = new Parser(source, config);
-            // grammar = InstrumentExpression.trace(grammar);
-            parser.parse(grammar);
-            parser.report();
-            if (parser.succeeded())
-            {
-                emitGrammar(parser.tree());
-            }
-        }
-        catch (IOException e)
-        {
-            System.out.println("Could not read file: " + filename);
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+        sequence(whitespace(), oneMore(captureGrouped("rules", rule))));
 }

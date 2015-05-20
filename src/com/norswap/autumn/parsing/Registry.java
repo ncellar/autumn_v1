@@ -23,6 +23,8 @@ public final class Registry
 
     public static final FlagFactory ParsingInputFlagsFactory = new FlagFactory();
 
+    public static final HandleFactory ParsingInputHandleFactory = new HandleFactory();
+
     public static final FlagFactory ParsingOutputFlagsFactory = new FlagFactory();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -61,8 +63,8 @@ public final class Registry
         = ParsingExpressionFlagsFactory.next();
 
     /**
-     * (For {@code Capture} only) Indicates that the capture should be grouped in a result container
-     * with other capture of the same name.
+     * (For {@code Capture} only) Indicates that tree nodes resulting from this capture should be
+     * grouped together under a tree node sporting the capture name.
      */
     public static final int PEF_CAPTURE_GROUPED
         = ParsingExpressionFlagsFactory.next();
@@ -89,6 +91,16 @@ public final class Registry
      */
     public static final int PIF_DONT_RECORD_ERRORS
         = ParsingInputFlagsFactory.next();
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // PARSING INPUT HANDLES (PIH)
+
+    /**
+     * Fetches the stack trace that shows parsing expressions we are currently traversing.
+     */
+    public static final int PIH_STACK_TRACE
+        = ParsingInputHandleFactory.next();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // PARSING OUTPUT FLAGS (POF)

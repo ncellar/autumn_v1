@@ -1,6 +1,6 @@
 package com.norswap.autumn.test.parsing;
 
-import com.norswap.autumn.parsing.ParseResult;
+import com.norswap.autumn.parsing.ParseTree;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.test.Ensure;
@@ -10,7 +10,7 @@ import com.norswap.autumn.util.Array;
 
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
 
-public class FeatureTests
+public final class FeatureTests
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -103,10 +103,10 @@ public class FeatureTests
         Parser parser = TestConfiguration.parser("aaa");
         parser.parse(expr);
 
-        ParseResult result = parser.result();
-        ParseResult aResult = result.get("a");
+        ParseTree tree = parser.tree();
+        ParseTree aTree = tree.get("a");
 
-        Ensure.equals(aResult.value, "aaa");
+        Ensure.equals(aTree.value, "aaa");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -119,8 +119,8 @@ public class FeatureTests
         Parser parser = TestConfiguration.parser("aaa");
         parser.parse(expr);
 
-        ParseResult result = parser.result();
-        Array<ParseResult> aResults = result.get("a").children;
+        ParseTree tree = parser.tree();
+        Array<ParseTree> aResults = tree.get("a").children;
 
         Ensure.equals(aResults.size(), 3);
 
@@ -154,10 +154,10 @@ public class FeatureTests
             parser.parse(expr);
             Ensure.equals(parser.endPosition(), 5);
 
-            ParseResult result = parser.result();
-            ParseResult plus = result.get("plus");
+            ParseTree tree = parser.tree();
+            ParseTree plus = tree.get("plus");
 
-            Ensure.equals(result.childrenCount(), 1);
+            Ensure.equals(tree.childrenCount(), 1);
             Ensure.different(plus.get("left").get("num"), null);
             Ensure.different(plus.get("right").get("plus").get("left").get("num"), null);
             Ensure.different(plus.get("right").get("plus").get("right").get("num"), null);
@@ -177,10 +177,10 @@ public class FeatureTests
 
         Parser parser = TestConfiguration.parser("1+1+1");
         parser.parse(expr);
-        Ensure.ensure(parser.matchedWholeSource());
-        ParseResult result = parser.result();
+        Ensure.ensure(parser.succeeded());
+        ParseTree tree = parser.tree();
 
-        ParseResult plus = result.get("plus");
+        ParseTree plus = tree.get("plus");
         Ensure.different(plus.get("right").get("num"), null);
         Ensure.different(plus.get("left").get("plus").get("right").get("num"), null);
         Ensure.different(plus.get("left").get("plus").get("left").get("num"), null);
@@ -211,21 +211,21 @@ public class FeatureTests
 
         Parser parser = TestConfiguration.parser("1+1*1");
         parser.parse(expr);
-        Ensure.ensure(parser.matchedWholeSource());
-        ParseResult result = parser.result();
+        Ensure.ensure(parser.succeeded());
+        ParseTree tree = parser.tree();
 
-        Ensure.different(result.get("+").get("left").get("num"), null);
-        Ensure.different(result.get("+").get("right").get("*").get("left").get("num"), null);
-        Ensure.different(result.get("+").get("right").get("*").get("right").get("num"), null);
+        Ensure.different(tree.get("+").get("left").get("num"), null);
+        Ensure.different(tree.get("+").get("right").get("*").get("left").get("num"), null);
+        Ensure.different(tree.get("+").get("right").get("*").get("right").get("num"), null);
 
         parser = TestConfiguration.parser("1*1+1");
         parser.parse(expr);
-        Ensure.ensure(parser.matchedWholeSource());
-        result = parser.result();
+        Ensure.ensure(parser.succeeded());
+        tree = parser.tree();
 
-        Ensure.different(result.get("+").get("right").get("num"), null);
-        Ensure.different(result.get("+").get("left").get("*").get("left").get("num"), null);
-        Ensure.different(result.get("+").get("left").get("*").get("right").get("num"), null);
+        Ensure.different(tree.get("+").get("right").get("num"), null);
+        Ensure.different(tree.get("+").get("left").get("*").get("left").get("num"), null);
+        Ensure.different(tree.get("+").get("left").get("*").get("right").get("num"), null);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

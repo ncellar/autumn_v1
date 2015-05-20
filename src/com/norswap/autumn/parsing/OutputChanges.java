@@ -8,7 +8,7 @@ public final class OutputChanges
 
     public int end;
     public int blackEnd;
-    public ParseResult tree;
+    public ParseTree tree;
     public Array<String> cuts;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -33,12 +33,12 @@ public final class OutputChanges
     {
         this.end = input.end;
         this.blackEnd = input.blackEnd;
-        this.tree = new ParseResult();
+        this.tree = new ParseTree();
         this.cuts = new Array<>();
 
-        for (int i = input.resultChildrenCount; i < input.result.childrenCount(); ++i)
+        for (int i = input.treeChildrenCount; i < input.tree.childrenCount(); ++i)
         {
-            this.tree.add(input.result.children.get(i));
+            this.tree.add(input.tree.children.get(i));
         }
 
         for (int i = input.cutsCount; i < input.cuts.size(); ++i)
@@ -56,7 +56,7 @@ public final class OutputChanges
 
         if (tree != null)
         {
-            input.result.add(tree);
+            input.tree.add(tree);
         }
 
         if (cuts != null)

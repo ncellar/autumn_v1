@@ -1,9 +1,9 @@
 package com.norswap.autumn.test.parsing;
 
-import com.norswap.autumn.parsing.ParseResult;
+import com.norswap.autumn.parsing.ParseTree;
 import com.norswap.autumn.util.Array;
 
-public class MouseToJava
+public final class MouseToJava
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -11,16 +11,16 @@ public class MouseToJava
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void emitGrammar(ParseResult grammar)
+    public void emitGrammar(ParseTree grammar)
     {
         emitRules(grammar.get("rules"));
     }
 
-    public void emitRules(ParseResult rules)
+    public void emitRules(ParseTree rules)
     {
-        for (ParseResult rule: rules.children)
+        for (ParseTree rule: rules.children)
         {
-            String ruleName = rule.get("ruleName").value;
+            String ruleName = rule.value("ruleName");
             b.append("ParsingExpression ");
             b.append(ruleName);
             b.append(" = named$(\"");
@@ -31,7 +31,7 @@ public class MouseToJava
         }
     }
 
-    public void emitTopChoice(Array<ParseResult> alts)
+    public void emitTopChoice(Array<ParseTree> alts)
     {
         if (alts.size() == 1)
         {
@@ -41,7 +41,7 @@ public class MouseToJava
 
         b.append("choice(");
 
-        for (ParseResult alt: alts)
+        for (ParseTree alt: alts)
         {
             emitSequence(alt.get("sequence"));
             b.append(", ");
@@ -51,9 +51,9 @@ public class MouseToJava
         b.append(")");
     }
 
-    public void emitChoice(ParseResult choice)
+    public void emitChoice(ParseTree choice)
     {
-        Array<ParseResult> alts = choice.children;
+        Array<ParseTree> alts = choice.children;
 
         if (alts.size() == 1)
         {
@@ -63,7 +63,7 @@ public class MouseToJava
 
         b.append("choice(");
 
-        for (ParseResult alt: alts)
+        for (ParseTree alt: alts)
         {
             emitSequence(alt);
             b.append(", ");
@@ -73,9 +73,9 @@ public class MouseToJava
         b.append(")");
     }
 
-    public void emitSequence(ParseResult sequence)
+    public void emitSequence(ParseTree sequence)
     {
-        Array<ParseResult> items = sequence.children;
+        Array<ParseTree> items = sequence.children;
 
         if (items.size() == 1)
         {
@@ -85,7 +85,7 @@ public class MouseToJava
 
         b.append("sequence(");
 
-        for (ParseResult item: items)
+        for (ParseTree item: items)
         {
             emitPrefixed(item);
             b.append(", ");
@@ -95,7 +95,7 @@ public class MouseToJava
         b.append(")");
     }
 
-    public void emitPrefixed(ParseResult prefixed)
+    public void emitPrefixed(ParseTree prefixed)
     {
         if ("and".equals(prefixed.name))
         {
@@ -115,7 +115,7 @@ public class MouseToJava
         }
     }
 
-    public void emitSuffixed(ParseResult suffixed)
+    public void emitSuffixed(ParseTree suffixed)
     {
         if ("until".equals(suffixed.name))
         {
@@ -157,7 +157,7 @@ public class MouseToJava
         }
     }
 
-    public void emitPrimary(ParseResult primary)
+    public void emitPrimary(ParseTree primary)
     {
         if ("choice".equals(primary.name))
         {
@@ -176,27 +176,27 @@ public class MouseToJava
         else if ("charRange".equals(primary.name))
         {
             b.append("charRange('");
-            b.append(primary.get("first").value);
+            b.append(primary.value("first"));
             b.append("', '");
-            b.append(primary.get("last").value);
+            b.append(primary.value("last"));
             b.append("')");
         }
         else if ("charSet".equals(primary.name))
         {
             b.append("charSet(\"");
-            b.append(primary.get("charSet").value);
+            b.append(primary.value("charSet"));
             b.append("\")");
         }
         else if ("notCharSet".equals(primary.name))
         {
             b.append("notCharSet(\"");
-            b.append(primary.get("notCharSet").value);
+            b.append(primary.value("notCharSet"));
             b.append("\")");
         }
         else if ("stringLit".equals(primary.name))
         {
             b.append("literal(\"");
-            b.append(primary.get("literal").value);
+            b.append(primary.value("literal"));
             b.append("\")");
         }
         else

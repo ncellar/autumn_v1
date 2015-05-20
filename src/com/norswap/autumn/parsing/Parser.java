@@ -14,7 +14,7 @@ public final class Parser
 
     public ParserConfiguration configuration;
 
-    private ParseResult result;
+    private ParseTree tree;
 
     private Array<LeftRecursive> leftAssociatives;
 
@@ -41,22 +41,26 @@ public final class Parser
     /**
      * Use the parser to match its source text to the given parsing expression.
      *
-     * After calling this method, the result of the parse can be retrieved via {@link #result()}.
+     * After calling this method, the parse tree resulting from the parse can be retrieved via
+     * {@link #tree()}.
      *
-     * If the result is a failure ({@code result().failed() == true}) or a partial match ({@code
+     * If the parse failed ({@code failed() == true}) or a partial match ({@code
      * matchedWholeSource() == false}), errors can be reported with {@link #report()}.
      */
     public void parse(ParsingExpression pe)
     {
         this.leftAssociatives = new Array<>();
         ParseInput rootInput = ParseInput.root();
-        rootInput.result = result = new ParseResult();
+        rootInput.tree = tree = new ParseTree();
 
         if (configuration.processLeadingWhitespace)
         {
             int pos = configuration.whitespace.parseDumb(text, 0);
-            rootInput.start = pos;
-            rootInput.end = pos;
+            if (pos > 0)
+            {
+                rootInput.start = pos;
+                rootInput.end = pos;
+            }
         }
 
         pe.parse(this, rootInput);
@@ -76,14 +80,9 @@ public final class Parser
      */
     public void report()
     {
-        if (matchedWholeSource())
+        if (succeeded())
         {
-            System.err.println("The parse succeeded, matching the whole source.");
-        }
-        else if (succeeded())
-        {
-            System.err.println("The parse succeeded, matching a prefix of the source, up to "
-                + source.position(endPosition));
+            System.err.println("The parse succeeded.");
         }
         else
         {
@@ -102,30 +101,23 @@ public final class Parser
 
     //----------------------------------------------------------------------------------------------
 
-    public ParseResult result()
+    public ParseTree tree()
     {
-        return result;
+        return tree;
     }
 
     //----------------------------------------------------------------------------------------------
 
     public boolean succeeded()
     {
-        return endPosition >= 0;
+        return endPosition == source.length();
     }
 
     //----------------------------------------------------------------------------------------------
 
     public boolean failed()
     {
-        return endPosition < 0;
-    }
-
-    //----------------------------------------------------------------------------------------------
-
-    public boolean matchedWholeSource()
-    {
-        return endPosition == source.length();
+        return endPosition != source.length();
     }
 
     //----------------------------------------------------------------------------------------------
@@ -143,7 +135,7 @@ public final class Parser
 
         if (!input.isErrorRecordingForbidden())
         {
-            configuration.errorHandler.handle(pe, input.start);
+            configuration.errorHandler.handle(pe, input);
         }
     }
 

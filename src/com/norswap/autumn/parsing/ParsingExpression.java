@@ -60,6 +60,15 @@ public abstract class ParsingExpression
 
     // ---------------------------------------------------------------------------------------------
 
+    public String toStringFull()
+    {
+        StringBuilder builder = new StringBuilder();
+        appendTo(builder);
+        return builder.toString();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     public abstract void appendTo(StringBuilder builder);
 
     // ---------------------------------------------------------------------------------------------

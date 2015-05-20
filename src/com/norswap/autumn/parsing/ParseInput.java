@@ -1,6 +1,7 @@
 package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.util.Array;
+import com.norswap.autumn.util.HandleMap;
 
 import static com.norswap.autumn.parsing.Registry.*; // PIF_*
 
@@ -18,11 +19,13 @@ public final class ParseInput
     // output
     public int end;
     public int blackEnd;
-    public ParseResult result;
+    public ParseTree tree;
     public Array<String> cuts;
 
-    public int resultChildrenCount;
+    public int treeChildrenCount;
     public int cutsCount;
+
+    public HandleMap ext;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -32,6 +35,7 @@ public final class ParseInput
         root.end = 0;
         root.blackEnd = 0;
         root.cuts = new Array<>();
+        root.ext = new HandleMap();
         return root;
     }
 
@@ -52,10 +56,11 @@ public final class ParseInput
         this.flags = parent.flags;
         this.end = parent.end;
         this.blackEnd = parent.blackEnd;
-        this.result = parent.result;
-        this.resultChildrenCount = parent.resultChildrenCount;
+        this.tree = parent.tree;
+        this.treeChildrenCount = parent.treeChildrenCount;
         this.cuts = parent.cuts;
         this.cutsCount = parent.cutsCount;
+        this.ext = parent.ext;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -90,7 +95,7 @@ public final class ParseInput
 
         start = end;
         blackStart = blackEnd;
-        resultChildrenCount = result.childrenCount();
+        treeChildrenCount = tree.childrenCount();
         cutsCount = cuts.size();
     }
 
@@ -112,9 +117,9 @@ public final class ParseInput
         end = start;
         blackEnd = blackStart;
 
-        if (result.children != null)
+        if (tree.children != null)
         {
-            result.children.truncate(resultChildrenCount);
+            tree.children.truncate(treeChildrenCount);
         }
     }
 

@@ -15,6 +15,8 @@ public final class Source
 
     private String text;
 
+    private String filename;
+
     private LineMap lineMap;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -51,6 +53,8 @@ public final class Source
 
         Source result = new Source();
         result.text = new String(data, "UTF-8");
+
+        result.filename = filename;
 
         return result;
     }

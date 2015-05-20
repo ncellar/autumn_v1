@@ -3,7 +3,6 @@ package com.norswap.autumn.parsing.expressions;
 import com.norswap.autumn.parsing.ParseInput;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
-import com.norswap.autumn.parsing.SingleReferenceResolver;
 import com.norswap.autumn.util.Array;
 
 
@@ -20,7 +19,7 @@ public final class Reference extends ParsingExpression
 
     public String target;
 
-    /** See {@link SingleReferenceResolver}. */
+    /** See {@link com.norswap.autumn.parsing.IncrementalReferenceResolver}. */
     public Array<ParsingExpression> nestedReferences;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -28,7 +27,7 @@ public final class Reference extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        throw new RuntimeException("Trying to parse an unresolved reference.");
+        throw new RuntimeException("Trying to parse an unresolved reference to: " + target);
     }
 
     // ---------------------------------------------------------------------------------------------
