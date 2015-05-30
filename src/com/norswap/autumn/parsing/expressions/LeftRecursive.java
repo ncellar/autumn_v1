@@ -17,7 +17,7 @@ public final class LeftRecursive extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        OutputChanges changes = input.getSeedChanges(this);
+        OutputChanges changes = input.getSeed(this);
 
         if (changes != null)
         {
@@ -35,7 +35,8 @@ public final class LeftRecursive extends ParsingExpression
             return;
         }
 
-        input.pushSheed(this, OutputChanges.failure());
+        changes = OutputChanges.failure();
+        input.pushSheed(this, changes);
 
         if (leftAssociative)
         {
@@ -54,27 +55,27 @@ public final class LeftRecursive extends ParsingExpression
         while (true)
         {
             operand.parse(parser, input);
-            OutputChanges oldChanges = input.popSeed();
 
-            if (oldChanges.end >= input.end)
+            if (changes.end >= input.end)
             {
-                // In case of either failure or no progress (no left-recursion or left-recursion
-                // consuming 0 input), revert to the previous seed.
-
-                input.flags = oldFlags;
-                input.resetAllOutput();
-                oldChanges.mergeInto(input);
+                // If no rule could grow the seed, exit the loop.
                 break;
             }
             else
             {
                 // Update the seed and retry the rule.
 
-                input.pushSheed(this, new OutputChanges(input));
+                changes = new OutputChanges(input);
+                input.setSeed(changes);
                 input.resetAllOutput();
                 input.forbidMemoization();
             }
         }
+
+        input.resetAllOutput();
+        input.flags = oldFlags;
+        changes.mergeInto(input);
+        input.popSeed();
 
         if (input.failed())
         {

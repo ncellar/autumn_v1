@@ -187,7 +187,15 @@ public final class Parser
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    // PRECEDENCE
 
+    //----------------------------------------------------------------------------------------------
+
+    /**
+     * If {@code expr} is not yet in the process of being parsed, registers a precedence value of 0
+     * for this expression and return it. Otherwise, returns the current precedence value for the
+     * expression.
+     */
     public int enterPrecedence(Expression expr, int position)
     {
         Expression.PrecedenceEntry entry = minPrecedence.peekOrNull();
@@ -210,6 +218,10 @@ public final class Parser
 
     //----------------------------------------------------------------------------------------------
 
+    /**
+     * Returns the current precedence value for the expression being parsed most recently.
+     * This is safe because inter-expression recursion is forbidden.
+     */
     public int minPrecedence()
     {
         return minPrecedence.peek().minPrecedence;
@@ -217,6 +229,10 @@ public final class Parser
 
     //----------------------------------------------------------------------------------------------
 
+    /**
+     * Sets the current precedence value for the expression being parsed most recently.
+     * This is safe because inter-expression recursion is forbidden.
+     */
     public void setMinPrecedence(int precedence)
     {
         minPrecedence.peek().minPrecedence = precedence;
@@ -224,6 +240,14 @@ public final class Parser
 
     //----------------------------------------------------------------------------------------------
 
+    /**
+     * If the expression being parsed most recently was entered at {@code position}, unregister
+     * the expression; otherwise sets its current precedence to {@code precedence}.
+     *
+     * This method is necessary because non-left recursion of expressions is done by invoking the
+     * expression at another position. When this call exits, it needs to restore the precedence
+     * that was in effect when it was entered. The initial call needs to unregister the expression.
+     */
     public void exitPrecedence(int precedence, int position)
     {
         Expression.PrecedenceEntry entry = minPrecedence.peek();

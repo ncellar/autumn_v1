@@ -3,13 +3,13 @@ package com.norswap.autumn.test.parsing;
 import com.norswap.autumn.parsing.ParseTree;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.Expression.Operand;
 import com.norswap.autumn.test.Ensure;
 import com.norswap.autumn.test.TestConfiguration;
 import com.norswap.autumn.test.TestRunner;
 import com.norswap.autumn.util.Array;
 
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
-import static com.norswap.autumn.util.Pair.$;
 
 public final class FeatureTests
 {
@@ -239,32 +239,30 @@ public final class FeatureTests
         // TODO: test deepCopy to simplify all these messes
         // TODO: write a way to build trees easily; then equals check to test easily?
 
-        ParsingExpression plus = exprLeftAssociative$(capture("+", sequence(
+        Operand plus = exprLeftAssoc(1, capture("+", sequence(
             capture("left", reference("expr")),
             literal("+"),
             capture("right", reference("expr")))));
 
-        ParsingExpression minus = exprLeftAssociative$(capture("-", sequence(
+        Operand minus = exprLeftAssoc(1, capture("-", sequence(
             capture("left", reference("expr")),
             literal("-"),
             capture("right", reference("expr")))));
 
-        ParsingExpression mult = exprLeftAssociative$(capture("*", sequence(
+        Operand mult = exprLeftAssoc(2, capture("*", sequence(
             capture("left", reference("expr")),
             literal("*"),
             capture("right", reference("expr")))));
 
-        ParsingExpression div = exprLeftAssociative$(capture("/", sequence(
+        Operand div = exprLeftAssoc(2, capture("/", sequence(
             capture("left", reference("expr")),
             literal("/"),
             capture("right", reference("expr")))));
 
         ParsingExpression expr = recursive$("expr", expression(
-            $(plus, 1),
-            $(minus, 1),
-            $(mult, 2),
-            $(div, 2),
-            $(captureText("num", num), 3)));
+            plus, minus,
+            mult, div,
+            exprAlt(3, captureText("num", num))));
 
         Parser parser = TestConfiguration.parser("1+2-3+4*5/6*7+8");
         parser.parse(expr);
@@ -293,32 +291,30 @@ public final class FeatureTests
     {
         // NOTE(norswap): Same as testExpression() but + and - are now right-associative.
 
-        ParsingExpression plus = exprLeftRecursive$(capture("+", sequence(
+        Operand plus = exprLeftRecur(1, capture("+", sequence(
             capture("left", reference("expr")),
             literal("+"),
             capture("right", reference("expr")))));
 
-        ParsingExpression minus = exprLeftRecursive$(capture("-", sequence(
+        Operand minus = exprLeftRecur(1, capture("-", sequence(
             capture("left", reference("expr")),
             literal("-"),
             capture("right", reference("expr")))));
 
-        ParsingExpression mult = exprLeftAssociative$(capture("*", sequence(
+        Operand mult = exprLeftAssoc(2, capture("*", sequence(
             capture("left", reference("expr")),
             literal("*"),
             capture("right", reference("expr")))));
 
-        ParsingExpression div = exprLeftAssociative$(capture("/", sequence(
+        Operand div = exprLeftAssoc(2, capture("/", sequence(
             capture("left", reference("expr")),
             literal("/"),
             capture("right", reference("expr")))));
 
         ParsingExpression expr = recursive$("expr", expression(
-            $(plus, 1),
-            $(minus, 1),
-            $(mult, 2),
-            $(div, 2),
-            $(captureText("num", num), 3)));
+            plus, minus,
+            mult, div,
+            exprAlt(3, captureText("num", num))));
 
         Parser parser = TestConfiguration.parser("1+2-3+4*5/6*7+8");
         parser.parse(expr);
@@ -347,32 +343,30 @@ public final class FeatureTests
     {
         // NOTE(norswap): Same as testExpression() but * and / are now right-associative.
 
-        ParsingExpression plus = exprLeftAssociative$(capture("+", sequence(
+        Operand plus = exprLeftAssoc(1, capture("+", sequence(
             capture("left", reference("expr")),
             literal("+"),
             capture("right", reference("expr")))));
 
-        ParsingExpression minus = exprLeftAssociative$(capture("-", sequence(
+        Operand minus = exprLeftAssoc(1, capture("-", sequence(
             capture("left", reference("expr")),
             literal("-"),
             capture("right", reference("expr")))));
 
-        ParsingExpression mult = exprLeftRecursive$(capture("*", sequence(
+        Operand mult = exprLeftRecur(2, capture("*", sequence(
             capture("left", reference("expr")),
             literal("*"),
             capture("right", reference("expr")))));
 
-        ParsingExpression div = exprLeftRecursive$(capture("/", sequence(
+        Operand div = exprLeftRecur(2, capture("/", sequence(
             capture("left", reference("expr")),
             literal("/"),
             capture("right", reference("expr")))));
 
         ParsingExpression expr = recursive$("expr", expression(
-            $(plus, 1),
-            $(minus, 1),
-            $(mult, 2),
-            $(div, 2),
-            $(captureText("num", num), 3)));
+            plus, minus,
+            mult, div,
+            exprAlt(3, captureText("num", num))));
 
         Parser parser = TestConfiguration.parser("1+2-3+4*5/6*7+8");
         parser.parse(expr);

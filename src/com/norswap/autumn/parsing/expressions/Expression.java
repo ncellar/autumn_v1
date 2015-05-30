@@ -7,11 +7,11 @@ import com.norswap.autumn.parsing.ParsingExpression;
 
 import java.util.Arrays;
 
-public class Expression extends ParsingExpression
+public final class Expression extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static class PrecedenceEntry
+    public final static class PrecedenceEntry
     {
         public Expression expression;
         public int initialPosition;
@@ -20,35 +20,8 @@ public class Expression extends ParsingExpression
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static class Operand
+    public final static class Operand
     {
-        public static Operand regular(ParsingExpression operand, int precedence)
-        {
-            Operand out = new Operand();
-            out.operand = operand;
-            out.precedence = precedence;
-            return out;
-        }
-
-        public static Operand leftRecursive(ParsingExpression operand, int precedence)
-        {
-            Operand out = new Operand();
-            out.operand = operand;
-            out.precedence = precedence;
-            out.leftRecursive = true;
-            return out;
-        }
-
-        public static Operand leftAssociative(ParsingExpression operand, int precedence)
-        {
-            Operand out = new Operand();
-            out.operand = operand;
-            out.precedence = precedence;
-            out.leftRecursive = true;
-            out.leftAssociative = true;
-            return out;
-        }
-
         public ParsingExpression operand;
         public int precedence;
         public boolean leftRecursive;
@@ -57,7 +30,7 @@ public class Expression extends ParsingExpression
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static class DropPrecedence extends ParsingExpression
+    public final static class DropPrecedence extends ParsingExpression
     {
         public ParsingExpression operand;
 
@@ -94,10 +67,16 @@ public class Expression extends ParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /*
-     * Each sub-array holds alternates of similar precedence. The array is sorted in order of
-     * decreasing precedence.
+     * Each sub-array is a group that holds alternates of similar precedence. The array is sorted
+      * in order of decreasing precedence.
      */
     public Operand[][] groups;
+
+    /**
+     * Each sub-array is a sub-group of the corresponding group in {@link #groups}, holding only
+     * the left-recursive operands.
+     */
+    public Operand[][] recursiveGroups;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -109,10 +88,14 @@ public class Expression extends ParsingExpression
         // other Expressions. Formally, any recursion cycle that the Expression is a part of
         // can't contain any LeftRecursive or other Expression nodes.
 
-        OutputChanges changes = input.getSeedChanges(this);
+        // This variable holds the current seed value throughout the function.
+        OutputChanges changes = input.getSeed(this);
 
         if (changes != null)
         {
+            // If this expression is already in the process of being parsed at this position; use
+            // the seed value.
+
             changes.mergeInto(input);
             return;
         }
@@ -124,31 +107,30 @@ public class Expression extends ParsingExpression
         // the expansion of the seed, so don't do it. This is cleared when advancing input position
         // with {@link ParseInput#advance()}.
 
-        int oldFlags = input.flags;
+        final int oldFlags = input.flags;
         input.forbidMemoization();
 
-        int minPrecedence = parser.enterPrecedence(this, input.start);
+        final int minPrecedence = parser.enterPrecedence(this, input.start);
+
+        // Used to sometimes inhibit error reporting.
         boolean report = true;
 
-        // Try the alternates in decreasing order of precedence, memoizing the previous results.
-
-        for (Operand[] group: groups)
+        for (int i = 0; i < groups.length; ++i)
         {
+            Operand[] group = groups[i], recursiveGroup = recursiveGroups[i];
+
             int groupPrecedence = group[0].precedence;
+
+            // This condition, coupled with the subsequent {@link Parser#setMinPrecedence} call,
+            // blocks recursion into alternates of lower precedence. It also blocks recursion into
+            // alternates of the same precedence if the current alternate is left-associative; in
+            // order to prevent right-recursion (left-recursion is handled via the seed).
 
             if (groupPrecedence < minPrecedence)
             {
-                // Block recursing into alternates of lower precedence.
-                // If the current alternate is left-associative, also block its own precedence level
-                // to avoid non-left recursion (if we were in left position, there would have
-                // been a seed).
-
-                // Block non-left-recursion for left-associative alternates.
-                // (If we were in left position, there would have been a seed.)
-
                 if (changes.failed())
                 {
-                    // Bypass error handling; it's unfair to say that the whole expression
+                    // Bypass error handling: it's unfair to say that the whole expression
                     // failed at this position, because maybe a lower precedence operator would
                     // have matched (e.g. prefix operator with higher precedence than a postfix
                     // operator).
@@ -156,79 +138,56 @@ public class Expression extends ParsingExpression
                     report = false;
                 }
 
+                // Because alternates are tried in decreasing order of precedence, we can exit
+                // the loop immediately.
                 break;
             }
 
             parser.setMinPrecedence(
                 groupPrecedence + (group[0].leftAssociative ? 1 : 0));
 
-            Operand[] recursives = Arrays.stream(group)
-                .filter(op -> op.leftRecursive)
-                .toArray(Operand[]::new);
-
-            for (Operand operand: group)
-            {
-                operand.operand.parse(parser, input);
-                changes = input.popSeed();
-
-                if (changes.end >= input.end)
-                {
-                    // In case of either failure or no progress (no left-recursion or left-recursion
-                    // consuming 0 input), revert to the previous seed.
-
-                    input.pushSheed(this, changes);
-                    input.resetAllOutput();
-                    input.forbidMemoization();
-                }
-                else
-                {
-                    changes = new OutputChanges(input);
-                    input.pushSheed(this, changes);
-                    input.resetAllOutput();
-                    input.forbidMemoization();
-                    break;
-                }
-            }
-
-            if (changes.succeeded())
             while (true)
             {
                 OutputChanges oldChanges = changes;
 
-                for (Operand operand: recursives)
+                for (Operand operand: group)
                 {
                     operand.operand.parse(parser, input);
-                    changes = input.popSeed();
 
                     if (changes.end >= input.end)
                     {
-                        // In case of either failure or no progress (no left-recursion or left-recursion
-                        // consuming 0 input), revert to the previous seed.
+                        // This rule couldn't grow the seed, try the next one.
 
-                        input.pushSheed(this, changes);
                         input.resetAllOutput();
                         input.forbidMemoization();
                     }
                     else
                     {
+                        // The seed was grown, try to grow it again startin from the first
+                        // recursive rule.
+
                         changes = new OutputChanges(input);
-                        input.pushSheed(this, changes);
+                        input.setSeed(changes);
                         input.resetAllOutput();
                         input.forbidMemoization();
                         break;
                     }
                 }
 
+                // If no rule could grow the seed, exit the loop.
                 if (oldChanges.end >= changes.end)
                 {
                     changes = oldChanges;
                     break;
                 }
+
+                // Non-left recursive rules will not yield longer matches, so no use trying them.
+                group = recursiveGroup;
             }
         }
 
-        changes.mergeInto(input);
         input.flags = oldFlags;
+        changes.mergeInto(input);
         input.popSeed();
         parser.exitPrecedence(minPrecedence, input.start);
 

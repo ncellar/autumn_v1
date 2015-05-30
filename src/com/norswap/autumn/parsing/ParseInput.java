@@ -65,7 +65,10 @@ public final class ParseInput
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public OutputChanges getSeedChanges(ParsingExpression pe)
+    /**
+     * Gets the seed for the given expression, if any; otherwise returns null.
+     */
+    public OutputChanges getSeed(ParsingExpression pe)
     {
         if (seeds == null)
         {
@@ -85,6 +88,9 @@ public final class ParseInput
 
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * Adds a seed for the given expression.
+     */
     public void pushSheed(ParsingExpression pe, OutputChanges changes)
     {
         if (seeds == null)
@@ -95,8 +101,22 @@ public final class ParseInput
         seeds.push(new Seed(pe, changes));
     }
 
+
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * Sets the seed of the innermost left-recursion or exression cluster being parsed.
+     */
+    public void setSeed(OutputChanges changes)
+    {
+        seeds.peek().changes = changes;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Removes the seed of the innermost left-recursive or expression cluster being parsed.
+     */
     public OutputChanges popSeed()
     {
         return seeds.pop().changes;

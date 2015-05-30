@@ -1,22 +1,17 @@
 --------------------------------------------------------------------------------
 TODO
 
-- DROP
-
-- comment expression code
 - make parseDumb take a parser instead of a text and see if making token work with dumb
   and putting much more dumbness in the grammar can improve things
+
 - improve diagnostics ("unexpected X" ?)
-- getSeed and setSeed instead of popSeed / pushSeed ?
+
 - left-recursion handling via Resolver / via SingleResolver?
 - make dumb expression faster via a backtracking DPDA
 - left-recur & expression: why do we need to reset ALL output (including cuts)?
 
 - implement deepcopy for all expressions
 - test deepcopy & simplify tests with it
-
-- exprLeftRecursive & exprLeftAssociative ?
-- add an expression alternate expression?
 
 - see FeatureTests TODOs
 
@@ -30,12 +25,15 @@ TODO LATER
 - retool Trace for added flexibility
 - retool InstrumentExpression to extract common pattern
 - StackTrace as a special case of Trace
+- remove grouped capture, supply filtering and partitioning operators instead
+
+--------------------------------------------------------------------------------
+TODO MUCH LATER
+
 - scala/clojure combinators?
 - parser generator?
 - think about how a parser could be retooled to parser html
   (which is lax in syntax) -> need to define bounding boxes
-
-- remove grouped capture, supply filtering and partitioning operators instead
 
 --------------------------------------------------------------------------------
 NOTES

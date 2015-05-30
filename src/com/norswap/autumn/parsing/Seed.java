@@ -3,7 +3,7 @@ package com.norswap.autumn.parsing;
 public final class Seed
 {
     public final ParsingExpression expression;
-    public final OutputChanges changes;
+    public OutputChanges changes;
 
     public Seed(ParsingExpression expression, OutputChanges changes)
     {

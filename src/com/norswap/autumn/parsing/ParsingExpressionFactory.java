@@ -118,39 +118,15 @@ public final class ParsingExpressionFactory
                 .toArray(Operand[]::new))
             .toArray(Operand[][]::new);
 
-        Expression result = new Expression();
-        result.groups = groups;
-        return result;
-    }
-
-    // TODO delete
-    @SafeVarargs
-    public static Expression expression(Pair<ParsingExpression, Integer>... operands)
-    {
-        // Partition the alternates by precedence and sort in descending order of precedence.
-        // Within each group, the order of alternates is preserved.
-
-        Operand[][] groups = Arrays.stream(operands)
-            .collect(Collectors.groupingBy(x -> x.b))
-            .entrySet()
-            .stream()
-            .sorted((x, y) -> y.getKey() - x.getKey())
-            .map(e -> e
-                .getValue()
-                .stream()
-                .map(pair -> {
-                    Operand op = new Operand();
-                    op.precedence = pair.b;
-                    op.operand = pair.a;
-                    op.leftAssociative = pair.a.hasFlagsSet(PEF_EXPR_LEFT_ASSOC);
-                    op.leftRecursive = pair.a.hasFlagsSet(PEF_EXPR_LEFT_RECUR);
-                    return op;
-                })
+        Operand[][] recursiveGroups = Arrays.stream(groups)
+            .map(group -> Arrays.stream(group)
+                .filter(op -> op.leftRecursive)
                 .toArray(Operand[]::new))
             .toArray(Operand[][]::new);
 
         Expression result = new Expression();
         result.groups = groups;
+        result.recursiveGroups = recursiveGroups;
         return result;
     }
 
@@ -164,6 +140,33 @@ public final class ParsingExpressionFactory
     public static Expression.DropPrecedence exprDropPrecedence(ParsingExpression... seq)
     {
         return exprDropPrecedence(sequence(seq));
+    }
+
+    public static Expression.Operand exprAlt(int precedence, ParsingExpression operand)
+    {
+        Operand op = new Operand();
+        op.operand = operand;
+        op.precedence = precedence;
+        return op;
+    }
+
+    public static Expression.Operand exprLeftRecur(int precedence, ParsingExpression operand)
+    {
+        Operand op = new Operand();
+        op.operand = operand;
+        op.precedence = precedence;
+        op.leftRecursive = true;
+        return op;
+    }
+
+    public static Expression.Operand exprLeftAssoc(int precedence, ParsingExpression operand)
+    {
+        Operand op = new Operand();
+        op.operand = operand;
+        op.precedence = precedence;
+        op.leftRecursive = true;
+        op.leftAssociative = true;
+        return op;
     }
 
     public static Literal literal(String string)
@@ -362,28 +365,6 @@ public final class ParsingExpressionFactory
     {
         pe.setFlags(Registry.PEF_ERROR_RECORDING);
         return pe;
-    }
-
-    public static ParsingExpression exprLeftAssociative$(ParsingExpression operand)
-    {
-        operand.setFlags(PEF_EXPR_LEFT_ASSOC | PEF_EXPR_LEFT_RECUR);
-        return operand;
-    }
-
-    public static ParsingExpression exprLeftAssociative$(ParsingExpression... seq)
-    {
-        return exprLeftAssociative$(sequence(seq));
-    }
-
-    public static ParsingExpression exprLeftRecursive$(ParsingExpression operand)
-    {
-        operand.setFlags(PEF_EXPR_LEFT_RECUR);
-        return operand;
-    }
-
-    public static ParsingExpression exprLeftRecursive$(ParsingExpression... seq)
-    {
-        return exprLeftRecursive$(sequence(seq));
     }
 
     public static ParsingExpression named$(String name, ParsingExpression pe)
