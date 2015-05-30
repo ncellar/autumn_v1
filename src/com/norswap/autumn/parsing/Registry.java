@@ -45,6 +45,12 @@ public final class Registry
     public static final int PEH_NAME
         = ParsingExpressionHandleFactory.next();
 
+    /**
+     * (For {@code Expression} alternates only) Fetches the precedence of the alternate.
+     */
+    public static final int PEH_EXPR_PRECEDENCE
+        = ParsingExpressionHandleFactory.next();
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // PARSING EXPRESSION FLAGS (PEF)
 
@@ -75,6 +81,19 @@ public final class Registry
     public static final int PEF_RESOLVED
         = ParsingExpressionFlagsFactory.next();
 
+    /**
+     * (For {@code Expression} alternates only) Indicates that the alternate is left-recursive.
+     */
+    public static final int PEF_EXPR_LEFT_RECUR
+        = ParsingExpressionFlagsFactory.next();
+
+    /**
+     * (For {@code Expression} alternates only) Indicates that the alternate is left-associative.
+     * Requires {@link #PEF_EXPR_LEFT_RECUR} to be present.
+     */
+    public static final int PEF_EXPR_LEFT_ASSOC
+        = ParsingExpressionFlagsFactory.next();
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // PARSING INPUT FLAGS (PIF)
 
@@ -91,7 +110,6 @@ public final class Registry
      */
     public static final int PIF_DONT_RECORD_ERRORS
         = ParsingInputFlagsFactory.next();
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // PARSING INPUT HANDLES (PIH)

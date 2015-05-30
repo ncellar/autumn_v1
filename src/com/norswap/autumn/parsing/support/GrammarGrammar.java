@@ -1,6 +1,10 @@
 package com.norswap.autumn.parsing.support;
 
 import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.util.Pair;
+
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
 
@@ -82,10 +86,19 @@ public final class GrammarGrammar
     until       = token(literal("*+")),
     aloUntil    = token(literal("++")),
     colEqual    = token(literal(":=")),
+    arrow       = token(literal("->")),
 
-    digit       = charRange('0', '9'),
-    hexDigit    = choice(digit, charRange('a', 'f'), charRange('A', 'F')),
-    letter      = choice(charRange('a', 'z'), charRange('A', 'Z')),
+    digit         = charRange('0', '9'),
+    hexDigit      = choice(digit, charRange('a', 'f'), charRange('A', 'F')),
+    letter        = choice(charRange('a', 'z'), charRange('A', 'Z')),
+    letterOrDigit = choice(letter, digit),
+
+    num           = token(oneMore(digit)),
+
+    exprLit       = token(literal("expr"), not(letterOrDigit)),
+    dropLit       = token(literal("drop"), not(letterOrDigit)),
+    left_assoc    = token(literal("left_assoc"), not(letterOrDigit)),
+    left_recur    = token(literal("left_recur"), not(letterOrDigit)),
 
     escape = named$("escape", choice(
         sequence(literal("\\u"), hexDigit, hexDigit, hexDigit, hexDigit),
@@ -117,7 +130,7 @@ public final class GrammarGrammar
         literal("\""))),
 
     diagName    = named$("diagName", token(literal("<"), until(character, literal(">")))),
-    name        = named$("name", token(letter, zeroMore(choice(letter, digit)))),
+    name        = named$("name", token(letter, zeroMore(letterOrDigit))),
 
     onFail = named$("onFail", capture("onFail", sequence(
         tilda,
@@ -131,8 +144,9 @@ public final class GrammarGrammar
         optional(capture("name", name)),
         rBrace))),
 
-    primary = named$("primary", choice(
+    primary = recursive$("primary", choice(
         sequence(lParen, reference("choice"), rParen),
+        capture("drop", sequence(dropLit, reference("primary"))),
         captureText("ref", name),
         capture("any", underscore),
         capture("charRange", range),
@@ -153,19 +167,38 @@ public final class GrammarGrammar
         capture("not", sequence(bang, suffixed)),
         suffixed)),
 
-    sequence    = named$("sequence", capture("sequence", oneMore(prefixed))),
-    choice      = recursive$("choice", capture("choice", aloSeparated(sequence, slash))),
+    sequence = named$("sequence", capture("sequence", oneMore(prefixed))),
+
+    exprAnnotation = sequence(literal("@"),
+        choice(
+            captureText("precedence", num),
+            capture("increment", plus),
+            capture("same", equal),
+            capture("left_assoc", left_assoc),
+            capture("left_recur", left_recur))),
+
+    expr = named$("expr", capture("expr", sequence(
+        exprLit,
+        oneMore(captureGrouped("alts", sequence(
+            arrow, sequence,
+            oneMore (captureGrouped("annotations", exprAnnotation)))))))),
+
+    choice = recursive$("choice", capture("choice", aloSeparated(
+        choice(expr, sequence),
+        slash))),
 
     ruleRhs = named$("ruleRhs", aloSeparated(
-        captureGrouped("alts", sequence(sequence, optional(onSucc), optional(onFail))),
+        captureGrouped("alts", sequence(
+            choice(expr, sequence),
+            optional(onSucc), optional(onFail))),
         slash)),
 
     rule = named$("rule", sequence(
         captureText("ruleName", name),
+        optional(capture("dumb", literal("!"))),
         choice(equal, capture("token", colEqual)),
         ruleRhs,
         optional(diagName), semi)),
 
-    grammar = named$("grammar",
-        sequence(whitespace(), oneMore(captureGrouped("rules", rule))));
+    grammar = named$("grammar", oneMore(captureGrouped("rules", rule)));
 }

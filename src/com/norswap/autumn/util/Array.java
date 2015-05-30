@@ -126,20 +126,14 @@ public final class Array<T> implements Iterable<T>, Cloneable
 
     public void addAll(Collection<? extends T> collection)
     {
-        for (T t: collection)
-        {
-            add(t);
-        }
+        collection.forEach(this::add);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public void addAll(Array<? extends T> array)
     {
-        for (int i = 0; i < array.size(); ++i)
-        {
-            add(array.get(i));
-        }
+        array.forEach(this::add);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -158,13 +152,30 @@ public final class Array<T> implements Iterable<T>, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
+    public T popOrNull()
+    {
+        return next == 0 ? null : pop();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public T peek()
+    {
+        return Caster.cast(array[next - 1]);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public T peekOrNull()
+    {
+        return next == 0 ? null : peek();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     public void remove(int index)
     {
-        for (int i = index + 1; i < next; ++i)
-        {
-            array[i - 1] = array[i];
-        }
-
+        System.arraycopy(array, index + 1, array, index, next - index - 1);
         --next;
     }
 
@@ -249,14 +260,7 @@ public final class Array<T> implements Iterable<T>, Cloneable
 
     public Iterable<T> reverseIterable()
     {
-        return new Iterable<T>()
-        {
-            @Override
-            public Iterator<T> iterator()
-            {
-                return reverseIterator();
-            }
-        };
+        return this::reverseIterator;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -307,6 +311,7 @@ public final class Array<T> implements Iterable<T>, Cloneable
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
+    @SuppressWarnings("unchecked")
     public Array<T> clone()
     {
         return new Array(array.clone(), next);

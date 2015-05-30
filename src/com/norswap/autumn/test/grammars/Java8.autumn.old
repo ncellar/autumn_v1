@@ -703,13 +703,11 @@ ConstructorModifier
 ConstructorBody
     = LWING ExplicitConstructorInvocation? BlockStatements? RWING ;
 
-// TODO: I change this to put expression
-// http://stackoverflow.com/questions/2831484
-
 ExplicitConstructorInvocation
     = TypeArguments? THIS Arguments SEMI
     / TypeArguments? SUPER Arguments SEMI
-    / Expression DOT TypeArguments? SUPER Arguments SEMI
+    / Primary DOT TypeArguments? SUPER Arguments SEMI
+    / QualIdent DOT TypeArguments? SUPER Arguments SEMI
     ;
 
 //-------------------------------------------------------------------------
@@ -857,10 +855,8 @@ ElementValuePairList
 ElementValuePair
     = Identifier EQU ElementValue ;
 
-// TODO expression can't be an assignment
-
 ElementValue
-    = Expression
+    = ConditionalExpression
     / ElementValueArrayInitializer
     / Annotation
     ;
@@ -944,8 +940,20 @@ Statement
     / Identifier COLON Statement
     ;
 
-ParExpression
-    = LPAR Expression RPAR ;
+//-------------------------------------------------------------------------
+//  JLS 14.8  Expression Statements
+//
+//  Each of MethodInvocation and ClassInstanceCreationExpression
+//  can be a prefix of the other one. Until a solution is found,
+//  they are replaced by Primary.
+//-------------------------------------------------------------------------
+
+StatementExpression
+    = Assignment
+    / (INC / DEC)(Primary / QualIdent)
+    / (Primary / QualIdent)(INC / DEC)
+    / Primary
+    ;
 
 //-------------------------------------------------------------------------
 //  JLS 14.11  The SWITCH Statement
@@ -961,7 +969,7 @@ SwitchLabels
     = SwitchLabel SwitchLabel* ;
 
 SwitchLabel
-    = CASE (Expression / EnumConstantName) COLON
+    = CASE (ConstantExpression / EnumConstantName) COLON
     / DEFAULT COLON
     ;
 
@@ -1026,6 +1034,68 @@ Resource
 //=========================================================================
 //  JLS 15  Expressions
 //=========================================================================
+//-------------------------------------------------------------------------
+//  JLS 15.2  Forms of Expression
+//-------------------------------------------------------------------------
+
+Expression
+    = LambdaExpression
+    / AssignmentExpression
+    ;
+
+//-------------------------------------------------------------------------
+//  JLS 15.8  Primary Expression
+//-------------------------------------------------------------------------
+
+Primary
+    = PrimaryBase PrimaryRest* ;
+
+PrimaryBase
+    = THIS
+    / Literal
+    / ParExpression
+    / SUPER
+      ( DOT TypeArguments? Identifier Arguments  // MethodInvocation
+      / DOT Identifier  // FieldAccess
+      / COLONCOLON TypeArguments? Identifier      // MethodReference
+      )
+    / NEW
+      ( ClassCreator  // Class creation
+      / ArrayCreator  // Array creation
+      )
+    / QualIdent
+      ( LBRK Expression RBRK // ArrayAccess
+      / Arguments  // MethodInvocation
+      / DOT
+        ( THIS
+        / NEW ClassCreator  // Class creation
+        / TypeArguments Identifier Arguments  // MethodInvocation
+        / SUPER DOT TypeArguments? Identifier Arguments  // MethodInvocation
+        / SUPER DOT Identifier // FieldAccess
+        / SUPER COLONCOLON TypeArguments? Identifier  // MethodReference
+        )
+      / (LBRK RBRK)* DOT CLASS
+      / COLONCOLON TypeArguments? Identifier  // MethodReference
+      )
+    / VOID DOT CLASS
+    / BasicType (LBRK RBRK)* DOT CLASS
+    / ReferenceType COLONCOLON TypeArguments? Identifier  // MethodReference
+    / ClassType COLONCOLON TypeArguments? NEW  // MethodReference
+    / ArrayType COLONCOLON NEW  // MethodReference
+    ;
+
+PrimaryRest
+    = DOT
+      ( TypeArguments? Identifier Arguments  // MethodInvocation
+      / Identifier  // FieldAccess
+      / NEW ClassCreator  // Class creation
+      )
+    / LBRK Expression RBRK  // ArrayAccess
+    / COLONCOLON TypeArguments? Identifier  // MethodReference
+    ;
+
+ParExpression
+    = LPAR Expression RPAR ;
 
 //-------------------------------------------------------------------------
 //  JLS 15.9  Class Instance Creation Expressions
@@ -1067,6 +1137,107 @@ ArgumentList
     = Expression (COMMA Expression)* ;
 
 //-------------------------------------------------------------------------
+//  JLS 15.15  Unary Operators
+//-------------------------------------------------------------------------
+
+UnaryExpression
+    = (INC / DEC)(Primary / QualIdent)
+    / PLUS UnaryExpression
+    / MINUS UnaryExpression
+    / UnaryExpressionNotPlusMinus
+    ;
+
+UnaryExpressionNotPlusMinus
+    = TILDE UnaryExpression
+    / BANG UnaryExpression
+    / CastExpression
+    / (Primary / QualIdent) (INC / DEC)?
+    ;
+
+//-------------------------------------------------------------------------
+//  JLS 15.16  Cast Expressions
+//-------------------------------------------------------------------------
+
+CastExpression
+    = LPAR PrimitiveType RPAR UnaryExpression
+    / LPAR ReferenceType AdditionalBound* RPAR LambdaExpression
+    / LPAR ReferenceType AdditionalBound* RPAR UnaryExpressionNotPlusMinus
+    ;
+
+//-------------------------------------------------------------------------
+//  JLS 15.17-24 Infix Expression
+//-------------------------------------------------------------------------
+
+InfixExpression
+    = UnaryExpression
+          ((InfixOperator UnaryExpression) / (INSTANCEOF ReferenceType))* ;
+
+InfixOperator
+    = OROR
+    / ANDAND
+    / OR
+    / HAT
+    / AND
+    / EQUAL
+    / NOTEQUAL
+    / LT
+    / GT
+    / LE
+    / GE
+    / SL
+    / SR
+    / BSR
+    / PLUS
+    / MINUS
+    / STAR
+    / DIV
+    / MOD
+    ;
+
+//-------------------------------------------------------------------------
+//  JLS 15.25  Conditional Operator ? :
+//-------------------------------------------------------------------------
+
+ConditionalExpression
+    = InfixExpression (QUERY Expression COLON Expression)* ;
+
+//-------------------------------------------------------------------------
+//  JLS 15.26  Assignment Operators
+//
+//  Each of ArrayAccess and FieldAccess in LeftHandSide
+//  can be a prefix of the other one.
+//  Until a solution is found, they are replaced by Primary.
+//-------------------------------------------------------------------------
+
+AssignmentExpression
+    = Assignment
+    / ConditionalExpression
+    ;
+
+Assignment
+    = LeftHandSide AssignmentOperator Expression ;
+
+LeftHandSide
+    = Primary
+    / QualIdent
+    ;
+
+AssignmentOperator
+    = EQU
+    / STAREQU
+    / DIVEQU
+    / MODEQU
+    / PLUSEQU
+    / MINUSEQU
+    / SLEQU
+    / SREQU
+    / BSREQU
+    / ANDEQU
+    / HATEQU
+    / OREQU
+    ;
+
+//-------------------------------------------------------------------------
 //  JLS 15.27  Lambda Expressions
 //-------------------------------------------------------------------------
 
@@ -1087,118 +1258,11 @@ LambdaBody
     / Block
     ;
 
-// ===============================================================================
+//-------------------------------------------------------------------------
+//  JLS 15.28  Constant Expressions
+//-------------------------------------------------------------------------
 
-Expression = expr
-
-    -> Assignment2              @1 @left_recur
-    -> LambdaExpression         @=
-    -> ConditionalExpression2   @+ @left_recur
-
-    // BINARY OPERATORS
-
-    -> Expression OROR       Expression @+ @left_assoc
-    -> Expression ANDAND     Expression @+ @left_assoc
-    -> Expression OR         Expression @+ @left_assoc
-    -> Expression HAT        Expression @+ @left_assoc
-    -> Expression AND        Expression @+ @left_assoc
-
-    -> Expression EQUAL      Expression @+ @left_assoc
-    -> Expression NOTEQUAL   Expression @= @left_assoc
-
-    -> Expression LE         Expression @+ @left_assoc
-    -> Expression GE         Expression @= @left_assoc
-    -> Expression LT         Expression @= @left_assoc
-    -> Expression GT         Expression @= @left_assoc
-    -> Expression INSTANCEOF Expression @= @left_assoc
-
-    -> Expression SL         Expression @+ @left_assoc
-    -> Expression SR         Expression @= @left_assoc
-    -> Expression BSR        Expression @= @left_assoc
-
-    -> Expression PLUS       Expression @+ @left_assoc
-    -> Expression MINUS      Expression @= @left_assoc
-
-    -> Expression STAR       Expression @+ @left_assoc
-    -> Expression DIV        Expression @= @left_assoc
-    -> Expression MOD        Expression @= @left_assoc
-
-    // PREFIX OPERATORS
-
-    -> INC   Expression @+
-    -> DEC   Expression @=
-    -> PLUS  Expression @=
-    -> MINUS Expression @=
-    -> TILDE Expression @=
-    -> BANG  Expression @=
-    -> CastExpression2  @=
-
-    // POSTFIX EXPRESSIONS
-
-    -> Expression INC                                       @+ @left_assoc
-    -> Expression DEC                                       @= @left_assoc
-    -> Expression DOT TypeArguments Identifier drop Arguments    @= @left_assoc // Method Invocation
-    -> Expression drop Arguments                                 @= @left_assoc // Method Invocation
-    -> Expression DOT Identifier                            @= @left_assoc
-    -> Expression DOT NEW drop ClassCreator                      @= @left_assoc
-    -> Expression DOT THIS                                  @= @left_assoc
-    -> Expression DOT SUPER                                 @= @left_assoc
-    -> Expression DOT CLASS                                 @= @left_assoc
-    -> Expression LBRK drop Expression RBRK                 @= @left_assoc // Array Access
-    -> Expression COLONCOLON TypeArguments? Identifier      @= @left_assoc // Instance Method Ref
-    -> Expression COLONCOLON TypeArguments? NEW             @= @left_assoc // New Method Ref
-
-    // POSTFIX TYPES
-
-    -> Expression TypeArguments @= @left_assoc
-    -> Expression LBRK RBRK     @= @left_assoc
-
-    // PRIMARY EXPRESSIONS
-
-    -> LPAR drop Expression RPAR            @+
-    -> THIS Arguments                       @=
-    -> THIS                                 @=
-    -> SUPER Arguments                      @=
-    -> SUPER                                @=
-    -> NEW drop (ClassCreator / ArrayCreator)    @=
-    -> Identifier                           @=
-    -> Literal                              @=
-
-    // PRIMARY TYPES
-
-    -> BasicType    @=
-    -> VOID         @=
-    ;
-
-ConditionalExpression2
-    = Expression QUERY drop Expression COLON (LambdaExpression / Expression) ;
-
-CastExpression2
-    = LPAR (ReferenceType AdditionalBound* / PrimitiveType) RPAR (LambdaExpression / Expression) ;
-
-// TODO make LVALUE rule
-
-// TODO make more precise on the left hand side
-Assignment2
-    = Expression AssignmentOperator Expression ;
-
-AssignmentOperator
-    = EQU
-    / STAREQU
-    / DIVEQU
-    / MODEQU
-    / PLUSEQU
-    / MINUSEQU
-    / SLEQU
-    / SREQU
-    / BSREQU
-    / ANDEQU
-    / HATEQU
-    / OREQU
-    ;
-
-// TODO: precise: assignment | inc/dec | method call, construction, constructor call
-StatementExpression
+ConstantExpression
     = Expression ;
 
-
+Test = QualIdent LBRK Expression RBRK;

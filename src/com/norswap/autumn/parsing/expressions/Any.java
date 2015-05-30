@@ -43,7 +43,7 @@ public final class Any extends ParsingExpression
     @Override
     public void appendTo(StringBuilder builder)
     {
-        builder.append("any");
+        builder.append("any()");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

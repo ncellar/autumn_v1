@@ -24,7 +24,8 @@ public class ParboiledBench
     public static void main(String[] args) throws IOException
     {
         ParboiledJava6Parser parser = Parboiled.createParser(ParboiledJava6Parser.class);
-        Rule root = parser.CompilationUnit().suppressNode(); // we want to see the parse-tree-less performance
+        //Rule root = parser.CompilationUnit().suppressNode(); // don't build parse tree
+        Rule root = parser.CompilationUnit();
 
         Instant start = Instant.now();
         parseDirectory("../guava", root);

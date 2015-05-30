@@ -1,7 +1,9 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.*;
-import com.norswap.autumn.util.Array;
+import com.norswap.autumn.parsing.OutputChanges;
+import com.norswap.autumn.parsing.ParseInput;
+import com.norswap.autumn.parsing.Parser;
+import com.norswap.autumn.parsing.ParsingExpression;
 
 public final class LeftRecursive extends ParsingExpression
 {
@@ -19,12 +21,10 @@ public final class LeftRecursive extends ParsingExpression
 
         if (changes != null)
         {
-            // There is a seed, use it.
-
             changes.mergeInto(input);
             return;
         }
-        else if (leftAssociative && parser.isLeftAssociative(this))
+        else if (leftAssociative && parser.isBlocked(this))
         {
             // Recursion is blocked in a left-associative expression when not in left
             // position (if we were in left position, there would have been a seed).
@@ -35,34 +35,26 @@ public final class LeftRecursive extends ParsingExpression
             return;
         }
 
-        // Push a failed changeset as initial seed.
-
-        if (input.seeds == null)
-        {
-            input.seeds = new Array<>();
-        }
-
-        input.seeds.push(new Seed(this, OutputChanges.failure()));
+        input.pushSheed(this, OutputChanges.failure());
 
         if (leftAssociative)
         {
-            parser.pushLeftAssociative(this);
+            parser.pushBlocked(this);
         }
 
         // If we're in a left-recursive position, relying on memoized values will prevent
         // the expansion of the seed, so don't do it. This is cleared when advancing input position
         // with {@link ParseInput#advance()}.
+
         int oldFlags = input.flags;
         input.forbidMemoization();
 
-        // Keep parsing the operand, as long as the seed keeps growing.
+        // Keep parsing the operand, as long as long as the seed keeps growing.
 
         while (true)
         {
             operand.parse(parser, input);
-            OutputChanges oldChanges = input.seeds.pop().changes;
-            // TODO remove
-            //System.err.println("||" + oldChanges.tree);
+            OutputChanges oldChanges = input.popSeed();
 
             if (oldChanges.end >= input.end)
             {
@@ -78,8 +70,9 @@ public final class LeftRecursive extends ParsingExpression
             {
                 // Update the seed and retry the rule.
 
-                input.seeds.push(new Seed(this, new OutputChanges(input)));
+                input.pushSheed(this, new OutputChanges(input));
                 input.resetAllOutput();
+                input.forbidMemoization();
             }
         }
 
@@ -90,7 +83,7 @@ public final class LeftRecursive extends ParsingExpression
 
         if (leftAssociative)
         {
-            parser.popLeftAssociative();
+            parser.popBlocked();
         }
     }
 

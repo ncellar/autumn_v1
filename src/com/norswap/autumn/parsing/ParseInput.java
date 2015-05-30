@@ -85,6 +85,25 @@ public final class ParseInput
 
     // ---------------------------------------------------------------------------------------------
 
+    public void pushSheed(ParsingExpression pe, OutputChanges changes)
+    {
+        if (seeds == null)
+        {
+            seeds = new Array<>();
+        }
+
+        seeds.push(new Seed(pe, changes));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public OutputChanges popSeed()
+    {
+        return seeds.pop().changes;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     public void advance()
     {
         if (end > start)
@@ -121,6 +140,8 @@ public final class ParseInput
         {
             tree.children.truncate(treeChildrenCount);
         }
+
+        // Of course, we don't reset cuts; they are only meaningful in case of failure!
     }
 
     // ---------------------------------------------------------------------------------------------

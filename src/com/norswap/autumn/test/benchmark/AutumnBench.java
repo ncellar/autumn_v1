@@ -25,6 +25,8 @@ public class AutumnBench
 
     public static void main(String[] args) throws IOException
     {
+        //System.in.read();
+
         Instant start = Instant.now();
 
         ParsingExpression[] rules = GrammarDriver.compile(grammarFile);
@@ -40,6 +42,7 @@ public class AutumnBench
             .findFirst().get();
 
         start = Instant.now();
+        //parseDirectory("../guava/guava/src/com/google/common/base/", root, whitespace);
         parseDirectory("../guava", root, whitespace);
         end = Instant.now();
         System.out.println("Guava parsed in: " + Duration.between(start, end));
@@ -74,7 +77,7 @@ public class AutumnBench
 
             if (parser.succeeded())
             {
-                //System.err.println(filename);
+                //System.err.println(file);
                 //System.out.println(parser.tree());
             }
             else
@@ -82,6 +85,7 @@ public class AutumnBench
                 System.err.println(file);
                 parser.report();
                 System.err.println();
+                throw new Error("stop!");
             }
         }
         catch (IOException e)

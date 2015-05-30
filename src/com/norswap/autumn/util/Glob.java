@@ -21,7 +21,7 @@ public class Glob
     public static Iterable<Path> glob(String pattern, Path directory) throws IOException
     {
         PathMatcher matcher =
-            FileSystems.getDefault().getPathMatcher("glob:" + directory + "/" + pattern);
+            FileSystems.getDefault().getPathMatcher("glob:" + pattern);
 
         ArrayList<Path> result = new ArrayList<>();
 

@@ -7,6 +7,12 @@ import com.norswap.autumn.parsing.ParsingExpression;
 
 import static com.norswap.autumn.parsing.Registry.*; // PEF_*
 
+/**
+ * Invokes its operand on the input, succeeding if the operand does, with the same end position.
+ *
+ * On success, adds a new child node to the current parse tree node whose name is {@link #name}.
+ * This node becomes the current parse tree node for the invocation of the operand.
+ */
 public final class Capture extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -20,8 +26,7 @@ public final class Capture extends ParsingExpression
     public void parse(Parser parser, ParseInput input)
     {
         ParseTree oldTree = input.tree;
-        ParseTree newTree = new ParseTree();
-        newTree.name = name;
+        ParseTree newTree = new ParseTree(name);
         int oldCount = input.treeChildrenCount;
 
         input.tree = newTree;
@@ -45,10 +50,8 @@ public final class Capture extends ParsingExpression
 
             if (shouldCaptureText())
             {
-                int end = input.blackEnd;
-
                 newTree.value = parser.text
-                    .subSequence(input.start, end)
+                    .subSequence(input.start, input.blackEnd)
                     .toString();
             }
         }
@@ -59,9 +62,9 @@ public final class Capture extends ParsingExpression
     @Override
     public void appendTo(StringBuilder builder)
     {
-        builder.append("capture(");
+        builder.append("capture(\"");
         builder.append(name);
-        builder.append(", ");
+        builder.append("\", ");
         operand.toString(builder);
         builder.append(")");
     }

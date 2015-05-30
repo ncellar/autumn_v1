@@ -28,6 +28,7 @@ public final class OneMore extends ParsingExpression
 
         if (down.failed())
         {
+            input.resetOutput();
             parser.fail(this, input);
             return;
         }

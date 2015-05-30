@@ -1,6 +1,6 @@
 package com.norswap.autumn.util;
 
-public final class HandleMap
+public final class HandleMap implements DeepCopy
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -120,6 +120,45 @@ public final class HandleMap
                 array[getIndex(entry.handle)] = entry;
             }
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public HandleMap clone()
+    {
+        HandleMap clone = Caster.cast(Exceptions.swallow(() -> super.clone()));
+        clone.array = array.clone();
+        return clone;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public HandleMap deepCopy()
+    {
+        HandleMap copy = clone();
+
+        for (int i = 0; i < copy.array.length; ++i)
+        {
+            Entry e = copy.array[i];
+
+            if (e.value instanceof DeepCopy)
+            {
+                copy.array[i] = new Entry(e.handle, ((DeepCopy)e.value).deepCopy());
+            }
+            else if (e.value instanceof Cloneable)
+            {
+                copy.array[i] = new Entry(e.handle, Exceptions.swallow(() ->
+                    e.value.getClass().getMethod("clone").invoke(e.value)));
+            }
+            else
+            {
+                copy.array[i] = new Entry(e.handle, e.value);
+            }
+        }
+
+        return copy;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

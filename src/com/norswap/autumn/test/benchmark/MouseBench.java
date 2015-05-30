@@ -29,7 +29,8 @@ public class MouseBench
 
     private static void parseDirectory(String directory, MouseJava8Parser parser) throws IOException
     {
-        for (Path path: Glob.glob("**/*.java", new File(directory).toPath()))
+        System.err.println(new File(directory).getCanonicalPath());
+        for (Path path: Glob.glob("**/*.java", new File(directory).getCanonicalFile().toPath()))
         {
             parseFile(path.toString(), parser);
         }

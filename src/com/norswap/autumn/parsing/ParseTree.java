@@ -21,6 +21,15 @@ public final class ParseTree implements Iterable<ParseTree>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    public ParseTree(){}
+
+    public ParseTree(String name)
+    {
+        this.name = name;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     public int childrenCount()
     {
         return children == null
@@ -68,9 +77,8 @@ public final class ParseTree implements Iterable<ParseTree>
 
         if (container == null)
         {
-            container = new ParseTree();
+            container = new ParseTree(child.name);
             container.grouped = true;
-            container.name = child.name;
             container.children = new Array<>();
             children.add(container);
         }
@@ -275,7 +283,7 @@ public final class ParseTree implements Iterable<ParseTree>
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public Iterator iterator()
+    public Iterator<ParseTree> iterator()
     {
         return children != null
             ? children.iterator()

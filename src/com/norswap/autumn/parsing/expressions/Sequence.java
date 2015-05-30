@@ -23,7 +23,7 @@ public final class Sequence extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseInput input)
     {
-        final ParseInput down = new ParseInput(input);
+        ParseInput down = new ParseInput(input);
 
         for (ParsingExpression operand : operands)
         {
@@ -35,8 +35,7 @@ public final class Sequence extends ParsingExpression
             }
             else
             {
-                // TODO should we do this? >> also apply in ZeroMore, OneMore
-                // input.resetOutput();
+                input.resetOutput();
                 parser.fail(this, input);
                 return;
             }

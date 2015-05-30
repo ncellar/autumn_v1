@@ -1,8 +1,10 @@
 package com.norswap.autumn.parsing;
 
+import com.norswap.autumn.parsing.expressions.Expression;
 import com.norswap.autumn.parsing.expressions.LeftRecursive;
 import com.norswap.autumn.util.Array;
 import com.norswap.autumn.util.HandleMap;
+import com.norswap.autumn.util.Pair;
 
 public final class Parser
 {
@@ -16,7 +18,9 @@ public final class Parser
 
     private ParseTree tree;
 
-    private Array<LeftRecursive> leftAssociatives;
+    private Array<LeftRecursive> blocked;
+
+    private Array<Expression.PrecedenceEntry> minPrecedence;
 
     private int endPosition;
     
@@ -49,7 +53,9 @@ public final class Parser
      */
     public void parse(ParsingExpression pe)
     {
-        this.leftAssociatives = new Array<>();
+        this.blocked = new Array<>();
+        this.minPrecedence = new Array<>();
+
         ParseInput rootInput = ParseInput.root();
         rootInput.tree = tree = new ParseTree();
 
@@ -129,6 +135,18 @@ public final class Parser
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * This method should be called whenever a parsing expression fails. It calls {@link
+     * ParseInput#fail} and passes the error to the error handler.
+     *
+     * {@code input} should be in the same state as when the expression was invoked, modulo any
+     * changes that persists across failures (e.g. cuts). This means {@link ParseInput#resetOutput}
+     * should have been called on the input if necessary.
+     *
+     * In some cases, an expression may elect not to report a failure, in which case it must
+     * call {@link ParseInput#fail} directly instead (e.g. left-recursion for blocked recursive
+     * calls).
+     */
     public void fail(ParsingExpression pe, ParseInput input)
     {
         input.fail();
@@ -141,9 +159,9 @@ public final class Parser
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public boolean isLeftAssociative(LeftRecursive lr)
+    public boolean isBlocked(LeftRecursive lr)
     {
-        for (LeftRecursive la: leftAssociatives)
+        for (LeftRecursive la: blocked)
         {
             if (lr == la)
             {
@@ -156,16 +174,68 @@ public final class Parser
 
     //----------------------------------------------------------------------------------------------
 
-    public void pushLeftAssociative(LeftRecursive lr)
+    public void pushBlocked(LeftRecursive lr)
     {
-        leftAssociatives.push(lr);
+        blocked.push(lr);
     }
 
     //----------------------------------------------------------------------------------------------
 
-    public void popLeftAssociative()
+    public void popBlocked()
     {
-        leftAssociatives.pop();
+        blocked.pop();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public int enterPrecedence(Expression expr, int position)
+    {
+        Expression.PrecedenceEntry entry = minPrecedence.peekOrNull();
+
+        if (entry == null || entry.expression != expr)
+        {
+            entry = new Expression.PrecedenceEntry();
+            entry.expression = expr;
+            entry.initialPosition = position;
+            entry.minPrecedence = 0;
+
+            minPrecedence.push(entry);
+            return 0;
+        }
+        else
+        {
+            return entry.minPrecedence;
+        }
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    public int minPrecedence()
+    {
+        return minPrecedence.peek().minPrecedence;
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    public void setMinPrecedence(int precedence)
+    {
+        minPrecedence.peek().minPrecedence = precedence;
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    public void exitPrecedence(int precedence, int position)
+    {
+        Expression.PrecedenceEntry entry = minPrecedence.peek();
+
+        if (entry.initialPosition == position)
+        {
+            minPrecedence.pop();
+        }
+        else
+        {
+            entry.minPrecedence = precedence;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

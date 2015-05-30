@@ -57,6 +57,14 @@ public final class Dumb extends ParsingExpression
     // ---------------------------------------------------------------------------------------------
 
     @Override
+    public int parseDumb(CharSequence text, int pos)
+    {
+        return operand.parseDumb(text, pos);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
     public void appendTo(StringBuilder builder)
     {
         builder.append("dumb(");

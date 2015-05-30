@@ -2,13 +2,30 @@ package com.norswap.autumn.parsing.support;
 
 import com.norswap.autumn.parsing.ParseTree;
 import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.ParsingExpressionFactory;
+import com.norswap.autumn.parsing.expressions.Expression;
+import com.norswap.autumn.parsing.expressions.Expression.Operand;
+import com.norswap.autumn.util.Pair;
 import com.norswap.autumn.util.Streams;
 
+import java.util.function.Function;
+
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
+import static com.norswap.autumn.parsing.Registry.*; // PEF_EXPR_*
 import static com.norswap.autumn.util.StringEscape.unescape;
 
 public final class GrammarCompiler
 {
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @FunctionalInterface
+    private interface Compiler extends Function<ParseTree, ParsingExpression> {}
+
+    @FunctionalInterface
+    private interface Grouper extends Function<ParsingExpression[], ParsingExpression> {}
+
+    private static ParsingExpressionFactory F = new ParsingExpressionFactory();
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -33,55 +50,147 @@ public final class GrammarCompiler
         String ruleName = rule.value("ruleName");
         ParsingExpression topChoice = compileTopChoice(rule.group("alts"));
 
-        return named$(ruleName, rule.has("token") ? token(topChoice) : topChoice);
+        if (rule.has("dumb"))
+        {
+            topChoice = dumb(topChoice);
+        }
+
+        if (rule.has("token"))
+        {
+            topChoice = token(topChoice);
+        }
+
+        return named$(ruleName, topChoice);
+    }
+
+
+    // ---------------------------------------------------------------------------------------------
+
+    private ParsingExpression compileChoiceAlt(ParseTree alt)
+    {
+        return alt.name.equals("sequence")
+            ? compileSequence(alt)
+            : compileExpression(alt);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private ParsingExpression compileOneOrGroup(
+        Compiler itemCompiler, Grouper grouper, ParseTree tree)
+    {
+        if (tree.childrenCount() == 1)
+        {
+            return itemCompiler.apply(tree.child());
+        }
+        else
+        {
+            return grouper.apply(Streams.from(tree)
+                .map(itemCompiler)
+                .toArray(ParsingExpression[]::new));
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
 
     private ParsingExpression compileTopChoice(ParseTree alts)
     {
-        if (alts.childrenCount() == 1)
-        {
-            return compileSequence(alts.child().get("sequence"));
-        }
-        else
-        {
-            return choice(Streams.from(alts)
-                .map(alt -> compileSequence(alt.get("sequence")))
-                .toArray(ParsingExpression[]::new));
-        }
+        return compileOneOrGroup(
+            t -> compileChoiceAlt(t.child(0)),
+            exprs -> choice(exprs),
+            alts);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     private ParsingExpression compileChoice(ParseTree choice)
     {
-        if (choice.childrenCount() == 1)
-        {
-            return compileSequence(choice.child());
+        return compileOneOrGroup(
+            t -> compileChoiceAlt(t),
+            exprs -> choice(exprs),
+            choice);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private ParsingExpression compileExpression(ParseTree expression)
+    {
+        class $ {
+            int lastPrecedence = 1;
         }
-        else
-        {
-            return choice(Streams.from(choice)
-                .map(alt -> compileSequence(alt))
-                .toArray(ParsingExpression[]::new));
-        }
+        $ $ = new $();
+
+        return expression(Streams.from(expression.group("alts"))
+            .map(alt ->
+            {
+                ParsingExpression pe = compileSequence(alt.get("sequence"));
+                Operand operand = new Operand();
+                int precedence = -1;
+
+                for (ParseTree annotation: alt.group("annotations"))
+                {
+                    // TODO(norswap): this is retarded
+                    annotation = annotation.child(0);
+
+                    switch (annotation.name)
+                    {
+                        case "precedence":
+                            precedence = precedence == -1
+                                ? Integer.parseInt(annotation.value)
+                                : -2;
+                            break;
+
+                        case "increment":
+                            precedence = precedence == -1
+                                ? $.lastPrecedence + 1
+                                : -2;
+                            break;
+
+                        case "same":
+                            precedence = precedence == -1
+                                ? $.lastPrecedence
+                                : -2;
+                            break;
+
+                        case "left_assoc":
+                            operand.leftRecursive = true;
+                            operand.leftAssociative = true;
+                            break;
+
+                        case "left_recur":
+                            operand.leftRecursive = true;
+                            break;
+                    }
+                }
+
+                if (precedence == -1)
+                {
+                    throw new RuntimeException(
+                        "Expression alternate does not specify precedence.");
+                }
+
+                if (precedence == -2)
+                {
+                    throw new RuntimeException(
+                        "Expression specifies precedence more than once.");
+                }
+
+                operand.operand = pe;
+                operand.precedence = precedence;
+                $.lastPrecedence = precedence;
+
+                return operand;
+
+            }).toArray(Operand[]::new));
     }
 
     // ---------------------------------------------------------------------------------------------
 
     private ParsingExpression compileSequence(ParseTree sequence)
     {
-        if (sequence.childrenCount() == 1)
-        {
-            return compilePrefixed(sequence.child());
-        }
-        else
-        {
-            return sequence(Streams.from(sequence)
-                .map(item -> compilePrefixed(item))
-                .toArray(ParsingExpression[]::new));
-        }
+        return compileOneOrGroup(
+            tree -> compilePrefixed(tree),
+            exprs -> sequence(exprs),
+            sequence);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -159,6 +268,11 @@ public final class GrammarCompiler
 
             case "stringLit":
                 return literal(unescape(primary.value("literal")));
+
+            case "drop":
+                Expression.DropPrecedence out = new Expression.DropPrecedence();
+                out.operand = compilePrimary(primary.child(0));
+                return out;
 
             default:
                 throw new RuntimeException("Primary expression with no name.");

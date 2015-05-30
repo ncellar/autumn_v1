@@ -1,15 +1,22 @@
 package com.norswap.autumn.util;
 
-public class Pair<X, Y> implements Cloneable
+public class Pair<A, B> implements Cloneable
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public X a;
-    public Y b;
+    public static <A, B> Pair<A, B> $(A a, B b)
+    {
+        return new Pair<>(a, b);
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public Pair(X a, Y b)
+    public A a;
+    public B b;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public Pair(A a, B b)
     {
         this.a = a;
         this.b = b;
@@ -45,9 +52,9 @@ public class Pair<X, Y> implements Cloneable
 
     @Override
     @SuppressWarnings("unchecked")
-    public Pair<X, Y> clone()
+    public Pair<A, B> clone()
     {
-        return (Pair<X, Y>) Exceptions.rt(() -> super.clone());
+        return (Pair<A, B>) Exceptions.rt(() -> super.clone());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

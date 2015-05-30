@@ -1,5 +1,8 @@
 package com.norswap.autumn.parsing;
 
+import com.norswap.autumn.util.Caster;
+import com.norswap.autumn.util.DeepCopy;
+import com.norswap.autumn.util.Exceptions;
 import com.norswap.autumn.util.HandleMap;
 
 /**
@@ -11,7 +14,7 @@ import com.norswap.autumn.util.HandleMap;
  * parse input. In particular the parse input includes the position in the source text at which
  * to attempt the match.
  */
-public abstract class ParsingExpression
+public abstract class ParsingExpression implements DeepCopy
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -19,6 +22,9 @@ public abstract class ParsingExpression
     public HandleMap ext = new HandleMap();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    // PARSING
+
+    // ---------------------------------------------------------------------------------------------
 
     public abstract void parse(Parser parser, ParseInput input);
 
@@ -32,10 +38,18 @@ public abstract class ParsingExpression
             + " doesn't support dumb parsing.");
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // STRING REPRESENTATION
+
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * Returns a string representation for the expression. If the expression has a name, writes
+     * that instead of a string representation of its content. This can hence be used to print
+     * recursive expressions (a recursive expression must have a name).
+     */
     @Override
-    public String toString()
+    public final String toString()
     {
         StringBuilder builder = new StringBuilder();
         toString(builder);
@@ -44,7 +58,13 @@ public abstract class ParsingExpression
 
     // ---------------------------------------------------------------------------------------------
 
-    public void toString(StringBuilder builder)
+    /**
+     * Similar to {@code builder.append(this.toString())}.
+     * {@link #toString} uses this method internally.
+     *
+     * Implemented by writing the name if there is one or else by calling {@link #appendTo}.
+     */
+    public final void toString(StringBuilder builder)
     {
         String name = name();
 
@@ -60,7 +80,11 @@ public abstract class ParsingExpression
 
     // ---------------------------------------------------------------------------------------------
 
-    public String toStringFull()
+    /**
+     * Like {@link #toString()}, but never writes the name of an expression instead of its content.
+     * As a result, this *can not* be used to print recursive expressions.
+     */
+    public final String toStringFull()
     {
         StringBuilder builder = new StringBuilder();
         appendTo(builder);
@@ -69,7 +93,13 @@ public abstract class ParsingExpression
 
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * Appends a string representation of this expression (but never its name) to the builder.
+     */
     public abstract void appendTo(StringBuilder builder);
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // TREE WALKING
 
     // ---------------------------------------------------------------------------------------------
 
@@ -89,39 +119,67 @@ public abstract class ParsingExpression
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    // NAME
 
-    public String name()
+    // ---------------------------------------------------------------------------------------------
+
+    public final String name()
     {
         return ext.get(Registry.PEH_NAME);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public void setName(String name)
+    public final void setName(String name)
     {
         ext.set(Registry.PEH_NAME, name);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // Generic Flag Manipulation Functions
-    ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public boolean hasAnyFlagsSet(int flagsToCheck)
+    @Override
+    public ParsingExpression clone()
+    {
+        ParsingExpression clone = Caster.cast(Exceptions.swallow(() -> super.clone()));
+        clone.ext = ext.deepCopy();
+        return clone;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public ParsingExpression deepCopy()
+    {
+        return clone();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // FLAG MANIPULATION
+
+    // ---------------------------------------------------------------------------------------------
+
+    public final boolean hasAnyFlagsSet(int flagsToCheck)
     {
         return (flags & flagsToCheck) != 0;
     }
 
-    public boolean hasFlagsSet(int flagsToCheck)
+    // ---------------------------------------------------------------------------------------------
+
+    public final boolean hasFlagsSet(int flagsToCheck)
     {
         return (flags & flagsToCheck) == flagsToCheck ;
     }
 
-    public void setFlags(int flagsToAdd)
+    // ---------------------------------------------------------------------------------------------
+
+    public final void setFlags(int flagsToAdd)
     {
         flags |= flagsToAdd;
     }
 
-    public void clearFlags(int flagsToClear)
+    // ---------------------------------------------------------------------------------------------
+
+    public final void clearFlags(int flagsToClear)
     {
         flags &= ~flagsToClear;
     }
