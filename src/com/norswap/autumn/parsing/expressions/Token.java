@@ -1,60 +1,47 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.ParseInput;
+import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
 
-public final class Token extends ParsingExpression
+public final class Token extends UnaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParsingExpression operand;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
     @Override
-    public void parse(Parser parser, ParseInput input)
+    public void parse(Parser parser, ParseState state)
     {
-        operand.parse(parser, input);
+        operand.parse(parser, state);
 
-        if (input.failed())
+        if (state.failed())
         {
-            parser.fail(this, input);
+            parser.fail(this, state);
             return;
         }
 
-        int pos = parser.configuration.whitespace.parseDumb(parser.text, input.end);
+        int pos = parser.whitespace.parseDumb(parser, state.end);
 
         if (pos > 0)
         {
-            input.end = pos;
+            state.end = pos;
         }
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void appendTo(StringBuilder builder)
+    public int parseDumb(Parser parser, int position)
     {
-        builder.append("token(");
-        operand.toString(builder);
-        builder.append(")");
-    }
+        position = operand.parseDumb(parser, position);
 
-    // ---------------------------------------------------------------------------------------------
+        if (position == -1)
+        {
+            return -1;
+        }
 
-    @Override
-    public ParsingExpression[] children()
-    {
-        return new ParsingExpression[]{operand};
-    }
+        int pos = parser.whitespace.parseDumb(parser, position);
 
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void setChild(int position, ParsingExpression expr)
-    {
-        operand = expr;
+        return pos > 0 ? pos : position;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

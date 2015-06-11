@@ -143,7 +143,8 @@ public final class HandleMap implements DeepCopy
         {
             Entry e = copy.array[i];
 
-            if (e.value instanceof DeepCopy)
+            if (e == null) ;
+            else if (e.value instanceof DeepCopy)
             {
                 copy.array[i] = new Entry(e.handle, ((DeepCopy)e.value).deepCopy());
             }

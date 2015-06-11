@@ -1,60 +1,33 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.*;
+import com.norswap.autumn.parsing.OutputChanges;
+import com.norswap.autumn.parsing.ParseState;
+import com.norswap.autumn.parsing.Parser;
+import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
 
-public final class Memo extends ParsingExpression
+public final class Memo extends UnaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParsingExpression operand;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
     @Override
-    public void parse(Parser parser, ParseInput input)
+    public void parse(Parser parser, ParseState state)
     {
-        if (input.isMemoizationForbidden())
+        if (state.isMemoizationForbidden())
         {
-            operand.parse(parser, input);
+            operand.parse(parser, state);
             return;
         }
 
-        OutputChanges changes = parser.configuration.memoizationStrategy.get(this, input);
+        OutputChanges changes = parser.memoizationStrategy.get(this, state);
 
         if (changes != null)
         {
-            changes.mergeInto(input);
+            changes.mergeInto(state);
             return;
         }
 
-        operand.parse(parser, input);
-        parser.configuration.memoizationStrategy.memoize(operand, input, new OutputChanges(input));
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void appendTo(StringBuilder builder)
-    {
-        builder.append("memo(");
-        operand.toString(builder);
-        builder.append(")");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ParsingExpression[] children()
-    {
-        return new ParsingExpression[]{operand};
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void setChild(int position, ParsingExpression expr)
-    {
-        operand = expr;
+        operand.parse(parser, state);
+        parser.memoizationStrategy.memoize(operand, state, new OutputChanges(state));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

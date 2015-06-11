@@ -291,4 +291,47 @@ public final class ParseTree implements Iterable<ParseTree>
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public boolean equals(Object o)
+    {
+        // mostly auto-generated; modified to accept null children == empty children
+
+        if (this == o)
+            return true;
+
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        ParseTree parseTree = (ParseTree) o;
+
+        if (grouped != parseTree.grouped)
+            return false;
+
+        if (name != null ? !name.equals(parseTree.name) : parseTree.name != null)
+            return false;
+
+        if (value != null ? !value.equals(parseTree.value) : parseTree.value != null)
+            return false;
+
+        return children == null
+            ? parseTree.children == null || parseTree.children.isEmpty()
+            : children.equals(parseTree.children);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public int hashCode()
+    {
+        // mostly auto-generated; modified to accept null children == empty children
+
+        int result = name != null ? name.hashCode() : 0;
+        result = 31 * result + (value != null ? value.hashCode() : 0);
+        result = 31 * result + (children == null || children.isEmpty() ? 0 : children.hashCode());
+        result = 31 * result + (grouped ? 1 : 0);
+        return result;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 }

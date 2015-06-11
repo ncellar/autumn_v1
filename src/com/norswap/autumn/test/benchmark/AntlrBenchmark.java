@@ -43,12 +43,12 @@ public final class AntlrBenchmark
     private static void parseFile(String file)
     {
         try {
-            //Lexer lexer = new Java8Lexer(new ANTLRFileStream(file));
-            Lexer lexer = new Java7Lexer(new ANTLRFileStream(file));
+            Lexer lexer = new Java8Lexer(new ANTLRFileStream(file));
+            //Lexer lexer = new Java7Lexer(new ANTLRFileStream(file));
             CommonTokenStream tokens = new CommonTokenStream(lexer);
 
-            //Java8Parser parser = new Java8Parser(tokens);
-            Java7Parser parser = new Java7Parser(tokens);
+            Java8Parser parser = new Java8Parser(tokens);
+            //Java7Parser parser = new Java7Parser(tokens);
 
             ParserRuleContext t = parser.compilationUnit();
 

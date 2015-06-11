@@ -1,5 +1,7 @@
 package com.norswap.autumn.parsing;
 
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+
 /**
  * The default memoization strategy memoizes every changeset that it is asked to.
  *
@@ -59,10 +61,10 @@ public final class DefaultMemoizationStrategy implements MemoizationStrategy
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void memoize(ParsingExpression pe, ParseInput input, OutputChanges changes)
+    public void memoize(ParsingExpression pe, ParseState state, OutputChanges changes)
     {
         MemoNode node = new MemoNode();
-        node.position = input.start;
+        node.position = state.start;
         node.pe = pe;
         node.changes = changes;
 
@@ -95,9 +97,9 @@ public final class DefaultMemoizationStrategy implements MemoizationStrategy
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public OutputChanges get(ParsingExpression pe, ParseInput input)
+    public OutputChanges get(ParsingExpression pe, ParseState state)
     {
-        int index = getIndex(input.start);
+        int index = getIndex(state.start);
 
         MemoNode node = index >= 0
             ? store[index]

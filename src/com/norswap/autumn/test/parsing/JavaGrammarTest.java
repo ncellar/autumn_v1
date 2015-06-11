@@ -2,8 +2,13 @@ package com.norswap.autumn.test.parsing;
 
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParserConfiguration;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.StackTrace;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.Source;
+import com.norswap.autumn.parsing.graph.FirstCalculator;
+import com.norswap.autumn.parsing.graph.FunctionalTransformer;
+import com.norswap.autumn.parsing.graph.LeftRecursionBreaker;
+import com.norswap.autumn.parsing.graph.nullability.NullabilityCalculator;
 import com.norswap.autumn.parsing.support.GrammarDriver;
 import com.norswap.autumn.util.Glob;
 
@@ -23,37 +28,48 @@ public final class JavaGrammarTest
     public static void main(String[] args) throws IOException
     {
         ParsingExpression[] rules = GrammarDriver.compile(grammarFile);
+
+        NullabilityCalculator nullCalc = new NullabilityCalculator();
+        nullCalc.run(rules);
+        FirstCalculator.nullCalc = nullCalc;
+
+        LeftRecursionBreaker.breakCycles(rules);
+
         ParsingExpression root = rules[0];
 
         ParsingExpression whitespace = Arrays.stream(rules)
             .filter(rule -> "Spacing".equals(rule.name()))
             .findFirst().get();
 
-        try {
-            for (Path path: Glob.glob("**/*.java", new File("../guava").toPath()))
-            {
-                ParserConfiguration config = new ParserConfiguration();
-                config.whitespace = whitespace;
+        parseDirectory("../guava", root, whitespace);
+    }
 
-                parseFile(path.toString(), root, config);
-            }
-        }
-        catch (IOException e)
+    // ---------------------------------------------------------------------------------------------
+
+    private static void parseDirectory(
+        String directory, ParsingExpression root, ParsingExpression whitespace)
+        throws IOException
+    {
+        for (Path path: Glob.glob("**/*.java", new File(directory).toPath()))
         {
-            e.printStackTrace();
+            ParserConfiguration config = new ParserConfiguration();
+            config.whitespace = () -> whitespace;
+
+            parseFile(path.toString(), root, config);
         }
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public static void parseFile(
-        String filename, ParsingExpression root, ParserConfiguration config)
+        String file, ParsingExpression root, ParserConfiguration config)
     {
         try
         {
-            Source source = Source.fromFile(filename);
+            Source source = Source.fromFile(file);
             Parser parser = new Parser(source, config);
             root = InstrumentExpression.stackTrace(root);
+            //root = FunctionalTransformer.apply(root, JavaGrammarTest::transform, false);
             parser.parse(root);
 
             if (parser.succeeded())
@@ -63,16 +79,25 @@ public final class JavaGrammarTest
             }
             else
             {
-                System.err.println(filename);
+                System.err.println(file);
                 parser.report();
-                System.err.println("");
+                System.err.println();
                 System.exit(-1);
             }
         }
         catch (IOException e)
         {
-            System.out.println("Could not read file: " + filename);
+            System.out.println("Could not read file: " + file);
         }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private static ParsingExpression transform(ParsingExpression pe)
+    {
+        StackTrace out = new StackTrace();
+        out.operand = pe;
+        return out;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

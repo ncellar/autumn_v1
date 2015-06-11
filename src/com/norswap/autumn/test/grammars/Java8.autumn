@@ -301,18 +301,18 @@ NullLiteral = NULL ;
 //  JLS 3.11  Separators
 //-------------------------------------------------------------------------
 
-AT              :=   "@"        ;
-COLONCOLON      :=   "::"       ;
-COMMA           :=   ","        ;
-DOT             :=   "."        ;
-ELLIPSIS        :=   "..."      ;
-LPAR            :=   "("        ;
-LBRK            :=   "["        ;
-RBRK            :=   "]"        ;
-RPAR            :=   ")"        ;
-LWING           :=   "{"        ;
-RWING           :=   "}"        ;
-SEMI            :=   ";"        ;
+'@'    :=   "@"        ;
+'::'   :=   "::"       ;
+','    :=   ","        ;
+'.'    :=   "."        ;
+'...'  :=   "..."      ;
+'('    :=   "("        ;
+'['    :=   "["        ;
+']'    :=   "]"        ;
+')'    :=   ")"        ;
+'{'    :=   "{"        ;
+'}'    :=   "}"        ;
+';'    :=   ";"        ;
 
 //-------------------------------------------------------------------------
 //  JLS 3.12  Operators
@@ -396,7 +396,7 @@ ReferenceType
 
 ClassType
     = Annotation* Identifier TypeArguments?
-          (DOT Annotation* Identifier TypeArguments?)* ;
+          ('.' Annotation* Identifier TypeArguments?)* ;
 
 Type
     = PrimitiveType
@@ -412,7 +412,7 @@ TypeVariable
     = Annotation* Identifier ;
 
 Dim
-    = Annotation* LBRK RBRK ;
+    = Annotation* '[' ']' ;
 
 //-------------------------------------------------------------------------
 //  JLS 4.4  Type Variables
@@ -438,7 +438,7 @@ TypeArguments
     = LPOINT TypeArgumentList RPOINT ;
 
 TypeArgumentList
-    = TypeArgument (COMMA TypeArgument)* ;
+    = TypeArgument (',' TypeArgument)* ;
 
 TypeArgument
     = ReferenceType
@@ -459,7 +459,7 @@ WildcardBounds
 //=========================================================================
 
 QualIdent
-    = Identifier (DOT Identifier)* ;
+    = Identifier ('.' Identifier)* ;
 
 
 //=========================================================================
@@ -477,7 +477,7 @@ CompilationUnit
 //-------------------------------------------------------------------------
 
 PackageDeclaration
-    = PackageModifier* PACKAGE Identifier (DOT Identifier)* SEMI ;
+    = PackageModifier* PACKAGE Identifier ('.' Identifier)* ';' ;
 
 PackageModifier
     = Annotation ;
@@ -487,8 +487,8 @@ PackageModifier
 //-------------------------------------------------------------------------
 
 ImportDeclaration
-    = IMPORT STATIC? QualIdent (DOT STAR)? SEMI
-    / SEMI
+    = IMPORT STATIC? QualIdent ('.' STAR)? ';'
+    / ';'
     ;
 
 //-------------------------------------------------------------------------
@@ -498,7 +498,7 @@ ImportDeclaration
 TypeDeclaration
     = ClassDeclaration
     / InterfaceDeclaration
-    / SEMI
+    / ';'
     ;
 
 
@@ -534,7 +534,7 @@ TypeParameters
     = LPOINT TypeParameterList RPOINT ;
 
 TypeParameterList
-    = TypeParameter (COMMA TypeParameter)* ;
+    = TypeParameter (',' TypeParameter)* ;
 
 Superclass
     = EXTENDS ClassType ;
@@ -543,10 +543,10 @@ Superinterfaces
     = IMPLEMENTS InterfaceTypeList ;
 
 InterfaceTypeList
-    = ClassType (COMMA ClassType)* ;
+    = ClassType (',' ClassType)* ;
 
 ClassBody
-    = LWING ClassBodyDeclaration* RWING ;
+    = '{' ClassBodyDeclaration* '}' ;
 
 ClassBodyDeclaration
     = ClassMemberDeclaration
@@ -560,7 +560,7 @@ ClassMemberDeclaration
     / MethodDeclaration
     / ClassDeclaration
     / InterfaceDeclaration
-    / SEMI
+    / ';'
     ;
 
 //-------------------------------------------------------------------------
@@ -568,10 +568,10 @@ ClassMemberDeclaration
 //-------------------------------------------------------------------------
 
 FieldDeclaration
-    = FieldModifier* UnannType VariableDeclaratorList SEMI ;
+    = FieldModifier* UnannType VariableDeclaratorList ';' ;
 
 VariableDeclaratorList
-    = VariableDeclarator (COMMA VariableDeclarator)* ;
+    = VariableDeclarator (',' VariableDeclarator)* ;
 
 VariableDeclarator
     = VariableDeclaratorId (EQU VariableInitializer)? ;
@@ -586,7 +586,7 @@ VariableInitializer
 
 UnannClassType
     = Identifier TypeArguments?
-          (DOT Annotation* Identifier TypeArguments?)*  ;
+          ('.' Annotation* Identifier TypeArguments?)*  ;
 
 UnannType
     = BasicType Dim*
@@ -617,14 +617,14 @@ MethodHeader
     ;
 
 MethodDeclarator
-    = Identifier LPAR FormalParameterList? RPAR Dim* ;
+    = Identifier '(' FormalParameterList? ')' Dim* ;
 
 FormalParameterList
-    = (ReceiverParameter / FormalParameter)(COMMA FormalParameter)* ;
+    = (ReceiverParameter / FormalParameter)(',' FormalParameter)* ;
 
 FormalParameter
     = VariableModifier* UnannType VariableDeclaratorId
-    / VariableModifier* UnannType Annotation* ELLIPSIS VariableDeclaratorId !COMMA
+    / VariableModifier* UnannType Annotation* '...' VariableDeclaratorId !','
     ;
 
 VariableModifier
@@ -633,7 +633,7 @@ VariableModifier
     ;
 
 ReceiverParameter
-    = VariableModifier* UnannType (Identifier DOT)? THIS ;
+    = VariableModifier* UnannType (Identifier '.')? THIS ;
 
 Result
     = UnannType
@@ -657,7 +657,7 @@ Throws
     = THROWS ExceptionTypeList ;
 
 ExceptionTypeList
-    = ExceptionType (COMMA ExceptionType)* ;
+    = ExceptionType (',' ExceptionType)* ;
 
 ExceptionType
     = ClassType
@@ -666,7 +666,7 @@ ExceptionType
 
 MethodBody
     = Block
-    / SEMI
+    / ';'
     ;
 
 //-------------------------------------------------------------------------
@@ -691,7 +691,7 @@ ConstructorDeclaration
     = ConstructorModifier* ConstructorDeclarator Throws? ConstructorBody ;
 
 ConstructorDeclarator
-    = TypeParameters? Identifier LPAR FormalParameterList? RPAR ;
+    = TypeParameters? Identifier '(' FormalParameterList? ')' ;
 
 ConstructorModifier
     = Annotation
@@ -701,15 +701,15 @@ ConstructorModifier
     ;
 
 ConstructorBody
-    = LWING ExplicitConstructorInvocation? BlockStatements? RWING ;
-
-// TODO: I change this to put expression
-// http://stackoverflow.com/questions/2831484
+    = '{' ExplicitConstructorInvocation? BlockStatements? '}' ;
 
 ExplicitConstructorInvocation
-    = TypeArguments? THIS Arguments SEMI
-    / TypeArguments? SUPER Arguments SEMI
-    / Expression DOT TypeArguments? SUPER Arguments SEMI
+    = TypeArguments? THIS Arguments ';'
+    / TypeArguments? SUPER Arguments ';'
+
+    // http://stackoverflow.com/questions/2831484
+
+    / Expression '.' TypeArguments? SUPER Arguments ';'
     ;
 
 //-------------------------------------------------------------------------
@@ -720,10 +720,10 @@ EnumDeclaration
     = ClassModifier* ENUM Identifier Superinterfaces? EnumBody ;
 
 EnumBody
-    = LWING EnumConstantList? COMMA? EnumBodyDeclarations? RWING ;
+    = '{' EnumConstantList? ','? EnumBodyDeclarations? '}' ;
 
 EnumConstantList
-    = EnumConstant (COMMA EnumConstant)* ;
+    = EnumConstant (',' EnumConstant)* ;
 
 EnumConstant
     = EnumConstantModifier* Identifier Arguments? ClassBody? ;
@@ -732,7 +732,7 @@ EnumConstantModifier
     = Annotation ;
 
 EnumBodyDeclarations
-    = SEMI ClassBodyDeclaration* ;
+    = ';' ClassBodyDeclaration* ;
 
 
 //=========================================================================
@@ -765,14 +765,14 @@ ExtendsInterfaces
     = EXTENDS InterfaceTypeList ;
 
 InterfaceBody
-    = LWING InterfaceMemberDeclaration* RWING ;
+    = '{' InterfaceMemberDeclaration* '}' ;
 
 InterfaceMemberDeclaration
     = ConstantDeclaration
     / InterfaceMethodDeclaration
     / ClassDeclaration
     / InterfaceDeclaration
-    / SEMI
+    / ';'
     ;
 
 //-------------------------------------------------------------------------
@@ -780,7 +780,7 @@ InterfaceMemberDeclaration
 //-------------------------------------------------------------------------
 
 ConstantDeclaration
-    = ConstantModifier* UnannType VariableDeclaratorList SEMI ;
+    = ConstantModifier* UnannType VariableDeclaratorList ';' ;
 
 ConstantModifier
     = Annotation
@@ -810,22 +810,22 @@ InterfaceMethodModifier
 //-------------------------------------------------------------------------
 
 AnnotationTypeDeclaration
-    = InterfaceModifier* AT INTERFACE Identifier AnnotationTypeBody ;
+    = InterfaceModifier* '@' INTERFACE Identifier AnnotationTypeBody ;
 
 AnnotationTypeBody
-    = LWING AnnotationTypeMemberDeclaration* RWING ;
+    = '{' AnnotationTypeMemberDeclaration* '}' ;
 
 AnnotationTypeMemberDeclaration
     = AnnotationTypeElementDeclaration
     / ConstantDeclaration
     / ClassDeclaration
     / InterfaceDeclaration
-    / SEMI
+    / ';'
     ;
 
 AnnotationTypeElementDeclaration
-    = AnnotationTypeElementModifier* UnannType Identifier LPAR RPAR Dim*
-         DefaultValue? SEMI ;
+    = AnnotationTypeElementModifier* UnannType Identifier '(' ')' Dim*
+         DefaultValue? ';' ;
 
 AnnotationTypeElementModifier
     = Annotation
@@ -841,7 +841,7 @@ DefaultValue
 //-------------------------------------------------------------------------
 
 Annotation
-    = AT
+    = '@'
       ( NormalAnnotation
       / SingleElementAnnotation
       / MarkerAnnotation
@@ -849,33 +849,31 @@ Annotation
     ;
 
 NormalAnnotation
-    = QualIdent LPAR ElementValuePairList* RPAR ;
+    = QualIdent '(' ElementValuePairList* ')' ;
 
 ElementValuePairList
-    = ElementValuePair (COMMA ElementValuePair)* ;
+    = ElementValuePair (',' ElementValuePair)* ;
 
 ElementValuePair
     = Identifier EQU ElementValue ;
 
-// TODO expression can't be an assignment
-
 ElementValue
-    = Expression
+    = Expression forbid { assign }
     / ElementValueArrayInitializer
     / Annotation
     ;
 
 ElementValueArrayInitializer
-    = LWING ElementValueList? COMMA? RWING ;
+    = '{' ElementValueList? ','? '}' ;
 
 ElementValueList
-    = ElementValue (COMMA ElementValue)* ;
+    = ElementValue (',' ElementValue)* ;
 
 MarkerAnnotation
     = QualIdent ;
 
 SingleElementAnnotation
-    = QualIdent LPAR ElementValue RPAR ;
+    = QualIdent '(' ElementValue ')' ;
 
 
 //=========================================================================
@@ -886,10 +884,10 @@ SingleElementAnnotation
 //-------------------------------------------------------------------------
 
 ArrayInitializer
-    = LWING VariableInitializerList? COMMA? RWING ;
+    = '{' VariableInitializerList? ','? '}' ;
 
 VariableInitializerList
-    = VariableInitializer (COMMA VariableInitializer)* ;
+    = VariableInitializer (',' VariableInitializer)* ;
 
 //=========================================================================
 //  JLS 14  Blocks and Statements
@@ -899,7 +897,7 @@ VariableInitializerList
 //-------------------------------------------------------------------------
 
 Block
-    = LWING BlockStatements? RWING ;
+    = '{' BlockStatements? '}' ;
 
 BlockStatements
     = BlockStatement BlockStatement* ;
@@ -915,7 +913,7 @@ BlockStatement
 //-------------------------------------------------------------------------
 
 LocalVariableDeclarationStatement
-    = LocalVariableDeclaration SEMI ;
+    = LocalVariableDeclaration ';' ;
 
 LocalVariableDeclaration
     = VariableModifier* UnannType VariableDeclaratorList ;
@@ -930,29 +928,29 @@ Statement
     / BasicForStatement
     / EnhancedForStatement
     / WHILE ParExpression Statement
-    / DO Statement WHILE ParExpression SEMI
+    / DO Statement WHILE ParExpression ';'
     / TryStatement
     / SWITCH ParExpression SwitchBlock
     / SYNCHRONIZED ParExpression Block
-    / RETURN Expression? SEMI
-    / THROW Expression SEMI
-    / BREAK Identifier? SEMI
-    / CONTINUE Identifier? SEMI
-    / ASSERT Expression (COLON Expression)? SEMI
-    / SEMI
-    / StatementExpression SEMI
+    / RETURN Expression? ';'
+    / THROW Expression ';'
+    / BREAK Identifier? ';'
+    / CONTINUE Identifier? ';'
+    / ASSERT Expression (COLON Expression)? ';'
+    / ';'
+    / StatementExpression ';'
     / Identifier COLON Statement
     ;
 
 ParExpression
-    = LPAR Expression RPAR ;
+    = '(' Expression ')' ;
 
 //-------------------------------------------------------------------------
 //  JLS 14.11  The SWITCH Statement
 //-------------------------------------------------------------------------
 
 SwitchBlock
-    = LWING SwitchBlockStatementGroup* SwitchLabel* RWING ;
+    = '{' SwitchBlockStatementGroup* SwitchLabel* '}' ;
 
 SwitchBlockStatementGroup
     = SwitchLabels BlockStatements ;
@@ -973,7 +971,7 @@ EnumConstantName
 //-------------------------------------------------------------------------
 
 BasicForStatement
-    = FOR LPAR ForInit? SEMI Expression? SEMI ForUpdate? RPAR Statement ;
+    = FOR '(' ForInit? ';' Expression? ';' ForUpdate? ')' Statement ;
 
 ForInit
     = LocalVariableDeclaration
@@ -984,11 +982,11 @@ ForUpdate
     = StatementExpressionList ;
 
 StatementExpressionList
-    = StatementExpression (COMMA  StatementExpression)* ;
+    = StatementExpression (','  StatementExpression)* ;
 
 EnhancedForStatement
-    = FOR LPAR VariableModifier* UnannType VariableDeclaratorId COLON
-          Expression RPAR Statement ;
+    = FOR '(' VariableModifier* UnannType VariableDeclaratorId COLON
+          Expression ')' Statement ;
 
 //-------------------------------------------------------------------------
 //  JLS 14.20  The TRY Statement
@@ -1002,7 +1000,7 @@ TryStatement
     ;
 
 CatchClause
-    = CATCH LPAR CatchFormalParameter RPAR Block ;
+    = CATCH '(' CatchFormalParameter ')' Block ;
 
 CatchFormalParameter
     = VariableModifier* CatchType VariableDeclaratorId ;
@@ -1014,10 +1012,10 @@ Finally
     = FINALLY Block ;
 
 ResourceSpecification
-    = LPAR ResourceList SEMI? RPAR ;
+    = '(' ResourceList ';'? ')' ;
 
 ResourceList
-    = Resource (SEMI Resource)* ;
+    = Resource (';' Resource)* ;
 
 Resource
     = VariableModifier* UnannType VariableDeclaratorId EQU Expression ;
@@ -1037,11 +1035,11 @@ ClassCreator
 
 ClassTypeWithDiamond
     = Annotation* Identifier TypeArgumentsOrDiamond?
-          (DOT Annotation* Identifier TypeArgumentsOrDiamond?)* ;
+          ('.' Annotation* Identifier TypeArgumentsOrDiamond?)* ;
 
 TypeArgumentsOrDiamond
     = TypeArguments
-    / LPOINT RPOINT !DOT  // Must be last
+    / LPOINT RPOINT !'.'  // Must be last
     ;
 
 //-------------------------------------------------------------------------
@@ -1054,17 +1052,17 @@ ArrayCreator
     ;
 
 DimExpr
-    = Annotation* LBRK Expression RBRK ;
+    = Annotation* '[' Expression ']' ;
 
 //-------------------------------------------------------------------------
 //  JLS 15.12  Method Invocation Expressions
 //-------------------------------------------------------------------------
 
 Arguments
-    = LPAR ArgumentList? RPAR ;
+    = '(' ArgumentList? ')' ;
 
 ArgumentList
-    = Expression (COMMA Expression)* ;
+    = Expression (',' Expression)* ;
 
 //-------------------------------------------------------------------------
 //  JLS 15.27  Lambda Expressions
@@ -1075,12 +1073,12 @@ LambdaExpression
 
 LambdaParameters
     = Identifier
-    / LPAR FormalParameterList? RPAR
-    / LPAR InferredFormalParameterList RPAR
+    / '(' FormalParameterList? ')'
+    / '(' InferredFormalParameterList ')'
     ;
 
 InferredFormalParameterList
-    = Identifier (COMMA Identifier)* ;
+    = Identifier (',' Identifier)* ;
 
 LambdaBody
     = Expression
@@ -1091,9 +1089,9 @@ LambdaBody
 
 Expression = expr
 
-    -> Assignment2              @1 @left_recur
+    -> Assignment               @+ @left_recur @assign
     -> LambdaExpression         @=
-    -> ConditionalExpression2   @+ @left_recur
+    -> ConditionalExpression    @+ @left_recur
 
     // BINARY OPERATORS
 
@@ -1104,65 +1102,66 @@ Expression = expr
     -> Expression AND        Expression @+ @left_assoc
 
     -> Expression EQUAL      Expression @+ @left_assoc
-    -> Expression NOTEQUAL   Expression @= @left_assoc
+    -> Expression NOTEQUAL   Expression @=
 
     -> Expression LE         Expression @+ @left_assoc
-    -> Expression GE         Expression @= @left_assoc
-    -> Expression LT         Expression @= @left_assoc
-    -> Expression GT         Expression @= @left_assoc
-    -> Expression INSTANCEOF Expression @= @left_assoc
+    -> Expression GE         Expression @=
+    -> Expression LT         Expression @=
+    -> Expression GT         Expression @=
+    -> Expression INSTANCEOF Expression @=
 
     -> Expression SL         Expression @+ @left_assoc
-    -> Expression SR         Expression @= @left_assoc
-    -> Expression BSR        Expression @= @left_assoc
+    -> Expression SR         Expression @=
+    -> Expression BSR        Expression @=
 
     -> Expression PLUS       Expression @+ @left_assoc
-    -> Expression MINUS      Expression @= @left_assoc
+    -> Expression MINUS      Expression @=
 
     -> Expression STAR       Expression @+ @left_assoc
-    -> Expression DIV        Expression @= @left_assoc
-    -> Expression MOD        Expression @= @left_assoc
+    -> Expression DIV        Expression @=
+    -> Expression MOD        Expression @=
 
     // PREFIX OPERATORS
 
-    -> INC   Expression @+
-    -> DEC   Expression @=
+    -> INC   Expression @+ @binc
+    -> DEC   Expression @= @bdec
     -> PLUS  Expression @=
     -> MINUS Expression @=
     -> TILDE Expression @=
     -> BANG  Expression @=
-    -> CastExpression2  @=
+    -> CastExpression   @= // does not conflict with (expr)(arguments) because lower precedence
 
     // POSTFIX EXPRESSIONS
 
-    -> Expression INC                                       @+ @left_assoc
-    -> Expression DEC                                       @= @left_assoc
-    -> Expression DOT TypeArguments Identifier drop Arguments    @= @left_assoc // Method Invocation
-    -> Expression drop Arguments                                 @= @left_assoc // Method Invocation
-    -> Expression DOT Identifier                            @= @left_assoc
-    -> Expression DOT NEW drop ClassCreator                      @= @left_assoc
-    -> Expression DOT THIS                                  @= @left_assoc
-    -> Expression DOT SUPER                                 @= @left_assoc
-    -> Expression DOT CLASS                                 @= @left_assoc
-    -> Expression LBRK drop Expression RBRK                 @= @left_assoc // Array Access
-    -> Expression COLONCOLON TypeArguments? Identifier      @= @left_assoc // Instance Method Ref
-    -> Expression COLONCOLON TypeArguments? NEW             @= @left_assoc // New Method Ref
+    -> Expression INC                                           @+ @left_assoc @ainc
+    -> Expression DEC                                           @= @adec
+    -> Expression '.' TypeArguments Identifier drop Arguments   @= @tmcall
+    -> Expression drop Arguments                                @= @mcall
+    -> Expression '.' Identifier                                @= @dot_iden
+    -> Expression '.' NEW drop ClassCreator                     @=
+    -> Expression '.' THIS                                      @=
+    -> Expression '.' SUPER                                     @=
+    -> Expression '.' CLASS                                     @=
+    -> Expression '[' drop Expression ']'                       @= @array_access
+    -> Expression '::' TypeArguments? Identifier                @=
+    -> Expression '::' TypeArguments? NEW                       @=
 
     // POSTFIX TYPES
 
-    -> Expression TypeArguments @= @left_assoc
-    -> Expression LBRK RBRK     @= @left_assoc
+    -> Expression TypeArguments  @=
+    -> Expression '[' ']'        @=
 
     // PRIMARY EXPRESSIONS
 
-    -> LPAR drop Expression RPAR            @+
-    -> THIS Arguments                       @=
-    -> THIS                                 @=
-    -> SUPER Arguments                      @=
-    -> SUPER                                @=
-    -> NEW drop (ClassCreator / ArrayCreator)    @=
-    -> Identifier                           @=
-    -> Literal                              @=
+    -> '(' drop Expression ')'                  @+
+    -> THIS Arguments                           @=
+    -> THIS                                     @=
+    -> SUPER Arguments                          @=
+    -> SUPER                                    @=
+    -> NEW drop ClassCreator                    @= @ccall
+    -> NEW drop ArrayCreator                    @=
+    -> Identifier                               @= @iden
+    -> Literal                                  @=
 
     // PRIMARY TYPES
 
@@ -1170,17 +1169,17 @@ Expression = expr
     -> VOID         @=
     ;
 
-ConditionalExpression2
+ConditionalExpression
     = Expression QUERY drop Expression COLON (LambdaExpression / Expression) ;
 
-CastExpression2
-    = LPAR (ReferenceType AdditionalBound* / PrimitiveType) RPAR (LambdaExpression / Expression) ;
+CastExpression
+    = '(' (ReferenceType AdditionalBound* / PrimitiveType) ')' (LambdaExpression / Expression) ;
 
-// TODO make LVALUE rule
+Assignment
+    = LValue AssignmentOperator Expression ;
 
-// TODO make more precise on the left hand side
-Assignment2
-    = Expression AssignmentOperator Expression ;
+LValue
+    = Expression allow { iden, dot_iden, array_access } ;
 
 AssignmentOperator
     = EQU
@@ -1197,8 +1196,5 @@ AssignmentOperator
     / OREQU
     ;
 
-// TODO: precise: assignment | inc/dec | method call, construction, constructor call
 StatementExpression
-    = Expression ;
-
-
+    = Expression allow { assign, binc, bdec, ainc, adec, mcall, tmcall, ccall } ;

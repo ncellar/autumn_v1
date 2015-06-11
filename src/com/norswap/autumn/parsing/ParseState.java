@@ -1,11 +1,12 @@
 package com.norswap.autumn.parsing;
 
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.util.Array;
 import com.norswap.autumn.util.HandleMap;
 
-import static com.norswap.autumn.parsing.Registry.*; // PIF_*
+import static com.norswap.autumn.parsing.Registry.*; // PSF_*
 
-public final class ParseInput
+public final class ParseState
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -29,9 +30,9 @@ public final class ParseInput
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    static ParseInput root()
+    static ParseState root()
     {
-        ParseInput root = new ParseInput();
+        ParseState root = new ParseState();
         root.end = 0;
         root.blackEnd = 0;
         root.cuts = new Array<>();
@@ -41,13 +42,13 @@ public final class ParseInput
 
     // ---------------------------------------------------------------------------------------------
 
-    private ParseInput()
+    private ParseState()
     {
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public ParseInput(ParseInput parent)
+    public ParseState(ParseState parent)
     {
         this.start = parent.start;
         this.blackStart = parent.blackStart;
@@ -129,7 +130,7 @@ public final class ParseInput
         if (end > start)
         {
             seeds = null;
-            clearFlags(PIF_DONT_MEMOIZE);
+            clearFlags(PSF_DONT_MEMOIZE_POSITION);
         }
 
         start = end;
@@ -196,7 +197,7 @@ public final class ParseInput
 
     // ---------------------------------------------------------------------------------------------
 
-    public void merge(ParseInput child)
+    public void merge(ParseState child)
     {
         this.end = child.end;
         this.blackEnd = child.blackEnd;
@@ -208,28 +209,35 @@ public final class ParseInput
 
     public void forbidMemoization()
     {
-        setFlags(PIF_DONT_MEMOIZE);
+        setFlags(PSF_DONT_MEMOIZE);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void forbidMemoizationAtPosition()
+    {
+        setFlags(PSF_DONT_MEMOIZE_POSITION);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public boolean isMemoizationForbidden()
     {
-        return hasFlagsSet(PIF_DONT_MEMOIZE);
+        return hasFlagsSet(PSF_DONT_MEMOIZE | PSF_DONT_MEMOIZE_POSITION);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public void forbidErrorRecording()
     {
-        setFlags(PIF_DONT_RECORD_ERRORS);
+        setFlags(PSF_DONT_RECORD_ERRORS);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public boolean isErrorRecordingForbidden()
     {
-        return hasFlagsSet(PIF_DONT_RECORD_ERRORS);
+        return hasFlagsSet(PSF_DONT_RECORD_ERRORS);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

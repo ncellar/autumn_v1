@@ -2,14 +2,14 @@ package com.norswap.autumn.test.parsing;
 
 import com.norswap.autumn.parsing.ParseTree;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
-import com.norswap.autumn.parsing.expressions.Expression.Operand;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.test.Ensure;
-import com.norswap.autumn.test.TestConfiguration;
 import com.norswap.autumn.test.TestRunner;
 import com.norswap.autumn.util.Array;
 
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
+import static com.norswap.autumn.test.TestConfiguration.parser;
+import static com.norswap.autumn.test.parsing.ParseTreeBuilder.$;
 
 public final class FeatureTests
 {
@@ -31,7 +31,41 @@ public final class FeatureTests
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ParsingExpression num = charRange('1', '9');
+    // ---------------------------------------------------------------------------------------------
+
+    ParsingExpression
+
+    plus = capture("+", sequence(
+        capture("left", reference("expr")),
+        literal("+"),
+        capture("right", reference("expr")))),
+
+    minus = capture("-", sequence(
+        capture("left", reference("expr")),
+        literal("-"),
+        capture("right", reference("expr")))),
+
+    mult = capture("*", sequence(
+        capture("left", reference("expr")),
+        literal("*"),
+        capture("right", reference("expr")))),
+
+    div = capture("/", sequence(
+        capture("left", reference("expr")),
+        literal("/"),
+        capture("right", reference("expr")))),
+
+    times = capture("*", sequence(
+        capture("left", reference("expr")),
+        literal("*"),
+        capture("right", reference("expr")))),
+
+    exp = capture("^", sequence(
+        capture("left", reference("expr")),
+        literal("^"),
+        capture("right", reference("expr")))),
+
+    num = captureText("num", charRange('1', '9'));
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -74,7 +108,7 @@ public final class FeatureTests
     {
         ParsingExpression expr = recursive$("expr", choice(
             leftRecursive(reference("expr"), literal("*")),
-            num));
+            num.deepCopy()));
 
         Ensure.match("1", expr);
         Ensure.match("1*", expr);
@@ -88,7 +122,7 @@ public final class FeatureTests
         ParsingExpression expr = recursive$("expr", choice(
             leftAssociative(reference("expr"), literal("+"), reference("expr")),
             leftAssociative(reference("expr"), literal("*"), reference("expr")),
-            num));
+            num.deepCopy()));
 
         Ensure.match("1", expr);
         Ensure.match("1+1", expr);
@@ -104,7 +138,7 @@ public final class FeatureTests
     {
         ParsingExpression expr = captureText("a", oneMore(literal("a")));
 
-        Parser parser = TestConfiguration.parser("aaa");
+        Parser parser = parser("aaa");
         parser.parse(expr);
 
         ParseTree tree = parser.tree();
@@ -120,7 +154,7 @@ public final class FeatureTests
         ParsingExpression expr = sequence(
             oneMore(captureTextGrouped("a", literal("a"))));
 
-        Parser parser = TestConfiguration.parser("aaa");
+        Parser parser = parser("aaa");
         parser.parse(expr);
 
         ParseTree tree = parser.tree();
@@ -139,32 +173,27 @@ public final class FeatureTests
     public void testRightAssociativity()
     {
         ParsingExpression expr1 = recursive$("expr", choice(
-            leftRecursive(capture("plus", sequence(
-                capture("left", reference("expr")),
-                literal("+"),
-                capture("right", reference("expr"))))),
-            capture("num", num)));
+            leftRecursive(plus.deepCopy()),
+            num.deepCopy()));
 
         ParsingExpression expr2 = recursive$("expr", leftRecursive(choice(
-            capture("plus", sequence(
-                capture("left", reference("expr")),
-                literal("+"),
-                capture("right", reference("expr")))),
-            capture("num", num))));
+            plus.deepCopy(),
+            num.deepCopy())));
 
         for (ParsingExpression expr: new ParsingExpression[]{expr1, expr2})
         {
-            Parser parser = TestConfiguration.parser("1+1+1");
+            Parser parser = parser("1+2+3");
             parser.parse(expr);
             Ensure.equals(parser.endPosition(), 5);
-
             ParseTree tree = parser.tree();
-            ParseTree plus = tree.get("plus");
 
-            Ensure.equals(tree.childrenCount(), 1);
-            Ensure.different(plus.get("left").get("num"), null);
-            Ensure.different(plus.get("right").get("plus").get("left").get("num"), null);
-            Ensure.different(plus.get("right").get("plus").get("right").get("num"), null);
+            ParseTree expected = $($("+",
+                $("left", $("num", "1")),
+                $("right", $("+",
+                    $("left", $("num", "2")),
+                    $("right", $("num", "3"))))));
+
+            Ensure.equals(tree, expected);
         }
     }
 
@@ -172,223 +201,168 @@ public final class FeatureTests
 
     public void testLeftAssociativity()
     {
-        ParsingExpression expr = recursive$("expr", choice(
-            capture("plus", leftAssociative(
-                capture("left", reference("expr")),
-                literal("+"),
-                capture("right", reference("expr")))),
-            capture("num", num)));
+        // NOTE(norswap): it also works if leftAssociative is nested inside the capture
 
-        Parser parser = TestConfiguration.parser("1+1+1");
+        ParsingExpression expr = recursive$("expr", choice(
+            leftAssociative(plus.deepCopy()),
+            num.deepCopy()));
+
+        Parser parser = parser("1+2+3");
         parser.parse(expr);
         Ensure.ensure(parser.succeeded());
         ParseTree tree = parser.tree();
 
-        ParseTree plus = tree.get("plus");
-        Ensure.different(plus.get("right").get("num"), null);
-        Ensure.different(plus.get("left").get("plus").get("right").get("num"), null);
-        Ensure.different(plus.get("left").get("plus").get("left").get("num"), null);
+        ParseTree expected = $($("+",
+            $("left", $("+",
+                $("left", $("num", "1")),
+                $("right", $("num", "2")))),
+            $("right", $("num", "3"))));
+
+        Ensure.equals(tree, expected);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public void testPrecedence()
     {
+        // NOTE(norswap): it also works if leftAssociative is nested inside the capture
+
         ParsingExpression expr = recursive$("expr", choice(
+            precedence(1, leftAssociative(plus.deepCopy())),
+            precedence(2, leftAssociative(mult.deepCopy())),
+            precedence(3, leftAssociative(exp.deepCopy())),
+            num.deepCopy()));
 
-            precedence(1, capture("+", leftAssociative(
-                capture("left", reference("expr")),
-                literal("+"),
-                capture("right", reference("expr"))))),
-
-            precedence(2, capture("*", leftAssociative(
-                capture("left", reference("expr")),
-                literal("*"),
-                capture("right", reference("expr"))))),
-
-            precedence(3, capture("^", leftAssociative(
-                capture("left", reference("expr")),
-                literal("^"),
-                capture("right", reference("expr"))))),
-
-            capture("num", num)));
-
-        Parser parser = TestConfiguration.parser("1+1*1");
+        Parser parser = parser("1+2*3");
         parser.parse(expr);
         Ensure.ensure(parser.succeeded());
         ParseTree tree = parser.tree();
 
-        Ensure.different(tree.get("+").get("left").get("num"), null);
-        Ensure.different(tree.get("+").get("right").get("*").get("left").get("num"), null);
-        Ensure.different(tree.get("+").get("right").get("*").get("right").get("num"), null);
+        ParseTree expected = $($("+",
+            $("left", $("num", "1")),
+            $("right", $("*",
+                $("left", $("num", "2")),
+                $("right", $("num", "3"))))));
 
-        parser = TestConfiguration.parser("1*1+1");
+        Ensure.equals(tree, expected);
+
+        parser = parser("1*2+3");
         parser.parse(expr);
         Ensure.ensure(parser.succeeded());
         tree = parser.tree();
 
-        Ensure.different(tree.get("+").get("right").get("num"), null);
-        Ensure.different(tree.get("+").get("left").get("*").get("left").get("num"), null);
-        Ensure.different(tree.get("+").get("left").get("*").get("right").get("num"), null);
+        expected = $($("+",
+            $("left", $("*",
+                $("left", $("num", "1")),
+                $("right", $("num", "2")))),
+            $("right", $("num", "3"))));
+
+        Ensure.equals(tree, expected);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public void testExpression()
     {
-        // TODO: test deepCopy to simplify all these messes
-        // TODO: write a way to build trees easily; then equals check to test easily?
+        ParsingExpression expr = recursive$("expr", cluster(
+            exprLeftAssoc(1, plus.deepCopy()),
+            exprLeftAssoc(1, minus.deepCopy()),
+            exprLeftAssoc(2, mult.deepCopy()),
+            exprLeftAssoc(2, div.deepCopy()),
+            exprAlt(3, num.deepCopy())));
 
-        Operand plus = exprLeftAssoc(1, capture("+", sequence(
-            capture("left", reference("expr")),
-            literal("+"),
-            capture("right", reference("expr")))));
-
-        Operand minus = exprLeftAssoc(1, capture("-", sequence(
-            capture("left", reference("expr")),
-            literal("-"),
-            capture("right", reference("expr")))));
-
-        Operand mult = exprLeftAssoc(2, capture("*", sequence(
-            capture("left", reference("expr")),
-            literal("*"),
-            capture("right", reference("expr")))));
-
-        Operand div = exprLeftAssoc(2, capture("/", sequence(
-            capture("left", reference("expr")),
-            literal("/"),
-            capture("right", reference("expr")))));
-
-        ParsingExpression expr = recursive$("expr", expression(
-            plus, minus,
-            mult, div,
-            exprAlt(3, captureText("num", num))));
-
-        Parser parser = TestConfiguration.parser("1+2-3+4*5/6*7+8");
+        Parser parser = parser("1+2-3+4*5/6*7+8");
         parser.parse(expr);
         Ensure.ensure(parser.succeeded());
         ParseTree tree = parser.tree();
 
-        Ensure.equals(tree.get("+").get("right").value("num"), "8");
+        ParseTree expected = $($("+",
+            $("left", $("+",
+                    $("left", $("-",
+                        $("left", $("+",
+                            $("left", $("num", "1")),
+                            $("right", $("num", "2")))),
+                        $("right", $("num", "3")))),
+                    $("right", $("*",
+                        $("left", $("/",
+                            $("left", $("*",
+                                $("left", $("num", "4")),
+                                $("right", $("num", "5")))),
+                            $("right", $("num", "6")))),
+                        $("right", $("num", "7")))))),
+            $("right", $("num", "8"))));
 
-        ParseTree oneToThree = tree.get("+").get("left").get("+").get("left");
-
-        Ensure.equals(oneToThree.get("-").get("right").value("num"), "3");
-        Ensure.equals(oneToThree.get("-").get("left").get("+").get("right").value("num"), "2");
-        Ensure.equals(oneToThree.get("-").get("left").get("+").get("left") .value("num"), "1");
-
-        ParseTree fourToSeven = tree.get("+").get("left").get("+").get("right");
-
-        Ensure.equals(fourToSeven.get("*").get("right").value("num"), "7");
-        Ensure.equals(fourToSeven.get("*").get("left").get("/").get("right").value("num"), "6");
-        Ensure.equals(fourToSeven.get("*").get("left").get("/").get("left").get("*")
-            .get("right").value("num"), "5");
-        Ensure.equals(fourToSeven.get("*").get("left").get("/").get("left").get("*")
-            .get("left").value("num"), "4");
+        Ensure.equals(tree, expected);
     }
 
     public void testExpression2()
     {
         // NOTE(norswap): Same as testExpression() but + and - are now right-associative.
 
-        Operand plus = exprLeftRecur(1, capture("+", sequence(
-            capture("left", reference("expr")),
-            literal("+"),
-            capture("right", reference("expr")))));
+        ParsingExpression expr = recursive$("expr", cluster(
+            exprLeftRecur(1, plus.deepCopy()),
+            exprLeftRecur(1, minus.deepCopy()),
+            exprLeftAssoc(2, mult.deepCopy()),
+            exprLeftAssoc(2, div.deepCopy()),
+            exprAlt(3, num.deepCopy())));
 
-        Operand minus = exprLeftRecur(1, capture("-", sequence(
-            capture("left", reference("expr")),
-            literal("-"),
-            capture("right", reference("expr")))));
-
-        Operand mult = exprLeftAssoc(2, capture("*", sequence(
-            capture("left", reference("expr")),
-            literal("*"),
-            capture("right", reference("expr")))));
-
-        Operand div = exprLeftAssoc(2, capture("/", sequence(
-            capture("left", reference("expr")),
-            literal("/"),
-            capture("right", reference("expr")))));
-
-        ParsingExpression expr = recursive$("expr", expression(
-            plus, minus,
-            mult, div,
-            exprAlt(3, captureText("num", num))));
-
-        Parser parser = TestConfiguration.parser("1+2-3+4*5/6*7+8");
+        Parser parser = parser("1+2-3+4*5/6*7+8");
         parser.parse(expr);
         Ensure.ensure(parser.succeeded());
         ParseTree tree = parser.tree();
 
-        Ensure.equals(tree.get("+").get("left").value("num"), "1");
-        Ensure.equals(tree.get("+").get("right").get("-").get("left").value("num"), "2");
-        Ensure.equals(tree.get("+").get("right").get("-").get("right").get("+").get("left")
-            .value("num"), "3");
-        Ensure.equals(tree.get("+").get("right").get("-").get("right").get("+").get("right")
-            .get("+").get("right").value("num"), "8");
+        ParseTree expected = $($("+",
+            $("left", $("num", "1")),
+            $("right", $("-",
+                $("left", $("num", "2")),
+                $("right", $("+",
+                    $("left", $("num", "3")),
+                    $("right", $("+",
+                        $("left", $("*",
+                            $("left", $("/",
+                                $("left", $("*",
+                                    $("left", $("num", "4")),
+                                    $("right", $("num", "5")))),
+                                $("right", $("num", "6")))),
+                            $("right", $("num", "7")))),
+                        $("right", $("num", "8"))))))))));
 
-        ParseTree fourToSeven = tree.get("+").get("right").get("-").get("right").get("+")
-            .get("right").get("+").get("left");
-
-        Ensure.equals(fourToSeven.get("*").get("right").value("num"), "7");
-        Ensure.equals(fourToSeven.get("*").get("left").get("/").get("right").value("num"), "6");
-        Ensure.equals(fourToSeven.get("*").get("left").get("/").get("left").get("*")
-            .get("right").value("num"), "5");
-        Ensure.equals(fourToSeven.get("*").get("left").get("/").get("left").get("*")
-            .get("left").value("num"), "4");
+        Ensure.equals(tree, expected);
     }
 
     public void testExpression3()
     {
         // NOTE(norswap): Same as testExpression() but * and / are now right-associative.
 
-        Operand plus = exprLeftAssoc(1, capture("+", sequence(
-            capture("left", reference("expr")),
-            literal("+"),
-            capture("right", reference("expr")))));
+        ParsingExpression expr = recursive$("expr", cluster(
+            exprLeftAssoc(1, plus.deepCopy()),
+            exprLeftAssoc(1, minus.deepCopy()),
+            exprLeftRecur(2, mult.deepCopy()),
+            exprLeftRecur(2, div.deepCopy()),
+            exprAlt(3, num.deepCopy())));
 
-        Operand minus = exprLeftAssoc(1, capture("-", sequence(
-            capture("left", reference("expr")),
-            literal("-"),
-            capture("right", reference("expr")))));
-
-        Operand mult = exprLeftRecur(2, capture("*", sequence(
-            capture("left", reference("expr")),
-            literal("*"),
-            capture("right", reference("expr")))));
-
-        Operand div = exprLeftRecur(2, capture("/", sequence(
-            capture("left", reference("expr")),
-            literal("/"),
-            capture("right", reference("expr")))));
-
-        ParsingExpression expr = recursive$("expr", expression(
-            plus, minus,
-            mult, div,
-            exprAlt(3, captureText("num", num))));
-
-        Parser parser = TestConfiguration.parser("1+2-3+4*5/6*7+8");
+        Parser parser = parser("1+2-3+4*5/6*7+8");
         parser.parse(expr);
         Ensure.ensure(parser.succeeded());
         ParseTree tree = parser.tree();
 
-        Ensure.equals(tree.get("+").get("right").value("num"), "8");
+        ParseTree expected = $($("+",
+            $("left", $("+",
+                $("left", $("-",
+                    $("left", $("+",
+                        $("left", $("num", "1")),
+                        $("right", $("num", "2")))),
+                    $("right", $("num", "3")))),
+                $("right", $("*",
+                    $("left", $("num", "4")),
+                    $("right", $("/",
+                        $("left", $("num", "5")),
+                        $("right", $("*",
+                            $("left", $("num", "6")),
+                            $("right", $("num", "7")))))))))),
+            $("right", $("num", "8"))));
 
-        ParseTree oneToThree = tree.get("+").get("left").get("+").get("left");
-
-        Ensure.equals(oneToThree.get("-").get("right").value("num"), "3");
-        Ensure.equals(oneToThree.get("-").get("left").get("+").get("right").value("num"), "2");
-        Ensure.equals(oneToThree.get("-").get("left").get("+").get("left") .value("num"), "1");
-
-        ParseTree fourToSeven = tree.get("+").get("left").get("+").get("right");
-
-        Ensure.equals(fourToSeven.get("*").get("left").value("num"), "4");
-        Ensure.equals(fourToSeven.get("*").get("right").get("/").get("left").value("num"), "5");
-        Ensure.equals(fourToSeven.get("*").get("right").get("/").get("right").get("*")
-            .get("left").value("num"), "6");
-        Ensure.equals(fourToSeven.get("*").get("right").get("/").get("right").get("*")
-            .get("right").value("num"), "7");
+        Ensure.equals(tree, expected);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

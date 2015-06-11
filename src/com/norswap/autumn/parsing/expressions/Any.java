@@ -1,8 +1,8 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.ParseInput;
+import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 
 /**
  * Matches any character.
@@ -16,24 +16,24 @@ public final class Any extends ParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void parse(Parser parser, ParseInput input)
+    public void parse(Parser parser, ParseState state)
     {
-        if (parser.text.charAt(input.start) != 0)
+        if (parser.text.charAt(state.start) != 0)
         {
-            input.advance(1);
+            state.advance(1);
         }
         else
         {
-            parser.fail(this, input);
+            parser.fail(this, state);
         }
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public int parseDumb(CharSequence text, int position)
+    public int parseDumb(Parser parser, int position)
     {
-        return text.charAt(position) != 0
+        return parser.text.charAt(position) != 0
             ? position + 1
             : -1;
     }

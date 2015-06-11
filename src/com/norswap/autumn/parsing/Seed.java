@@ -1,5 +1,7 @@
 package com.norswap.autumn.parsing;
 
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+
 public final class Seed
 {
     public final ParsingExpression expression;

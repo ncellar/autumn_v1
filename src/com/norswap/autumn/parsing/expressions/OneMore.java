@@ -1,8 +1,8 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.ParseInput;
+import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
 
 /**
  * Repeatedly invokes its operand over the input, until it fails.
@@ -12,24 +12,20 @@ import com.norswap.autumn.parsing.ParsingExpression;
  * On success, its end position is the end position of the last successful
  * invocation of its operand.
  */
-public final class OneMore extends ParsingExpression
+public final class OneMore extends UnaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParsingExpression operand;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
     @Override
-    public void parse(Parser parser, ParseInput input)
+    public void parse(Parser parser, ParseState state)
     {
-        final ParseInput down = new ParseInput(input);
+        final ParseState down = new ParseState(state);
         operand.parse(parser, down);
 
         if (down.failed())
         {
-            input.resetOutput();
-            parser.fail(this, input);
+            state.resetOutput();
+            parser.fail(this, state);
             return;
         }
         else
@@ -50,15 +46,15 @@ public final class OneMore extends ParsingExpression
             down.advance();
         }
 
-        input.merge(down);
+        state.merge(down);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public int parseDumb(CharSequence text, int position)
+    public int parseDumb(Parser parser, int position)
     {
-        position = operand.parseDumb(text, position);
+        position = operand.parseDumb(parser, position);
 
         if (position == -1)
         {
@@ -67,40 +63,13 @@ public final class OneMore extends ParsingExpression
 
         int result;
 
-        while ((result = operand.parseDumb(text, position)) != -1)
+        while ((result = operand.parseDumb(parser, position)) != -1)
         {
             position = result;
         }
 
         return position;
     }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void appendTo(StringBuilder builder)
-    {
-        builder.append("oneMore(");
-        operand.toString(builder);
-        builder.append(")");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ParsingExpression[] children()
-    {
-        return new ParsingExpression[]{operand};
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void setChild(int position, ParsingExpression expr)
-    {
-        operand = expr;
-    }
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

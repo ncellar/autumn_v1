@@ -2,10 +2,12 @@ package com.norswap.autumn.test.benchmark;
 
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParserConfiguration;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.Source;
+import com.norswap.autumn.parsing.graph.FirstCalculator;
+import com.norswap.autumn.parsing.graph.LeftRecursionBreaker;
+import com.norswap.autumn.parsing.graph.nullability.NullabilityCalculator;
 import com.norswap.autumn.parsing.support.GrammarDriver;
-import com.norswap.autumn.test.parsing.InstrumentExpression;
 import com.norswap.autumn.util.Glob;
 
 import java.io.File;
@@ -34,18 +36,53 @@ public class AutumnBench
         Instant end = Instant.now();
         System.out.println("Grammar compiled in: " + Duration.between(start, end));
 
-        ParsingExpression root = rules[0];
-        //root = InstrumentExpression.stackTrace(root);
-
         ParsingExpression whitespace = Arrays.stream(rules)
             .filter(rule -> "Spacing".equals(rule.name()))
             .findFirst().get();
 
+        // TODO better entry points
+
+        NullabilityCalculator nullCalc = new NullabilityCalculator();
+        nullCalc.run(rules);
+
+        // Test NullabilityCalculator
+        //nullCalc.nullables().forEach(x -> System.err.println(x));
+
+        FirstCalculator.nullCalc = nullCalc;
+        /*
+        FirstCalculator firstCalc = new FirstCalculator();
+        firstCalc.run(rules);
+        */
+
+        // Test FirstCalculator
+        //firstCalc.first.entrySet().stream().forEach(e -> System.err.println(e));
+
+        LeftRecursionBreaker leftBreaker = new LeftRecursionBreaker();
+        rules = leftBreaker.run(rules);
+
+        /*
+        // Left Recursion Breaker Test
+        {
+            Source source = Source.fromString("xxxxx");
+            Parser parser = new Parser(source, new ParserConfiguration());
+            parser.parse(rules[rules.length - 1]);
+            System.err.println("breaker test: " + parser.succeeded());
+        }
+
+        //*/
+
+        ParsingExpression root = rules[0];
+        //root = InstrumentExpression.stackTrace(root);
+
         start = Instant.now();
-        //parseDirectory("../guava/guava/src/com/google/common/base/", root, whitespace);
-        parseDirectory("../guava", root, whitespace);
+        int iters = 1;
+        for (int i = 0; i < 1; ++i)
+        {
+            //parseDirectory("../guava/guava/src/com/google/common/base/", root, whitespace);
+            parseDirectory("../guava", root, whitespace);
+        }
         end = Instant.now();
-        System.out.println("Guava parsed in: " + Duration.between(start, end));
+        System.out.println("Guava parsed in: " + Duration.between(start, end).dividedBy(iters));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -57,7 +94,7 @@ public class AutumnBench
         for (Path path: Glob.glob("**/*.java", new File(directory).toPath()))
         {
             ParserConfiguration config = new ParserConfiguration();
-            config.whitespace = whitespace;
+            config.whitespace = () -> whitespace;
 
             parseFile(path.toString(), root, config);
         }
@@ -72,7 +109,6 @@ public class AutumnBench
         {
             Source source = Source.fromFile(file);
             Parser parser = new Parser(source, config);
-
             parser.parse(root);
 
             if (parser.succeeded())
@@ -85,7 +121,7 @@ public class AutumnBench
                 System.err.println(file);
                 parser.report();
                 System.err.println();
-                throw new Error("stop!");
+                System.exit(-1);
             }
         }
         catch (IOException e)

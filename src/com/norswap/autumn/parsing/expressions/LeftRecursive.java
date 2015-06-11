@@ -1,27 +1,27 @@
 package com.norswap.autumn.parsing.expressions;
 
 import com.norswap.autumn.parsing.OutputChanges;
-import com.norswap.autumn.parsing.ParseInput;
+import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
 
-public final class LeftRecursive extends ParsingExpression
+public final class LeftRecursive extends UnaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public boolean leftAssociative;
-    public ParsingExpression operand;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void parse(Parser parser, ParseInput input)
+    public void parse(Parser parser, ParseState state)
     {
-        OutputChanges changes = input.getSeed(this);
+        OutputChanges changes = state.getSeed(this);
 
         if (changes != null)
         {
-            changes.mergeInto(input);
+            changes.mergeInto(state);
             return;
         }
         else if (leftAssociative && parser.isBlocked(this))
@@ -31,12 +31,12 @@ public final class LeftRecursive extends ParsingExpression
 
             // We bypass error handling: it is not expected that the input matches this expression.
 
-            input.fail();
+            state.fail();
             return;
         }
 
         changes = OutputChanges.failure();
-        input.pushSheed(this, changes);
+        state.pushSheed(this, changes);
 
         if (leftAssociative)
         {
@@ -47,16 +47,16 @@ public final class LeftRecursive extends ParsingExpression
         // the expansion of the seed, so don't do it. This is cleared when advancing input position
         // with {@link ParseInput#advance()}.
 
-        int oldFlags = input.flags;
-        input.forbidMemoization();
+        int oldFlags = state.flags;
+        state.forbidMemoizationAtPosition();
 
         // Keep parsing the operand, as long as long as the seed keeps growing.
 
         while (true)
         {
-            operand.parse(parser, input);
+            operand.parse(parser, state);
 
-            if (changes.end >= input.end)
+            if (changes.end >= state.end)
             {
                 // If no rule could grow the seed, exit the loop.
                 break;
@@ -65,21 +65,24 @@ public final class LeftRecursive extends ParsingExpression
             {
                 // Update the seed and retry the rule.
 
-                changes = new OutputChanges(input);
-                input.setSeed(changes);
-                input.resetAllOutput();
-                input.forbidMemoization();
+                changes = new OutputChanges(state);
+                state.setSeed(changes);
+                state.resetAllOutput();
+                state.forbidMemoizationAtPosition();
             }
         }
 
-        input.resetAllOutput();
-        input.flags = oldFlags;
-        changes.mergeInto(input);
-        input.popSeed();
+        // Reset cuts as well, as a precaution, while further thinking is done on
+        // the implications (and on the usefulness of the cut operator in general).
+        state.resetAllOutput();
 
-        if (input.failed())
+        state.flags = oldFlags;
+        changes.mergeInto(state);
+        state.popSeed();
+
+        if (state.failed())
         {
-            parser.fail(this, input);
+            parser.fail(this, state);
         }
 
         if (leftAssociative)
@@ -96,22 +99,6 @@ public final class LeftRecursive extends ParsingExpression
         builder.append(leftAssociative ? "leftAssociative" : "leftRecursive(");
         operand.toString(builder);
         builder.append(")");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ParsingExpression[] children()
-    {
-        return new ParsingExpression[]{operand};
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void setChild(int position, ParsingExpression expr)
-    {
-        operand = expr;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

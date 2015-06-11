@@ -3,6 +3,7 @@ package com.norswap.autumn.util;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.function.Function;
 
 /**
  * A dynamic array to serve as minimal substitute to ArrayList.
@@ -287,6 +288,15 @@ public final class Array<T> implements Iterable<T>, Cloneable
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    public T[] toArray(Function<Integer, T[]> supplier)
+    {
+        T[] out = supplier.apply(next);
+        System.arraycopy(array, 0, out, 0, next);
+        return out;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     @Override
     public String toString()
     {
@@ -311,10 +321,57 @@ public final class Array<T> implements Iterable<T>, Cloneable
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "CloneDoesntCallSuperClone"})
     public Array<T> clone()
     {
         return new Array(array.clone(), next);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public boolean equals(Object o)
+    {
+        // part auto-generated, part lifted from Arrays.equals
+
+        if (this == o)
+            return true;
+
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        Array<?> array1 = (Array<?>) o;
+
+        if (next != array1.next)
+            return false;
+
+        for (int i = 0; i < next; ++i)
+        {
+            Object o1 = array[i];
+            Object o2 = array1.array[i];
+
+            if (!(o1==null ? o2==null : o1.equals(o2)))
+                return false;
+        }
+
+        return true;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public int hashCode()
+    {
+        // lifted from Arrays.hashCode
+
+        int result = 1;
+
+        for (T t: this)
+        {
+            result = 31 * result + (t == null ? 0 : t.hashCode());
+        }
+
+        return result;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

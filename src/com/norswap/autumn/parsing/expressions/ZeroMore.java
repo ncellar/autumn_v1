@@ -1,8 +1,9 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.ParseInput;
+import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
+import com.norswap.autumn.parsing.graph.nullability.Nullability;
 
 /**
  * Repeatedly invokes its operand over the input, until it fails. Each invocation occurs at
@@ -13,18 +14,14 @@ import com.norswap.autumn.parsing.ParsingExpression;
  * On success, its end position is the end position of the last successful invocation of its
  * operand.
  */
-public final class ZeroMore extends ParsingExpression
+public final class ZeroMore extends UnaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParsingExpression operand;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
     @Override
-    public void parse(Parser parser, ParseInput input)
+    public void parse(Parser parser, ParseState state)
     {
-        final ParseInput down = new ParseInput(input);
+        final ParseState down = new ParseState(state);
 
         while (true)
         {
@@ -39,17 +36,17 @@ public final class ZeroMore extends ParsingExpression
             down.advance();
         }
 
-        input.merge(down);
+        state.merge(down);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public int parseDumb(CharSequence text, int position)
+    public int parseDumb(Parser parser, int position)
     {
         int result;
 
-        while ((result = operand.parseDumb(text, position)) != -1)
+        while ((result = operand.parseDumb(parser, position)) != -1)
         {
             position = result;
         }
@@ -57,30 +54,12 @@ public final class ZeroMore extends ParsingExpression
         return position;
     }
 
-    // ---------------------------------------------------------------------------------------------
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void appendTo(StringBuilder builder)
+    public Nullability nullability()
     {
-        builder.append("zeroMore(");
-        operand.toString(builder);
-        builder.append(")");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ParsingExpression[] children()
-    {
-        return new ParsingExpression[]{operand};
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void setChild(int position, ParsingExpression expr)
-    {
-        operand = expr;
+        return Nullability.yes(this);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

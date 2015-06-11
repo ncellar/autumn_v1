@@ -1,66 +1,59 @@
 package com.norswap.autumn.parsing.expressions;
 
 import com.norswap.autumn.parsing.OutputChanges;
-import com.norswap.autumn.parsing.ParseInput;
+import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.graph.nullability.Nullability;
+import com.norswap.autumn.util.DeepCopy;
 
 import java.util.Arrays;
 
-public final class Expression extends ParsingExpression
+public final class ExpressionCluster extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public final static class PrecedenceEntry
     {
-        public Expression expression;
+        public ExpressionCluster cluster;
         public int initialPosition;
         public int minPrecedence;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public final static class Operand
+    public final static class Group implements DeepCopy
+    {
+        public int precedence;
+        public boolean leftRecursive;
+        public boolean leftAssociative;
+        public ParsingExpression[] operands;
+
+        @Override
+        public Group deepCopy()
+        {
+            Group copy = DeepCopy.clone(this);
+            copy.operands = DeepCopy.of(operands, ParsingExpression[]::new);
+            return copy;
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public final static class Operand implements DeepCopy
     {
         public ParsingExpression operand;
         public int precedence;
         public boolean leftRecursive;
         public boolean leftAssociative;
-    }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public final static class DropPrecedence extends ParsingExpression
-    {
-        public ParsingExpression operand;
 
         @Override
-        public void parse(Parser parser, ParseInput input)
+        public Operand deepCopy()
         {
-            int minPrecedence = parser.minPrecedence();
-            parser.setMinPrecedence(0);
-            operand.parse(parser, input);
-            parser.setMinPrecedence(minPrecedence);
-        }
-
-        @Override
-        public void appendTo(StringBuilder builder)
-        {
-            builder.append("dropPrecedence(");
-            operand.toString(builder);
-            builder.append(")");
-        }
-
-        @Override
-        public ParsingExpression[] children()
-        {
-            return new ParsingExpression[]{operand};
-        }
-
-        @Override
-        public void setChild(int position, ParsingExpression expr)
-        {
-            this.operand = expr;
+            Operand copy = DeepCopy.clone(this);
+            copy.operand = operand.deepCopy();
+            return copy;
         }
     }
 
@@ -81,36 +74,36 @@ public final class Expression extends ParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void parse(Parser parser, ParseInput input)
+    public void parse(Parser parser, ParseState state)
     {
-        // NOTE(norswap): Expression can't contain left-recursive sub-expressions that go through
-        // the expression to achieve left-recursion. Neither can the Expression recurse through
-        // other Expressions. Formally, any recursion cycle that the Expression is a part of
-        // can't contain any LeftRecursive or other Expression nodes.
+        // NOTE(norswap): Clusters can't contain left-recursive sub-expressions that go through
+        // the expression to achieve left-recursion. Neither can the cluster recurse through
+        // other clusters. Formally, any recursion cycle that a cluster is a part of
+        // can't contain any LeftRecursive or other cluster nodes.
 
         // This variable holds the current seed value throughout the function.
-        OutputChanges changes = input.getSeed(this);
+        OutputChanges changes = state.getSeed(this);
 
         if (changes != null)
         {
-            // If this expression is already in the process of being parsed at this position; use
+            // If this cluster is already in the process of being parsed at this position; use
             // the seed value.
 
-            changes.mergeInto(input);
+            changes.mergeInto(state);
             return;
         }
 
         changes = OutputChanges.failure();
-        input.pushSheed(this, changes);
+        state.pushSheed(this, changes);
+        int changesPrecedence = 0;
 
-        // If we're in a left-recursive position, relying on memoized values will prevent
-        // the expansion of the seed, so don't do it. This is cleared when advancing input position
-        // with {@link ParseInput#advance()}.
+        // Because of precedence, memoized results might not be correct (might have been obtained
+        // with another precedence).
 
-        final int oldFlags = input.flags;
-        input.forbidMemoization();
+        final int oldFlags = state.flags;
+        state.forbidMemoization();
 
-        final int minPrecedence = parser.enterPrecedence(this, input.start);
+        final int minPrecedence = parser.enterPrecedence(this, state.start, 0);
 
         // Used to sometimes inhibit error reporting.
         boolean report = true;
@@ -130,7 +123,7 @@ public final class Expression extends ParsingExpression
             {
                 if (changes.failed())
                 {
-                    // Bypass error handling: it's unfair to say that the whole expression
+                    // Bypass error handling: it's unfair to say that the whole cluster
                     // failed at this position, because maybe a lower precedence operator would
                     // have matched (e.g. prefix operator with higher precedence than a postfix
                     // operator).
@@ -152,25 +145,28 @@ public final class Expression extends ParsingExpression
 
                 for (Operand operand: group)
                 {
-                    operand.operand.parse(parser, input);
+                    operand.operand.parse(parser, state);
 
-                    if (changes.end >= input.end)
+                    if (state.end > changes.end
+                        || groupPrecedence > changesPrecedence && state.end != -1)
                     {
-                        // This rule couldn't grow the seed, try the next one.
+                        // The seed was grown, try to grow it again starting from the first
+                        // recursive rule.
 
-                        input.resetAllOutput();
-                        input.forbidMemoization();
+                        parser.clusterAlternate = operand.operand;
+                        changes = new OutputChanges(state);
+                        changesPrecedence = groupPrecedence;
+                        state.setSeed(changes);
+                        state.resetAllOutput();
+                        break;
                     }
                     else
                     {
-                        // The seed was grown, try to grow it again startin from the first
-                        // recursive rule.
+                        // This rule couldn't grow the seed, try the next one.
 
-                        changes = new OutputChanges(input);
-                        input.setSeed(changes);
-                        input.resetAllOutput();
-                        input.forbidMemoization();
-                        break;
+                        // Reset cuts as well, as a precaution, while further thinking is done on
+                        // the implications (and on the usefulness of the cut operator in general).
+                        state.resetAllOutput();
                     }
                 }
 
@@ -186,14 +182,14 @@ public final class Expression extends ParsingExpression
             }
         }
 
-        input.flags = oldFlags;
-        changes.mergeInto(input);
-        input.popSeed();
-        parser.exitPrecedence(minPrecedence, input.start);
+        state.flags = oldFlags;
+        changes.mergeInto(state);
+        state.popSeed();
+        parser.exitPrecedence(minPrecedence, state.start);
 
-        if (input.failed() && report)
+        if (state.failed() && report)
         {
-            parser.fail(this, input);
+            parser.fail(this, state);
         }
     }
 
@@ -232,7 +228,7 @@ public final class Expression extends ParsingExpression
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void setChild(int position, ParsingExpression expr)
+    public void setChild(int position, ParsingExpression pe)
     {
         int pos = 0;
 
@@ -240,7 +236,7 @@ public final class Expression extends ParsingExpression
         {
             if (position < pos + group.length)
             {
-                group[position - pos].operand = expr;
+                group[position - pos].operand = pe;
                 return;
             }
 
@@ -249,6 +245,45 @@ public final class Expression extends ParsingExpression
 
         throw new RuntimeException(
             "Requesting child " + position + " of an expression with only " + pos + "children.");
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public ExpressionCluster deepCopy()
+    {
+        ExpressionCluster copy = (ExpressionCluster) super.deepCopy();
+
+        copy.groups = new Operand[groups.length][];
+        copy.recursiveGroups = new Operand[groups.length][];
+
+        for (int i = 0; i < groups.length; ++i)
+        {
+            copy.groups[i] = DeepCopy.of(groups[i], Operand[]::new);
+            copy.recursiveGroups[i] = DeepCopy.of(recursiveGroups[i], Operand[]::new);
+        }
+
+        return copy;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public Nullability nullability()
+    {
+        return Nullability.any(this, firsts());
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public ParsingExpression[] firsts()
+    {
+        return Arrays.stream(groups)
+            .flatMap(Arrays::stream)
+            .filter(o -> !o.leftRecursive)
+            .map(o -> o.operand)
+            .toArray(ParsingExpression[]::new);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

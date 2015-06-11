@@ -1,6 +1,6 @@
 package com.norswap.autumn.test.mouse;
 
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
 

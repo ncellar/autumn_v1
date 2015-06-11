@@ -1,9 +1,9 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.ParseInput;
+import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.ParseTree;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
 
 import static com.norswap.autumn.parsing.Registry.*; // PEF_*
 
@@ -13,45 +13,44 @@ import static com.norswap.autumn.parsing.Registry.*; // PEF_*
  * On success, adds a new child node to the current parse tree node whose name is {@link #name}.
  * This node becomes the current parse tree node for the invocation of the operand.
  */
-public final class Capture extends ParsingExpression
+public final class Capture extends UnaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public String name;
-    public ParsingExpression operand;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void parse(Parser parser, ParseInput input)
+    public void parse(Parser parser, ParseState state)
     {
-        ParseTree oldTree = input.tree;
+        ParseTree oldTree = state.tree;
         ParseTree newTree = new ParseTree(name);
-        int oldCount = input.treeChildrenCount;
+        int oldCount = state.treeChildrenCount;
 
-        input.tree = newTree;
-        input.treeChildrenCount = 0;
+        state.tree = newTree;
+        state.treeChildrenCount = 0;
 
-        operand.parse(parser, input);
+        operand.parse(parser, state);
 
-        input.tree = oldTree;
-        input.treeChildrenCount = oldCount;
+        state.tree = oldTree;
+        state.treeChildrenCount = oldCount;
 
-        if (input.succeeded())
+        if (state.succeeded())
         {
             if (isCaptureGrouped())
             {
-                input.tree.addGrouped(newTree);
+                oldTree.addGrouped(newTree);
             }
             else
             {
-                input.tree.add(newTree);
+                oldTree.add(newTree);
             }
 
             if (shouldCaptureText())
             {
                 newTree.value = parser.text
-                    .subSequence(input.start, input.blackEnd)
+                    .subSequence(state.start, state.blackEnd)
                     .toString();
             }
         }
@@ -67,22 +66,6 @@ public final class Capture extends ParsingExpression
         builder.append("\", ");
         operand.toString(builder);
         builder.append(")");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ParsingExpression[] children()
-    {
-        return new ParsingExpression[]{operand};
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void setChild(int position, ParsingExpression expr)
-    {
-        operand = expr;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

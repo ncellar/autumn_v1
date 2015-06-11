@@ -1,8 +1,9 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.ParseInput;
+import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
+import com.norswap.autumn.parsing.graph.nullability.Nullability;
 
 /**
  * Invokes its operand on the input, then resets the input to its initial position.
@@ -11,63 +12,41 @@ import com.norswap.autumn.parsing.ParsingExpression;
  *
  * On success, its end position is its start position.
  */
-public final class Lookahead extends ParsingExpression
+public final class Lookahead extends UnaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParsingExpression operand;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
     @Override
-    public void parse(Parser parser, ParseInput input)
+    public void parse(Parser parser, ParseState state)
     {
-        operand.parse(parser, input);
+        operand.parse(parser, state);
 
-        if (input.succeeded())
+        if (state.succeeded())
         {
-            input.resetOutput();
+            state.resetOutput();
         }
         else
         {
-            parser.fail(this, input);
+            parser.fail(this, state);
         }
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public int parseDumb(CharSequence text, int position)
+    public int parseDumb(Parser parser, int position)
     {
-        return operand.parseDumb(text, position) == -1
+        return operand.parseDumb(parser, position) == -1
             ? -1
             : position;
     }
 
-    // ---------------------------------------------------------------------------------------------
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void appendTo(StringBuilder builder)
+    public Nullability nullability()
     {
-        builder.append("lookahead(");
-        operand.toString(builder);
-        builder.append(")");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ParsingExpression[] children()
-    {
-        return new ParsingExpression[]{operand};
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void setChild(int position, ParsingExpression expr)
-    {
-        operand = expr;
+        return Nullability.yes(this);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

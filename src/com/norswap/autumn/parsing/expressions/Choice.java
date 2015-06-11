@@ -1,8 +1,10 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.ParseInput;
+import com.norswap.autumn.parsing.expressions.common.NaryParsingExpression;
+import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.graph.nullability.Nullability;
 
 /**
  * Invokes all its operands at its initial input position, until one succeeds.
@@ -11,42 +13,38 @@ import com.norswap.autumn.parsing.ParsingExpression;
  *
  * On success, its end position is that of the operand that succeeded.
  */
-public final class Choice extends ParsingExpression
+public final class Choice extends NaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParsingExpression[] operands;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
     @Override
-    public void parse(Parser parser, ParseInput input)
+    public void parse(Parser parser, ParseState state)
     {
         for (ParsingExpression operand : operands)
         {
-            operand.parse(parser, input);
+            operand.parse(parser, state);
 
-            if (input.succeeded())
+            if (state.succeeded())
             {
                 return;
             }
             else
             {
-                input.resetOutput();
+                state.resetOutput();
             }
         }
 
-        parser.fail(this, input);
+        parser.fail(this, state);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public int parseDumb(CharSequence text, int position)
+    public int parseDumb(Parser parser, int position)
     {
         for (ParsingExpression operand : operands)
         {
-            int result = operand.parseDumb(text, position);
+            int result = operand.parseDumb(parser, position);
 
             if (result != - 1)
             {
@@ -57,31 +55,10 @@ public final class Choice extends ParsingExpression
         return -1;
     }
 
-    // ---------------------------------------------------------------------------------------------
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void appendTo(StringBuilder builder)
-    {
-        builder.append("choice(");
-
-        for (ParsingExpression operand: operands)
-        {
-            operand.toString(builder);
-            builder.append(", ");
-        }
-
-        if (operands.length > 0)
-        {
-            builder.setLength(builder.length() - 2);
-        }
-
-        builder.append(")");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ParsingExpression[] children()
+    public ParsingExpression[] firsts()
     {
         return operands;
     }
@@ -89,9 +66,9 @@ public final class Choice extends ParsingExpression
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void setChild(int position, ParsingExpression expr)
+    public Nullability nullability()
     {
-        operands[position] = expr;
+        return Nullability.any(this, operands);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

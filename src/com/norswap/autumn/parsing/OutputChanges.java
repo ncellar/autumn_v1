@@ -1,6 +1,9 @@
 package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.util.Array;
+import com.norswap.autumn.util.HandleMap;
+
+import java.util.function.Supplier;
 
 public final class OutputChanges
 {
@@ -10,6 +13,7 @@ public final class OutputChanges
     public int blackEnd;
     public ParseTree tree;
     public Array<String> cuts;
+    public HandleMap ext;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -29,39 +33,41 @@ public final class OutputChanges
 
     // ---------------------------------------------------------------------------------------------
 
-    public OutputChanges(ParseInput input)
+    public OutputChanges(ParseState state)
     {
-        this.end = input.end;
-        this.blackEnd = input.blackEnd;
+        this.end = state.end;
+        this.blackEnd = state.blackEnd;
         this.tree = new ParseTree();
         this.cuts = new Array<>();
 
-        for (int i = input.treeChildrenCount; i < input.tree.childrenCount(); ++i)
+        Supplier<String> x = "x"::toString;
+
+        for (int i = state.treeChildrenCount; i < state.tree.childrenCount(); ++i)
         {
-            this.tree.add(input.tree.children.get(i));
+            this.tree.add(state.tree.children.get(i));
         }
 
-        for (int i = input.cutsCount; i < input.cuts.size(); ++i)
+        for (int i = state.cutsCount; i < state.cuts.size(); ++i)
         {
-            this.cuts.add(input.cuts.get(i));
+            this.cuts.add(state.cuts.get(i));
         }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void mergeInto(ParseInput input)
+    public void mergeInto(ParseState state)
     {
-        input.end = end;
-        input.blackEnd = blackEnd;
+        state.end = end;
+        state.blackEnd = blackEnd;
 
         if (tree != null)
         {
-            input.tree.add(tree);
+            state.tree.add(tree);
         }
 
         if (cuts != null)
         {
-            input.cuts.addAll(cuts);
+            state.cuts.addAll(cuts);
         }
     }
 

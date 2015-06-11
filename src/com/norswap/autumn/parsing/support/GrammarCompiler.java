@@ -1,17 +1,19 @@
 package com.norswap.autumn.parsing.support;
 
 import com.norswap.autumn.parsing.ParseTree;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.DropPrecedence;
+import com.norswap.autumn.parsing.expressions.Filter;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.ParsingExpressionFactory;
-import com.norswap.autumn.parsing.expressions.Expression;
-import com.norswap.autumn.parsing.expressions.Expression.Operand;
-import com.norswap.autumn.util.Pair;
+import com.norswap.autumn.parsing.expressions.ExpressionCluster.Operand;
+import com.norswap.autumn.parsing.expressions.Reference;
+import com.norswap.autumn.util.Array;
 import com.norswap.autumn.util.Streams;
 
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
-import static com.norswap.autumn.parsing.Registry.*; // PEF_EXPR_*
 import static com.norswap.autumn.util.StringEscape.unescape;
 
 public final class GrammarCompiler
@@ -28,6 +30,10 @@ public final class GrammarCompiler
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    private Array<ParsingExpression> namedClusterAlternates = new Array<>();
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     /**
      * Takes the parse tree obtained from a grammar file, and return an array of parsing
      * expressions, corresponding to the grammar rules defined in the grammar.
@@ -38,8 +44,9 @@ public final class GrammarCompiler
     {
         ParseTree rules = tree.group("rules");
 
-        return Streams.from(rules)
-            .map(this::compileRule)
+        return Stream.concat(
+                Streams.from(rules).map(this::compileRule),
+                Streams.from(namedClusterAlternates))
             .toArray(ParsingExpression[]::new);
     }
 
@@ -114,21 +121,27 @@ public final class GrammarCompiler
 
     private ParsingExpression compileExpression(ParseTree expression)
     {
-        class $ {
-            int lastPrecedence = 1;
-        }
-        $ $ = new $();
+        final int UNSET = -1, MULTISET = -2, SET = 1;
 
-        return expression(Streams.from(expression.group("alts"))
+        class $ {
+            int precedence = 0;
+            boolean leftRecur = false;
+            boolean leftAssoc = false;
+        }
+        $ last = new $();
+
+        Array<ParsingExpression> namedAlternates = new Array<>();
+        Array<String> alternateNames = new Array<>();
+
+        ParsingExpression cluster = cluster(Streams.from(expression.group("alts"))
             .map(alt ->
             {
                 ParsingExpression pe = compileSequence(alt.get("sequence"));
                 Operand operand = new Operand();
-                int precedence = -1;
+                int precedence = UNSET;
 
-                for (ParseTree annotation: alt.group("annotations"))
+                for (ParseTree annotation : alt.group("annotations"))
                 {
-                    // TODO(norswap): this is retarded
                     annotation = annotation.child(0);
 
                     switch (annotation.name)
@@ -136,19 +149,19 @@ public final class GrammarCompiler
                         case "precedence":
                             precedence = precedence == -1
                                 ? Integer.parseInt(annotation.value)
-                                : -2;
+                                : MULTISET;
                             break;
 
                         case "increment":
                             precedence = precedence == -1
-                                ? $.lastPrecedence + 1
-                                : -2;
+                                ? last.precedence + 1
+                                : MULTISET;
                             break;
 
                         case "same":
                             precedence = precedence == -1
-                                ? $.lastPrecedence
-                                : -2;
+                                ? last.precedence
+                                : MULTISET;
                             break;
 
                         case "left_assoc":
@@ -159,16 +172,27 @@ public final class GrammarCompiler
                         case "left_recur":
                             operand.leftRecursive = true;
                             break;
+
+                        case "name":
+                            namedAlternates.push(pe);
+                            alternateNames.push(annotation.value);
+                            break;
                     }
                 }
 
-                if (precedence == -1)
+                if (precedence == 0)
+                {
+                    throw new RuntimeException(
+                        "Precedence can't be 0. Don't use @0; or use @= in first position.");
+                }
+
+                if (precedence == UNSET)
                 {
                     throw new RuntimeException(
                         "Expression alternate does not specify precedence.");
                 }
 
-                if (precedence == -2)
+                if (precedence == MULTISET)
                 {
                     throw new RuntimeException(
                         "Expression specifies precedence more than once.");
@@ -176,11 +200,47 @@ public final class GrammarCompiler
 
                 operand.operand = pe;
                 operand.precedence = precedence;
-                $.lastPrecedence = precedence;
+
+                if (precedence != last.precedence)
+                {
+                    last.leftAssoc = operand.leftAssociative;
+                    last.leftRecur = operand.leftRecursive;
+                    last.precedence = precedence;
+                }
+                else
+                {
+                    if (operand.leftAssociative)
+                    {
+                        throw new RuntimeException(
+                            "@left_assoc annotation not on the item with its precedence.");
+                    }
+
+                    if (operand.leftRecursive)
+                    {
+                        throw new RuntimeException(
+                            "@left_recur annotation not on the item with its precedence.");
+                    }
+
+                    operand.leftAssociative = last.leftAssoc;
+                    operand.leftRecursive = last.leftRecur;
+                }
 
                 return operand;
 
             }).toArray(Operand[]::new));
+
+        for (int i = 0; i < namedAlternates.size(); ++i)
+        {
+            Filter filter = new Filter();
+            filter.operand = cluster;
+            filter.allowed = new ParsingExpression[]{ namedAlternates.get(i) };
+            filter.forbidden = new ParsingExpression[0];
+            filter.setName(alternateNames.get(i));
+
+            namedClusterAlternates.push(filter);
+        }
+
+        return cluster;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -250,7 +310,32 @@ public final class GrammarCompiler
                 return compileChoice(primary);
 
             case "ref":
-                return reference(primary.value);
+                Reference ref = reference(primary.value("name"));
+
+                ParseTree allowed = primary.getOrNull("allowed");
+                ParseTree forbidden = primary.getOrNull("forbidden");
+
+                if (allowed != null || forbidden != null)
+                {
+                    return filter(
+                        allowed == null
+                            ? new ParsingExpression[0]
+                            : Streams.from(allowed)
+                                .map(pe -> reference(pe.value))
+                                .toArray(ParsingExpression[]::new),
+
+                        forbidden == null
+                            ? new ParsingExpression[0]
+                            : Streams.from(forbidden)
+                                .map(pe -> reference(pe.value))
+                                .toArray(ParsingExpression[]::new),
+
+                        ref
+                    );
+                }
+                else {
+                    return ref;
+                }
 
             case "any":
                 return any();
@@ -270,7 +355,7 @@ public final class GrammarCompiler
                 return literal(unescape(primary.value("literal")));
 
             case "drop":
-                Expression.DropPrecedence out = new Expression.DropPrecedence();
+                DropPrecedence out = new DropPrecedence();
                 out.operand = compilePrimary(primary.child(0));
                 return out;
 

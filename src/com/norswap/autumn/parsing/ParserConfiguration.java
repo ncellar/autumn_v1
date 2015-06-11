@@ -1,5 +1,9 @@
 package com.norswap.autumn.parsing;
 
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+
+import java.util.function.Supplier;
+
 public final class ParserConfiguration
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -11,11 +15,12 @@ public final class ParserConfiguration
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ErrorHandler errorHandler = new DefaultErrorHandler();
+    public Supplier<ErrorHandler> errorHandler = DefaultErrorHandler::new;
 
-    public ParsingExpression whitespace = Whitespace.whitespace;
+    public Supplier<ParsingExpression> whitespace = () ->
+        ReferenceResolver.run(Whitespace.whitespace.deepCopy());
 
-    public MemoizationStrategy memoizationStrategy = new DefaultMemoizationStrategy();
+    public Supplier<MemoizationStrategy> memoizationStrategy = DefaultMemoizationStrategy::new;
 
     public boolean processLeadingWhitespace = true;
 

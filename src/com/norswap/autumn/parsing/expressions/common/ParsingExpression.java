@@ -1,5 +1,9 @@
-package com.norswap.autumn.parsing;
+package com.norswap.autumn.parsing.expressions.common;
 
+import com.norswap.autumn.parsing.ParseState;
+import com.norswap.autumn.parsing.Parser;
+import com.norswap.autumn.parsing.Registry;
+import com.norswap.autumn.parsing.graph.nullability.Nullability;
 import com.norswap.autumn.util.Caster;
 import com.norswap.autumn.util.DeepCopy;
 import com.norswap.autumn.util.Exceptions;
@@ -11,7 +15,7 @@ import com.norswap.autumn.util.HandleMap;
  * flavour.
  *
  * {@link #parse} takes two parameters: the parser itself which supplies global context and some
- * parse input. In particular the parse input includes the position in the source text at which
+ * parse state. In particular the parse state includes the position in the source text at which
  * to attempt the match.
  */
 public abstract class ParsingExpression implements DeepCopy
@@ -26,11 +30,11 @@ public abstract class ParsingExpression implements DeepCopy
 
     // ---------------------------------------------------------------------------------------------
 
-    public abstract void parse(Parser parser, ParseInput input);
+    public abstract void parse(Parser parser, ParseState state);
 
     // ---------------------------------------------------------------------------------------------
 
-    public int parseDumb(CharSequence text, int position)
+    public int parseDumb(Parser parser, int position)
     {
         throw new UnsupportedOperationException(
             "Parsing expression class "
@@ -110,7 +114,7 @@ public abstract class ParsingExpression implements DeepCopy
 
     // ---------------------------------------------------------------------------------------------
 
-    public void setChild(int position, ParsingExpression expr)
+    public void setChild(int position, ParsingExpression pe)
     {
         throw new UnsupportedOperationException(
             "Parsing expression class "
@@ -136,6 +140,21 @@ public abstract class ParsingExpression implements DeepCopy
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    // PROPERTIES
+
+    public Nullability nullability()
+    {
+        return Nullability.no(this);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public ParsingExpression[] firsts()
+    {
+        return new ParsingExpression[0];
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public ParsingExpression clone()
@@ -147,6 +166,9 @@ public abstract class ParsingExpression implements DeepCopy
 
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * Note: only run on parsing expression without loop, i.e. before resolving references.
+     */
     @Override
     public ParsingExpression deepCopy()
     {

@@ -1,9 +1,9 @@
 package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.parsing.expressions.*;
-import com.norswap.autumn.parsing.expressions.Expression.Operand;
 import com.norswap.autumn.parsing.expressions.Whitespace;
-import com.norswap.autumn.util.Pair;
+import com.norswap.autumn.parsing.expressions.ExpressionCluster.Operand;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -102,7 +102,7 @@ public final class ParsingExpressionFactory
         return dumb(sequence(seq));
     }
 
-    public static Expression expression(Operand... operands)
+    public static ExpressionCluster cluster(Operand... operands)
     {
         // Partition the alternates by precedence and sort in descending order of precedence.
         // Within each group, the order of alternates is preserved.
@@ -124,25 +124,25 @@ public final class ParsingExpressionFactory
                 .toArray(Operand[]::new))
             .toArray(Operand[][]::new);
 
-        Expression result = new Expression();
+        ExpressionCluster result = new ExpressionCluster();
         result.groups = groups;
         result.recursiveGroups = recursiveGroups;
         return result;
     }
 
-    public static Expression.DropPrecedence exprDropPrecedence(ParsingExpression operand)
+    public static DropPrecedence exprDropPrecedence(ParsingExpression operand)
     {
-        Expression.DropPrecedence result = new Expression.DropPrecedence();
+        DropPrecedence result = new DropPrecedence();
         result.operand = operand;
         return result;
     }
 
-    public static Expression.DropPrecedence exprDropPrecedence(ParsingExpression... seq)
+    public static DropPrecedence exprDropPrecedence(ParsingExpression... seq)
     {
         return exprDropPrecedence(sequence(seq));
     }
 
-    public static Expression.Operand exprAlt(int precedence, ParsingExpression operand)
+    public static ExpressionCluster.Operand exprAlt(int precedence, ParsingExpression operand)
     {
         Operand op = new Operand();
         op.operand = operand;
@@ -150,7 +150,7 @@ public final class ParsingExpressionFactory
         return op;
     }
 
-    public static Expression.Operand exprLeftRecur(int precedence, ParsingExpression operand)
+    public static ExpressionCluster.Operand exprLeftRecur(int precedence, ParsingExpression operand)
     {
         Operand op = new Operand();
         op.operand = operand;
@@ -159,7 +159,7 @@ public final class ParsingExpressionFactory
         return op;
     }
 
-    public static Expression.Operand exprLeftAssoc(int precedence, ParsingExpression operand)
+    public static ExpressionCluster.Operand exprLeftAssoc(int precedence, ParsingExpression operand)
     {
         Operand op = new Operand();
         op.operand = operand;
@@ -167,6 +167,26 @@ public final class ParsingExpressionFactory
         op.leftRecursive = true;
         op.leftAssociative = true;
         return op;
+    }
+
+    public static Filter filter(
+        ParsingExpression[] allowed,
+        ParsingExpression[] forbidden,
+        ParsingExpression cluster)
+    {
+        Filter filter = new Filter();
+        filter.allowed = allowed;
+        filter.forbidden = forbidden;
+        filter.operand = cluster;
+        return filter;
+    }
+
+    /**
+     * Use to create the allowed and forbidden parameters to {@link #filter}.
+     */
+    public static ParsingExpression[] $(ParsingExpression... exprs)
+    {
+        return exprs;
     }
 
     public static Literal literal(String string)

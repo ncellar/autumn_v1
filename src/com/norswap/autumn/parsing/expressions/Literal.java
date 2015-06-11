@@ -1,8 +1,9 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.ParseInput;
+import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.graph.nullability.Nullability;
 
 /**
  * Attempt to match a literal string to the input.
@@ -20,10 +21,10 @@ public final class Literal extends ParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void parse(Parser parser, ParseInput input)
+    public void parse(Parser parser, ParseState state)
     {
         int index = 0;
-        int pos = input.start;
+        int pos = state.start;
         final int len = string.length();
 
         while (index < len && parser.text.charAt(pos) == string.charAt(index))
@@ -34,24 +35,24 @@ public final class Literal extends ParsingExpression
 
         if (index == len)
         {
-            input.advance(len);
+            state.advance(len);
         }
         else
         {
-            parser.fail(this, input);
+            parser.fail(this, state);
         }
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public int parseDumb(CharSequence text, int position)
+    public int parseDumb(Parser parser, int position)
     {
         int index = 0;
         int pos = position;
         int len = string.length();
 
-        while (index < len && text.charAt(pos) == string.charAt(index))
+        while (index < len && parser.text.charAt(pos) == string.charAt(index))
         {
             ++index;
             ++pos;
@@ -70,6 +71,14 @@ public final class Literal extends ParsingExpression
         builder.append("\"");
         builder.append(string);
         builder.append("\"");
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public Nullability nullability()
+    {
+        return Nullability.bool(this, string.isEmpty());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

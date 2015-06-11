@@ -1,8 +1,11 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.*;
+import com.norswap.autumn.parsing.expressions.common.NaryParsingExpression;
+import com.norswap.autumn.parsing.OutputChanges;
+import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.graph.nullability.Nullability;
 
 /**
  * Invokes all its operands at its initial input position.
@@ -12,49 +15,45 @@ import com.norswap.autumn.parsing.ParsingExpression;
  * On success, its end position is the largest amongst the end positions of its
  * successful operands.
  */
-public final class LongestMatch extends ParsingExpression
+public final class LongestMatch extends NaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParsingExpression[] operands;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
     @Override
-    public void parse(Parser parser, ParseInput input)
+    public void parse(Parser parser, ParseState state)
     {
         OutputChanges farthestChanges = OutputChanges.failure();
 
         for (ParsingExpression operand : operands)
         {
-            operand.parse(parser, input);
+            operand.parse(parser, state);
 
-            if (input.end > farthestChanges.end)
+            if (state.end > farthestChanges.end)
             {
-                farthestChanges = new OutputChanges(input);
+                farthestChanges = new OutputChanges(state);
             }
 
-            input.resetAllOutput();
+            state.resetAllOutput();
         }
 
-        farthestChanges.mergeInto(input);
+        farthestChanges.mergeInto(state);
 
-        if (input.failed())
+        if (state.failed())
         {
-            parser.fail(this, input);
+            parser.fail(this, state);
         }
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public int parseDumb(CharSequence text, int position)
+    public int parseDumb(Parser parser, int position)
     {
         int farthestPosition = -1;
 
         for (ParsingExpression operand: operands)
         {
-            int result = operand.parseDumb(text, position);
+            int result = operand.parseDumb(parser, position);
 
             if (result > farthestPosition)
             {
@@ -65,37 +64,20 @@ public final class LongestMatch extends ParsingExpression
         return farthestPosition;
     }
 
-    // ---------------------------------------------------------------------------------------------
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void appendTo(StringBuilder builder)
+    public Nullability nullability()
     {
-        builder.append("longestMatch(");
-
-        for (ParsingExpression operand: operands)
-        {
-            operand.toString(builder);
-            builder.append(", ");
-        }
-
-        builder.setLength(builder.length() - 2);
-        builder.append(")");
+        return Nullability.any(this, operands);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public ParsingExpression[] children()
+    public ParsingExpression[] firsts()
     {
         return operands;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void setChild(int position, ParsingExpression expr)
-    {
-        operands[position] = expr;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

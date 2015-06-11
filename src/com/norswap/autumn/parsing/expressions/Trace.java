@@ -1,42 +1,37 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.ParseInput;
+import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
 
 import static com.norswap.autumn.parsing.Registry.PH_DEPTH;
 
-public final class Trace extends ParsingExpression
+public final class Trace extends UnaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParsingExpression operand;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
     @Override
-    public void parse(Parser parser, ParseInput input)
+    public void parse(Parser parser, ParseState state)
     {
         Integer depth = parser.ext.get(PH_DEPTH);
 
         if (depth == null)
         {
-            depth = 0;
-            parser.ext.set(PH_DEPTH, 0);
+            parser.ext.set(PH_DEPTH, depth = 0);
         }
 
         System.err.println(new String(new char[depth]).replace("\0", "-|") + operand);
 
         parser.ext.set(PH_DEPTH, depth + 1);
-        operand.parse(parser, input);
+        operand.parse(parser, state);
         parser.ext.set(PH_DEPTH, depth);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public int parseDumb(CharSequence text, int position)
+    public int parseDumb(Parser parser, int position)
     {
-        return operand.parseDumb(text, position);
+        return operand.parseDumb(parser, position);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -45,22 +40,6 @@ public final class Trace extends ParsingExpression
     public void appendTo(StringBuilder builder)
     {
         operand.toString(builder);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ParsingExpression[] children()
-    {
-        return new ParsingExpression[]{operand};
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void setChild(int position, ParsingExpression expr)
-    {
-        operand = expr;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

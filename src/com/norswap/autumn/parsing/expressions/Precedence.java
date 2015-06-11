@@ -1,10 +1,10 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.ParseInput;
+import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
 
-public final class Precedence extends ParsingExpression
+public final class Precedence extends UnaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -14,37 +14,36 @@ public final class Precedence extends ParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public int precedence;
-    public ParsingExpression operand;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void parse(Parser parser, ParseInput input)
+    public void parse(Parser parser, ParseState state)
     {
-        if (precedence > 0 && precedence < input.precedence)
+        if (precedence > 0 && precedence < state.precedence)
         {
             // We bypass error handling: it is not expected that the input matches this expression.
 
-            input.fail();
+            state.fail();
         }
         else
         {
-            int oldFlags = input.flags;
-            int oldPrecedence = input.precedence;
-            input.precedence = precedence;
+            int oldFlags = state.flags;
+            int oldPrecedence = state.precedence;
+            state.precedence = precedence;
 
             if (precedence > 0)
             {
                 // If a precedence level is set, calling a sub-expression at the same position with
-                // another precedence might yield a different input, so don't memoize.
+                // another precedence might yield a different result, so don't memoize.
 
-                input.forbidMemoization();
+                state.forbidMemoization();
             }
 
-            operand.parse(parser, input);
+            operand.parse(parser, state);
 
-            input.precedence = oldPrecedence;
-            input.flags = oldFlags;
+            state.precedence = oldPrecedence;
+            state.flags = oldFlags;
         }
     }
 
@@ -66,22 +65,6 @@ public final class Precedence extends ParsingExpression
 
         operand.toString(builder);
         builder.append(")");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ParsingExpression[] children()
-    {
-        return new ParsingExpression[]{operand};
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void setChild(int position, ParsingExpression expr)
-    {
-        operand = expr;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

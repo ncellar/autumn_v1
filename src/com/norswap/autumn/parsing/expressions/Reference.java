@@ -1,8 +1,9 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.ParseInput;
+import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.graph.nullability.Nullability;
 import com.norswap.autumn.util.Array;
 
 
@@ -25,9 +26,10 @@ public final class Reference extends ParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void parse(Parser parser, ParseInput input)
+    public void parse(Parser parser, ParseState state)
     {
-        throw new RuntimeException("Trying to parse an unresolved reference to: " + target);
+        throw new UnsupportedOperationException(
+            "Trying to parse an unresolved reference to: " + target);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -37,6 +39,25 @@ public final class Reference extends ParsingExpression
     {
         builder.append(target);
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public Nullability nullability()
+    {
+        throw new UnsupportedOperationException(
+            "Trying to get the nullability of: " + target);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public ParsingExpression[] firsts()
+    {
+        throw new UnsupportedOperationException(
+            "Trying to get the FIRST set of: " + target);
+    }
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

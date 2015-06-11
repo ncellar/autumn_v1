@@ -1,7 +1,7 @@
 package com.norswap.autumn.test;
 
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.Source;
 
 /**

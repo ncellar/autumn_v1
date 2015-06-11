@@ -1,47 +1,46 @@
 --------------------------------------------------------------------------------
 TODO
 
-- make parseDumb take a parser instead of a text and see if making token work with dumb
-  and putting much more dumbness in the grammar can improve things
+- trace package + trace abstract class
+- retool InstrumentExpression to extract common pattern
+- check that all references have been resolved successfully
 
+TODO SHOULD
+
+- make output changes hookable
+- make reset hookable
+
+TODO NICETIES
+
+- automatically tokenize litterals
 - improve diagnostics ("unexpected X" ?)
+    - round up tokens definitions
 
-- left-recursion handling via Resolver / via SingleResolver?
-- make dumb expression faster via a backtracking DPDA
-- left-recur & expression: why do we need to reset ALL output (including cuts)?
+TODO SUBMISSION
 
-- implement deepcopy for all expressions
-- test deepcopy & simplify tests with it
-
-- see FeatureTests TODOs
-
-- better grouped capture, they are RETARDED at current
+- tree building into the grammar!
 
 --------------------------------------------------------------------------------
-TODO LATER
+TODO PAPER
 
-- rename ParseInput to ParseState
-- make config purely descriptive (reusable)
-- retool Trace for added flexibility
-- retool InstrumentExpression to extract common pattern
-- StackTrace as a special case of Trace
-- remove grouped capture, supply filtering and partitioning operators instead
+- cite pure and declarative syntax definition
+- cite Left Recursion in Parsing Expression Grammars
+- mention semantic actions
+- must cite Left Recursion in Parsing Expression Grammars
+- mention no memoization inside expressions
 
 --------------------------------------------------------------------------------
 TODO MUCH LATER
 
-- scala/clojure combinators?
+- make dumb expression faster via a backtracking DPDA
 - parser generator?
 - think about how a parser could be retooled to parser html
   (which is lax in syntax) -> need to define bounding boxes
 
---------------------------------------------------------------------------------
-NOTES
+OLD IDEAS
 
-- precedence is an extremely blunt tool: it precludes memoization!
-    - it also increases complexity (??)
-- overhead of making everything potentially left-recursive
-- generator vs interpreter
+- token memo
+- unique memo
 
 --------------------------------------------------------------------------------
 APPLICATIONS
@@ -49,7 +48,6 @@ APPLICATIONS
 - graph constraining language
 - pcap filtering language
 
---------------------------------------------------------------------------------
 IDEAS (NETWORK)
 
 - FRP to enact real-time changes
@@ -63,9 +61,9 @@ IDEAS (NETWORK)
 - versioning: transition/hand-over between states
     - ensure some properties during the transition (atomic updates?)
 
---------------------------------------------------------------------------------
 IDEAS (OTHER)
 
 - meta-checking: check that linguistic extensions satisfy properties
+- lookup island grammars
 
 --------------------------------------------------------------------------------

@@ -1,8 +1,8 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.ParseInput;
+import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.util.StringEscape;
 
 /**
@@ -21,28 +21,28 @@ public final class CharSet extends ParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void parse(Parser parser, ParseInput input)
+    public void parse(Parser parser, ParseState state)
     {
-        char c = parser.text.charAt(input.start);
+        char c = parser.text.charAt(state.start);
 
         for (char d : chars)
         {
             if (c == d)
             {
-                input.advance(1);
+                state.advance(1);
                 return;
             }
         }
 
-        parser.fail(this, input);
+        parser.fail(this, state);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public int parseDumb(CharSequence text, int position)
+    public int parseDumb(Parser parser, int position)
     {
-        char c = text.charAt(position);
+        char c = parser.text.charAt(position);
 
         for (char d : chars)
         {

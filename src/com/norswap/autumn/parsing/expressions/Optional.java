@@ -1,8 +1,9 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.ParseInput;
+import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
+import com.norswap.autumn.parsing.graph.nullability.Nullability;
 
 /**
  * Invokes its operand on the input.
@@ -12,61 +13,39 @@ import com.norswap.autumn.parsing.ParsingExpression;
  * On success, its end position is the end position of it operand if it
  * succeeded, or its start position otherwise.
  */
-public final class Optional extends ParsingExpression
+public final class Optional extends UnaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParsingExpression operand;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
     @Override
-    public void parse(Parser parser, ParseInput input)
+    public void parse(Parser parser, ParseState state)
     {
-        operand.parse(parser, input);
+        operand.parse(parser, state);
 
-        if (input.failed())
+        if (state.failed())
         {
-            input.resetOutput();
+            state.resetOutput();
         }
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public int parseDumb(CharSequence text, int position)
+    public int parseDumb(Parser parser, int position)
     {
-        int result = operand.parseDumb(text, position);
+        int result = operand.parseDumb(parser, position);
 
         return result != -1
             ? result
             : position;
     }
 
-    // ---------------------------------------------------------------------------------------------
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void appendTo(StringBuilder builder)
+    public Nullability nullability()
     {
-        builder.append("optional(");
-        operand.toString(builder);
-        builder.append(")");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ParsingExpression[] children()
-    {
-        return new ParsingExpression[]{operand};
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void setChild(int position, ParsingExpression expr)
-    {
-        operand = expr;
+        return Nullability.yes(this);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

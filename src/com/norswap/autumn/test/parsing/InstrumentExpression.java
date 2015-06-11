@@ -1,9 +1,10 @@
 package com.norswap.autumn.test.parsing;
 
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.ExpressionCluster;
+import com.norswap.autumn.parsing.expressions.Filter;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.expressions.StackTrace;
 import com.norswap.autumn.parsing.expressions.Trace;
-import com.norswap.autumn.util.Array;
 
 import java.util.HashSet;
 
@@ -52,15 +53,24 @@ public final class InstrumentExpression
 
     public StackTrace doStackTrace(ParsingExpression pe)
     {
-        if (!visited.contains(pe) && !(pe instanceof StackTrace))
+        if (pe instanceof StackTrace)
+        {
+            return (StackTrace) pe;
+        }
+
+        if (!visited.contains(pe))
         {
             visited.add(pe);
 
-            ParsingExpression[] children = pe.children();
-
-            for (int i = 0; i < children.length; ++i)
+            if (!(pe instanceof ExpressionCluster)
+                && !(pe instanceof Filter))
             {
-                pe.setChild(i, doStackTrace(children[i]));
+                ParsingExpression[] children = pe.children();
+
+                for (int i = 0; i < children.length; ++i)
+                {
+                    pe.setChild(i, doStackTrace(children[i]));
+                }
             }
         }
 

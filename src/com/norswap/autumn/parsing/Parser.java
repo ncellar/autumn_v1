@@ -1,10 +1,10 @@
 package com.norswap.autumn.parsing;
 
-import com.norswap.autumn.parsing.expressions.Expression;
+import com.norswap.autumn.parsing.expressions.ExpressionCluster;
 import com.norswap.autumn.parsing.expressions.LeftRecursive;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.util.Array;
 import com.norswap.autumn.util.HandleMap;
-import com.norswap.autumn.util.Pair;
 
 public final class Parser
 {
@@ -14,25 +14,40 @@ public final class Parser
 
     public CharSequence text;
 
-    public ParserConfiguration configuration;
-
     private ParseTree tree;
 
     private Array<LeftRecursive> blocked;
 
-    private Array<Expression.PrecedenceEntry> minPrecedence;
+    private Array<ExpressionCluster.PrecedenceEntry> minPrecedence;
+
+    public ParsingExpression clusterAlternate;
 
     private int endPosition;
     
     public HandleMap ext = new HandleMap();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Configuration Fields
 
-    public Parser(Source source, ParserConfiguration configuration)
+    public final ErrorHandler errorHandler;
+
+    public final ParsingExpression whitespace;
+
+    public final MemoizationStrategy memoizationStrategy;
+
+    public final boolean processLeadingWhitespace;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public Parser(Source source, ParserConfiguration config)
     {
         this.source = source;
         this.text = source.text();
-        this.configuration = configuration;
+
+        this.errorHandler = config.errorHandler.get();
+        this.whitespace = config.whitespace.get();
+        this.memoizationStrategy = config.memoizationStrategy.get();
+        this.processLeadingWhitespace = config.processLeadingWhitespace;
     }
 
     public Parser(Source source)
@@ -56,24 +71,24 @@ public final class Parser
         this.blocked = new Array<>();
         this.minPrecedence = new Array<>();
 
-        ParseInput rootInput = ParseInput.root();
-        rootInput.tree = tree = new ParseTree();
+        ParseState rootState = ParseState.root();
+        rootState.tree = tree = new ParseTree();
 
-        if (configuration.processLeadingWhitespace)
+        if (processLeadingWhitespace)
         {
-            int pos = configuration.whitespace.parseDumb(text, 0);
+            int pos = whitespace.parseDumb(this, 0);
             if (pos > 0)
             {
-                rootInput.start = pos;
-                rootInput.end = pos;
+                rootState.start = pos;
+                rootState.end = pos;
             }
         }
 
-        pe.parse(this, rootInput);
+        pe.parse(this, rootState);
 
-        if ((this.endPosition = rootInput.end) < 0)
+        if ((this.endPosition = rootState.end) < 0)
         {
-            rootInput.resetAllOutput();
+            rootState.resetAllOutput();
         }
     }
 
@@ -93,7 +108,7 @@ public final class Parser
         else
         {
             System.err.println("The parse failed.");
-            configuration.errorHandler.reportErrors(this);
+            errorHandler.reportErrors(this);
         }
 
     }
@@ -137,23 +152,23 @@ public final class Parser
 
     /**
      * This method should be called whenever a parsing expression fails. It calls {@link
-     * ParseInput#fail} and passes the error to the error handler.
+     * ParseState#fail} and passes the error to the error handler.
      *
-     * {@code input} should be in the same state as when the expression was invoked, modulo any
-     * changes that persists across failures (e.g. cuts). This means {@link ParseInput#resetOutput}
-     * should have been called on the input if necessary.
+     * {@code state} should be in the same state as when the expression was invoked, modulo any
+     * changes that persists across failures (e.g. cuts). This means {@link ParseState#resetOutput}
+     * should have been called on the state if necessary.
      *
      * In some cases, an expression may elect not to report a failure, in which case it must
-     * call {@link ParseInput#fail} directly instead (e.g. left-recursion for blocked recursive
+     * call {@link ParseState#fail} directly instead (e.g. left-recursion for blocked recursive
      * calls).
      */
-    public void fail(ParsingExpression pe, ParseInput input)
+    public void fail(ParsingExpression pe, ParseState state)
     {
-        input.fail();
+        state.fail();
 
-        if (!input.isErrorRecordingForbidden())
+        if (!state.isErrorRecordingForbidden())
         {
-            configuration.errorHandler.handle(pe, input);
+            errorHandler.handle(pe, state);
         }
     }
 
@@ -192,23 +207,29 @@ public final class Parser
     //----------------------------------------------------------------------------------------------
 
     /**
-     * If {@code expr} is not yet in the process of being parsed, registers a precedence value of 0
-     * for this expression and return it. Otherwise, returns the current precedence value for the
-     * expression.
+     * If {@code expr} is not yet in the process of being parsed, or if its current precedence is
+     * below the given precedence, registers the given precedence for this expression. Returns
+     * the old the precedence if there was one, else the given precedence.
      */
-    public int enterPrecedence(Expression expr, int position)
+    public int enterPrecedence(ExpressionCluster expr, int position, int precedence)
     {
-        Expression.PrecedenceEntry entry = minPrecedence.peekOrNull();
+        ExpressionCluster.PrecedenceEntry entry = minPrecedence.peekOrNull();
 
-        if (entry == null || entry.expression != expr)
+        if (entry == null || entry.cluster != expr)
         {
-            entry = new Expression.PrecedenceEntry();
-            entry.expression = expr;
+            entry = new ExpressionCluster.PrecedenceEntry();
+            entry.cluster = expr;
             entry.initialPosition = position;
-            entry.minPrecedence = 0;
+            entry.minPrecedence = precedence;
 
             minPrecedence.push(entry);
-            return 0;
+            return precedence;
+        }
+        else if (entry.minPrecedence < precedence)
+        {
+            int result = entry.minPrecedence;
+            entry.minPrecedence = precedence;
+            return result;
         }
         else
         {
@@ -250,7 +271,7 @@ public final class Parser
      */
     public void exitPrecedence(int precedence, int position)
     {
-        Expression.PrecedenceEntry entry = minPrecedence.peek();
+        ExpressionCluster.PrecedenceEntry entry = minPrecedence.peek();
 
         if (entry.initialPosition == position)
         {

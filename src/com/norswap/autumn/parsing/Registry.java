@@ -21,11 +21,9 @@ public final class Registry
 
     public static final FlagFactory ParsingExpressionFlagsFactory = new FlagFactory();
 
-    public static final FlagFactory ParsingInputFlagsFactory = new FlagFactory();
+    public static final FlagFactory ParseStateFlagsFactory = new FlagFactory();
 
-    public static final HandleFactory ParsingInputHandleFactory = new HandleFactory();
-
-    public static final FlagFactory ParsingOutputFlagsFactory = new FlagFactory();
+    public static final HandleFactory ParseStateHandleFactory = new HandleFactory();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // PARSER HANDLES (PH)
@@ -76,40 +74,36 @@ public final class Registry
         = ParsingExpressionFlagsFactory.next();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // PARSING INPUT FLAGS (PIF)
+    // PARSE STATE FLAGS (PSF)
 
     /**
      * Indicates that we shouldn't memoize any of the sub-expressions of the expression
-     * associated with this parse input.
+     * associated with this parse state.
      */
-    public static final int PIF_DONT_MEMOIZE
-        = ParsingInputFlagsFactory.next();
+    public static final int PSF_DONT_MEMOIZE
+        = ParseStateFlagsFactory.next();
+
+    /**
+     * Indicates that we shouldn't memoize any expression at the current position.
+     */
+    public static final int PSF_DONT_MEMOIZE_POSITION
+        = ParseStateFlagsFactory.next();
 
     /**
      * Indicates that we shouldn't record errors when sub-expressions of the expression
-     * associated with this parse input fail to parse.
+     * associated with this parse state fail to parse.
      */
-    public static final int PIF_DONT_RECORD_ERRORS
-        = ParsingInputFlagsFactory.next();
+    public static final int PSF_DONT_RECORD_ERRORS
+        = ParseStateFlagsFactory.next();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // PARSING INPUT HANDLES (PIH)
+    // PARSE STATE HANDLES (PSH)
 
     /**
      * Fetches the stack trace that shows parsing expressions we are currently traversing.
      */
-    public static final int PIH_STACK_TRACE
-        = ParsingInputHandleFactory.next();
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // PARSING OUTPUT FLAGS (POF)
-
-    /**
-     * Indicates that a cut operator has been encountered while parsing the
-     * sub-expressions of the expression associated to the parse input owning the output.
-     */
-    public static final int POF_CUT
-        = ParsingOutputFlagsFactory.next();
+    public static final int PSH_STACK_TRACE
+        = ParseStateHandleFactory.next();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

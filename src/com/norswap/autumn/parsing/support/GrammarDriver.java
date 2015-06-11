@@ -2,7 +2,7 @@ package com.norswap.autumn.parsing.support;
 
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParserConfiguration;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.ReferenceResolver;
 import com.norswap.autumn.parsing.Source;
 
@@ -36,7 +36,7 @@ public final class GrammarDriver
         }
         else
         {
-            return new ReferenceResolver().resolve(new GrammarCompiler().compile(parser.tree()));
+            return ReferenceResolver.run(new GrammarCompiler().compile(parser.tree()));
         }
     }
 

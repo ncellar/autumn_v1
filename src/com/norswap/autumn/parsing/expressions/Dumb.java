@@ -1,8 +1,8 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.ParseInput;
+import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
 
 /**
  * Parses its operand in dumb mode, like a non-memoizing PEG parser. In this
@@ -31,61 +31,31 @@ import com.norswap.autumn.parsing.ParsingExpression;
  *
  *  On success, its end position is that of its operand.
  */
-public final class Dumb extends ParsingExpression
+public final class Dumb extends UnaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParsingExpression operand;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
     @Override
-    public void parse(Parser parser, ParseInput input)
+    public void parse(Parser parser, ParseState state)
     {
-        int pos = operand.parseDumb(parser.text, input.start);
+        int pos = operand.parseDumb(parser, state.start);
 
         if (pos >= 0)
         {
-            input.advance(pos - input.start);
+            state.advance(pos - state.start);
         }
         else
         {
-            parser.fail(this, input);
+            parser.fail(this, state);
         }
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public int parseDumb(CharSequence text, int pos)
+    public int parseDumb(Parser parser, int pos)
     {
-        return operand.parseDumb(text, pos);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void appendTo(StringBuilder builder)
-    {
-        builder.append("dumb(");
-        operand.toString(builder);
-        builder.append(")");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ParsingExpression[] children()
-    {
-        return new ParsingExpression[]{operand};
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void setChild(int position, ParsingExpression expr)
-    {
-        operand = expr;
+        return operand.parseDumb(parser, pos);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

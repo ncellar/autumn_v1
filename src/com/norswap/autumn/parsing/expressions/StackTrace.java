@@ -1,38 +1,32 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.ParseInput;
+import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
 import com.norswap.autumn.util.Array;
 
-import static com.norswap.autumn.parsing.Registry.PIH_STACK_TRACE;
+import static com.norswap.autumn.parsing.Registry.PSH_STACK_TRACE;
 
-/**
- *
- */
-public class StackTrace extends ParsingExpression
+public class StackTrace extends UnaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParsingExpression operand;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
     @Override
-    public void parse(Parser parser, ParseInput input)
+    public void parse(Parser parser, ParseState state)
     {
-        Array<ParsingExpression> stackTrace = input.ext.get(PIH_STACK_TRACE);
+        Array<ParsingExpression> stackTrace = state.ext.get(PSH_STACK_TRACE);
 
         if (stackTrace == null)
         {
             stackTrace = new Array<>();
-            input.ext.set(PIH_STACK_TRACE, stackTrace);
+            state.ext.set(PSH_STACK_TRACE, stackTrace);
         }
 
         stackTrace.push(this);
 
         try {
-            operand.parse(parser, input);
+            operand.parse(parser, state);
         }
         catch (Exception e)
         {
@@ -49,9 +43,9 @@ public class StackTrace extends ParsingExpression
 
     // ---------------------------------------------------------------------------------------------
 
-    public int parseDumb(CharSequence text, int position)
+    public int parseDumb(Parser parser, int position)
     {
-        return operand.parseDumb(text, position);
+        return operand.parseDumb(parser, position);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -60,22 +54,6 @@ public class StackTrace extends ParsingExpression
     public void appendTo(StringBuilder builder)
     {
         operand.toString(builder);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ParsingExpression[] children()
-    {
-        return new ParsingExpression[]{operand};
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void setChild(int position, ParsingExpression expr)
-    {
-        operand = expr;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

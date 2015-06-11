@@ -1,8 +1,12 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.ParseInput;
+import com.norswap.autumn.parsing.expressions.common.NaryParsingExpression;
+import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.graph.FirstCalculator;
+import com.norswap.autumn.parsing.graph.nullability.Nullability;
+import com.norswap.autumn.util.Array;
 
 /**
  * Invokes all its operands sequentially over the input, until one fails. Each operand is
@@ -12,18 +16,14 @@ import com.norswap.autumn.parsing.ParsingExpression;
  *
  * On success, its end position is that of its last operand.
  */
-public final class Sequence extends ParsingExpression
+public final class Sequence extends NaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParsingExpression[] operands;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
     @Override
-    public void parse(Parser parser, ParseInput input)
+    public void parse(Parser parser, ParseState state)
     {
-        ParseInput down = new ParseInput(input);
+        ParseState down = new ParseState(state);
 
         for (ParsingExpression operand : operands)
         {
@@ -35,23 +35,23 @@ public final class Sequence extends ParsingExpression
             }
             else
             {
-                input.resetOutput();
-                parser.fail(this, input);
+                state.resetOutput();
+                parser.fail(this, state);
                 return;
             }
         }
 
-        input.merge(down);
+        state.merge(down);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public int parseDumb(CharSequence text, int position)
+    public int parseDumb(Parser parser, int position)
     {
         for (ParsingExpression operand: operands)
         {
-            position = operand.parseDumb(text, position);
+            position = operand.parseDumb(parser, position);
 
             if (position == -1)
             {
@@ -62,37 +62,30 @@ public final class Sequence extends ParsingExpression
         return position;
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public Nullability nullability()
+    {
+        return Nullability.all(this, operands);
+    }
+
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void appendTo(StringBuilder builder)
+    public ParsingExpression[] firsts()
     {
-        builder.append("sequence(");
+        ParsingExpression pe;
+        int i = 0;
+        Array<ParsingExpression> array = new Array<>();
 
-        for (ParsingExpression operand: operands)
-        {
-            operand.toString(builder);
-            builder.append(", ");
+        do {
+            pe = operands[i++];
+            array.add(pe);
         }
+        while (i < operands.length && FirstCalculator.nullCalc.isNullable(pe));
 
-        builder.setLength(builder.length() - 2);
-        builder.append(")");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ParsingExpression[] children()
-    {
-        return operands;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void setChild(int position, ParsingExpression expr)
-    {
-        operands[position] = expr;
+        return array.toArray(ParsingExpression[]::new);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
