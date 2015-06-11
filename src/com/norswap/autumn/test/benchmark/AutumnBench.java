@@ -72,7 +72,6 @@ public class AutumnBench
         //*/
 
         ParsingExpression root = rules[0];
-        //root = InstrumentExpression.stackTrace(root);
 
         start = Instant.now();
         int iters = 1;

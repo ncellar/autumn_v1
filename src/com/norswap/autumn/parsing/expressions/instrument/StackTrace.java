@@ -1,14 +1,14 @@
-package com.norswap.autumn.parsing.expressions;
+package com.norswap.autumn.parsing.expressions.instrument;
 
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
+import com.norswap.autumn.parsing.expressions.common.InstrumentedExpression;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
 import com.norswap.autumn.util.Array;
 
 import static com.norswap.autumn.parsing.Registry.PSH_STACK_TRACE;
 
-public class StackTrace extends UnaryParsingExpression
+public class StackTrace extends InstrumentedExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -39,21 +39,6 @@ public class StackTrace extends UnaryParsingExpression
             throw new Error(e);
         }
         stackTrace.pop();
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public int parseDumb(Parser parser, int position)
-    {
-        return operand.parseDumb(parser, position);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void appendTo(StringBuilder builder)
-    {
-        operand.toString(builder);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

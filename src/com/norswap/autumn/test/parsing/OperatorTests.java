@@ -142,8 +142,6 @@ public final class OperatorTests
         src = Source.fromString("a");
         Ensure.match(src, pe);
 
-        // pe = new InstrumentExpression().trace(pe);
-
         src = Source.fromString("");
         Ensure.match(src, pe);
     }

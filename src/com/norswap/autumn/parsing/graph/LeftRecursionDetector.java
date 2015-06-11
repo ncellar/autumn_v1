@@ -17,7 +17,7 @@ import java.util.Set;
  * not record nodes in {@link #leftRecursives} for that cycle, unless they belong to another cycle.
  *
  * The basic idea of the algorithm is to mark an expression as left-recursive whenever {@link
- * #afterChild} reports {@Link State.VISITING}. Effectively, this means that the expression
+ * #afterChild} reports {@link State#VISITING}. Effectively, this means that the expression
  * selected to break a cycle is the one encountered first when walking the rules in a top-down,
  * left-to-right (w.r.t. the order of {@link ParsingExpression#firsts}) manner. Cycles reachable
  * from multiple rules will be detected in the first rule that reaches it.
@@ -32,7 +32,7 @@ import java.util.Set;
  * This class only detects cycles and record the expressions at which theses cycles should be
  * broken. To actually break them, see {@link LeftRecursionBreaker}.
  */
-public class LeftRecursionDetector extends ExpressionGraphWalker
+public final class LeftRecursionDetector extends ExpressionGraphWalker
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -47,7 +47,7 @@ public class LeftRecursionDetector extends ExpressionGraphWalker
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Runs the detector then returns {@link  #leftRecursives}.
+     * Runs the detector then returns {@link #leftRecursives}.
      */
     public static Set<ParsingExpression> detect(ParsingExpression[] rules)
     {
@@ -57,7 +57,7 @@ public class LeftRecursionDetector extends ExpressionGraphWalker
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Runs the detector then returns {@link  #leftRecursives}.
+     * Runs the detector then returns {@link #leftRecursives}.
      */
     public Set<ParsingExpression> run(ParsingExpression[] rules)
     {
@@ -76,7 +76,7 @@ public class LeftRecursionDetector extends ExpressionGraphWalker
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void before(ParsingExpression pe)
+    protected void before(ParsingExpression pe)
     {
         if (pe instanceof LeftRecursive)
         {
@@ -89,7 +89,7 @@ public class LeftRecursionDetector extends ExpressionGraphWalker
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void afterChild(ParsingExpression pe, ParsingExpression child, int index, State state)
+    protected void afterChild(ParsingExpression pe, ParsingExpression child, int index, State state)
     {
         Integer leftPos = leftRecursiveStackPositions.peekOrNull();
 
@@ -103,7 +103,7 @@ public class LeftRecursionDetector extends ExpressionGraphWalker
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void afterAll(ParsingExpression pe)
+    protected void afterAll(ParsingExpression pe)
     {
         if (pe instanceof LeftRecursive)
         {

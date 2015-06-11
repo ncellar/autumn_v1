@@ -1,9 +1,8 @@
 --------------------------------------------------------------------------------
 TODO
 
-- trace package + trace abstract class
-- retool InstrumentExpression to extract common pattern
-- check that all references have been resolved successfully
+- paper!
+- UI
 
 TODO SHOULD
 
@@ -15,6 +14,8 @@ TODO NICETIES
 - automatically tokenize litterals
 - improve diagnostics ("unexpected X" ?)
     - round up tokens definitions
+- check that named alternates are only used on allow and forbid clauses
+- print expressions only with recursion as names
 
 TODO SUBMISSION
 

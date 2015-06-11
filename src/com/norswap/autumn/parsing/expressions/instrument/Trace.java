@@ -1,12 +1,12 @@
-package com.norswap.autumn.parsing.expressions;
+package com.norswap.autumn.parsing.expressions.instrument;
 
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.InstrumentedExpression;
 
 import static com.norswap.autumn.parsing.Registry.PH_DEPTH;
 
-public final class Trace extends UnaryParsingExpression
+public final class Trace extends InstrumentedExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -25,21 +25,6 @@ public final class Trace extends UnaryParsingExpression
         parser.ext.set(PH_DEPTH, depth + 1);
         operand.parse(parser, state);
         parser.ext.set(PH_DEPTH, depth);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public int parseDumb(Parser parser, int position)
-    {
-        return operand.parseDumb(parser, position);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void appendTo(StringBuilder builder)
-    {
-        operand.toString(builder);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

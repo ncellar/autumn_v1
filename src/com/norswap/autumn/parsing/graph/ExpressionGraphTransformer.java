@@ -14,7 +14,9 @@ import java.util.Map;
  * with it as the parameter.
  *
  * If {@link #unique} is set, {@link #transform} will only be called once on every expression,
- * and the result will be cached, to be reused whenever the expression is encountered again.
+ * and the result will be cached, to be reused whenever the expression is encountered again. Note
+ * that if you intend to modify the named alternates of an expression cluster, you *must* use
+ * this option, otherwise you won't work in filters anymore.
  *
  * If you want to pass the transformation function as a lambda, see {@link FunctionalTransformer}.
  */
@@ -31,11 +33,6 @@ public abstract class ExpressionGraphTransformer extends ExpressionGraphWalker
     public ExpressionGraphTransformer(boolean unique)
     {
         this.unique = unique;
-        
-        if (unique)
-        {
-            transformations = new HashMap<>();
-        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -50,8 +47,14 @@ public abstract class ExpressionGraphTransformer extends ExpressionGraphWalker
      */
     protected ParsingExpression apply(ParsingExpression pe)
     {
+        if (unique) {
+            transformations = new HashMap<>();
+        }
+
         walk(pe);
-        return transform(pe);
+        ParsingExpression out = transform(pe);
+        transformations = null;
+        return out;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -62,12 +65,17 @@ public abstract class ExpressionGraphTransformer extends ExpressionGraphWalker
      */
     protected ParsingExpression[] apply(ParsingExpression[] exprs)
     {
+        if (unique) {
+            transformations = new HashMap<>();
+        }
+
         for (int i = 0; i < exprs.length; ++i)
         {
             walk(exprs[i]);
             exprs[i] = transform(exprs[i]);
         }
 
+        transformations = null;
         return exprs;
     }
 
@@ -81,6 +89,10 @@ public abstract class ExpressionGraphTransformer extends ExpressionGraphWalker
      */
     protected Collection<ParsingExpression> apply(Iterable<ParsingExpression> exprs)
     {
+        if (unique) {
+            transformations = new HashMap<>();
+        }
+
         ArrayList<ParsingExpression> array = new ArrayList<>();
 
         for (ParsingExpression expr: exprs)
@@ -89,45 +101,19 @@ public abstract class ExpressionGraphTransformer extends ExpressionGraphWalker
             array.add(transform(expr));
         }
 
+        transformations = null;
         return array;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void afterChild(ParsingExpression pe, ParsingExpression child, int index, State state)
+    protected void afterChild(ParsingExpression pe, ParsingExpression child, int index, State state)
     {
         pe.setChild(index,
             unique
                 ? transformations.computeIfAbsent(child, this::transform)
                 : transform(child));
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    @Override
-    protected void walk(ParsingExpression[] exprs)
-    {
-        super.walk(exprs);
-        transformations = null;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    protected void walk(Iterable<ParsingExpression> exprs)
-    {
-        super.walk(exprs);
-        transformations = null;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    protected void walk(ParsingExpression pe)
-    {
-        super.walk(pe);
-        transformations = null;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

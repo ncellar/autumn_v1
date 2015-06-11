@@ -90,7 +90,7 @@ public class NullabilityCalculator extends ExpressionGraphWalker
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void before(ParsingExpression pe)
+    protected void before(ParsingExpression pe)
     {
         nullabilities.put(pe, pe.nullability());
     }
@@ -98,7 +98,7 @@ public class NullabilityCalculator extends ExpressionGraphWalker
     // -----------------------------------------------------------------------------------------
 
     @Override
-    public void afterAll(ParsingExpression pe)
+    protected void afterAll(ParsingExpression pe)
     {
         Nullability n = nullabilities.get(pe);
 

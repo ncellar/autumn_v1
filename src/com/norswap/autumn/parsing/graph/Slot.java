@@ -5,7 +5,7 @@ import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 /**
  * Represents an assignable parsing expression slot (a child) in another parsing expression.
  */
-public class Slot
+public final class Slot
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

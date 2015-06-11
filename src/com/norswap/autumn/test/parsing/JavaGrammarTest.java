@@ -2,7 +2,7 @@ package com.norswap.autumn.test.parsing;
 
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParserConfiguration;
-import com.norswap.autumn.parsing.expressions.StackTrace;
+import com.norswap.autumn.parsing.expressions.instrument.StackTrace;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.Source;
 import com.norswap.autumn.parsing.graph.FirstCalculator;
@@ -37,6 +37,8 @@ public final class JavaGrammarTest
 
         ParsingExpression root = rules[0];
 
+        root = FunctionalTransformer.apply(root, JavaGrammarTest::transform, true);
+
         ParsingExpression whitespace = Arrays.stream(rules)
             .filter(rule -> "Spacing".equals(rule.name()))
             .findFirst().get();
@@ -68,8 +70,6 @@ public final class JavaGrammarTest
         {
             Source source = Source.fromFile(file);
             Parser parser = new Parser(source, config);
-            root = InstrumentExpression.stackTrace(root);
-            //root = FunctionalTransformer.apply(root, JavaGrammarTest::transform, false);
             parser.parse(root);
 
             if (parser.succeeded())

@@ -35,7 +35,7 @@ import java.util.Set;
  * NOTE: {@link Sequence#firsts()} relies on {@link #nullCalc} being set to a completed
  * nullability calculator. Even if this method is not used in the context of FirstCalculator!
  */
-public class FirstCalculator extends ExpressionGraphWalker
+public final class FirstCalculator extends ExpressionGraphWalker
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -82,7 +82,7 @@ public class FirstCalculator extends ExpressionGraphWalker
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void afterAll(ParsingExpression pe)
+    protected void afterAll(ParsingExpression pe)
     {
         ParsingExpression[] peFirsts = pe.firsts();
         add(pe, peFirsts);

@@ -48,7 +48,7 @@ public final class FunctionalTransformer extends ExpressionGraphTransformer
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    protected Collection<ParsingExpression> apply(Iterable<ParsingExpression> exprs)
+    public Collection<ParsingExpression> apply(Iterable<ParsingExpression> exprs)
     {
         return super.apply(exprs);
     }
@@ -56,7 +56,7 @@ public final class FunctionalTransformer extends ExpressionGraphTransformer
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    protected ParsingExpression[] apply(ParsingExpression[] exprs)
+    public ParsingExpression[] apply(ParsingExpression[] exprs)
     {
         return super.apply(exprs);
     }
@@ -64,7 +64,7 @@ public final class FunctionalTransformer extends ExpressionGraphTransformer
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    protected ParsingExpression apply(ParsingExpression pe)
+    public ParsingExpression apply(ParsingExpression pe)
     {
         return super.apply(pe);
     }

@@ -37,8 +37,7 @@ public final class Filter extends UnaryParsingExpression
 
         for (ParsingExpression pe : allowed)
         {
-            if (pe == clusterAlternate
-                || pe instanceof Filter && clusterAlternate == ((Filter) pe).allowed[0])
+            if (pe == clusterAlternate)
             {
                 success = true;
                 break;
@@ -47,7 +46,7 @@ public final class Filter extends UnaryParsingExpression
 
         for (ParsingExpression pe : forbidden)
         {
-            if (pe instanceof Filter && clusterAlternate == ((Filter) pe).allowed[0])
+            if (pe == clusterAlternate)
             {
                 success = false;
                 break;

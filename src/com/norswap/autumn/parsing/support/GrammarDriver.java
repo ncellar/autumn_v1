@@ -3,8 +3,9 @@ package com.norswap.autumn.parsing.support;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParserConfiguration;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-import com.norswap.autumn.parsing.ReferenceResolver;
+import com.norswap.autumn.parsing.graph.ReferenceResolver;
 import com.norswap.autumn.parsing.Source;
+import com.norswap.autumn.util.Array;
 
 import java.io.IOException;
 
@@ -36,7 +37,7 @@ public final class GrammarDriver
         }
         else
         {
-            return ReferenceResolver.run(new GrammarCompiler().compile(parser.tree()));
+            return ReferenceResolver.resolve(GrammarCompiler.compile(parser.tree()));
         }
     }
 

@@ -19,6 +19,15 @@ public class MultiMap<K, V> extends HashMap<K, Set<V>>
         return out == null ? Collections.emptySet() : out;
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public Set<V> remove(Object key)
+    {
+        Set<V> out = super.remove(key);
+        return out == null ? Collections.emptySet() : out;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public Set<V> add(K key, V value)

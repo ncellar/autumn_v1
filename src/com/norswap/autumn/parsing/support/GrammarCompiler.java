@@ -2,7 +2,6 @@ package com.norswap.autumn.parsing.support;
 
 import com.norswap.autumn.parsing.ParseTree;
 import com.norswap.autumn.parsing.expressions.DropPrecedence;
-import com.norswap.autumn.parsing.expressions.Filter;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.ParsingExpressionFactory;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster.Operand;
@@ -34,13 +33,20 @@ public final class GrammarCompiler
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    public static ParsingExpression[] compile(ParseTree tree)
+    {
+        return new GrammarCompiler().run(tree);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     /**
      * Takes the parse tree obtained from a grammar file, and return an array of parsing
      * expressions, corresponding to the grammar rules defined in the grammar.
      *
      * Note that the references inside these expressions are not resolved.
      */
-    public ParsingExpression[] compile(ParseTree tree)
+    public ParsingExpression[] run(ParseTree tree)
     {
         ParseTree rules = tree.group("rules");
 
@@ -131,7 +137,6 @@ public final class GrammarCompiler
         $ last = new $();
 
         Array<ParsingExpression> namedAlternates = new Array<>();
-        Array<String> alternateNames = new Array<>();
 
         ParsingExpression cluster = cluster(Streams.from(expression.group("alts"))
             .map(alt ->
@@ -174,8 +179,8 @@ public final class GrammarCompiler
                             break;
 
                         case "name":
+                            pe.setName(annotation.value);
                             namedAlternates.push(pe);
-                            alternateNames.push(annotation.value);
                             break;
                     }
                 }
@@ -231,13 +236,7 @@ public final class GrammarCompiler
 
         for (int i = 0; i < namedAlternates.size(); ++i)
         {
-            Filter filter = new Filter();
-            filter.operand = cluster;
-            filter.allowed = new ParsingExpression[]{ namedAlternates.get(i) };
-            filter.forbidden = new ParsingExpression[0];
-            filter.setName(alternateNames.get(i));
-
-            namedClusterAlternates.push(filter);
+            namedClusterAlternates.push(namedAlternates.get(i));
         }
 
         return cluster;

@@ -18,7 +18,7 @@ import static com.norswap.autumn.parsing.ParsingExpressionFactory.leftRecursive;
  * recorded node occur. We can't replace nodes during the walk as that would break the walking
  * algorithm. Finally, it replaces each recorded location by its proper replacement.
  */
-public class LeftRecursionBreaker extends ExpressionGraphWalker
+public final class LeftRecursionBreaker extends ExpressionGraphWalker
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -85,7 +85,7 @@ public class LeftRecursionBreaker extends ExpressionGraphWalker
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void afterChild(ParsingExpression pe, ParsingExpression child, int index, State state)
+    protected void afterChild(ParsingExpression pe, ParsingExpression child, int index, State state)
     {
         LeftRecursive replacement = replacements.get(child);
 

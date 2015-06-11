@@ -22,6 +22,7 @@ public final class ExpressionCluster extends ParsingExpression
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    // TODO use this?
     public final static class Group implements DeepCopy
     {
         public int precedence;
