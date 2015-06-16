@@ -68,6 +68,7 @@ public abstract class UnaryParsingExpression extends ParsingExpression
         {
             System.err.println("NULL OPERAND: " + this);
         }
+
         return Nullability.single(this, operand);
     }
 

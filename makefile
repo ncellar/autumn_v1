@@ -8,6 +8,12 @@ a?=
 OUTDIR=out/$o
 DEBUG=
 
+ifeq ($(OS),Windows_NT)
+	SEP=;
+else
+	SEP=:
+endif
+
 ifeq ($o,debug)
 	DEBUG=-g
 else ifeq ($o,opti)
@@ -15,13 +21,17 @@ else ifeq ($o,opti)
 endif
 
 build: outdir
+	cp -R resources/* $(OUTDIR)
 	javac -Xlint:unchecked $(DEBUG) -d $(OUTDIR) -cp "deps/*" `find src -name *.java`
 
 run:
-	java -cp "$(OUTDIR);deps/*" $t $a
+	java -cp "$(OUTDIR)$(SEP)deps/*$(SEP)$(OUTDIR)/resources" $t $a
+
+debug:
+	java -cp "$(OUTDIR)$(SEP)deps/*$(SEP)$(OUTDIR)/resources" com.norswap.autumn.parsing.debug.GUI $a
 
 trace:
-	java -cp "$(OUTDIR);deps/*" -agentlib:hprof=cpu=samples $t $a
+	java -cp "$(OUTDIR)$(SEP)deps/*$(SEP)$(OUTDIR)/resources" -agentlib:hprof=cpu=samples $t $a
 
 clean:
 	rm -rf $(OUTDIR)

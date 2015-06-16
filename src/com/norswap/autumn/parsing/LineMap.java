@@ -34,6 +34,13 @@ public final class LineMap
 
     // ---------------------------------------------------------------------------------------------
 
+    public TextPosition position(int line, int column)
+    {
+        return new TextPosition(fileOffset(line, column), line, column);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     public int fileOffset(int line, int column)
     {
         return linePositions[line] + column;

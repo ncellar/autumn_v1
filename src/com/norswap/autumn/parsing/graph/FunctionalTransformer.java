@@ -31,18 +31,34 @@ public final class FunctionalTransformer extends ExpressionGraphTransformer
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static ParsingExpression apply(
-        ParsingExpression pe, ExpressionTransformer transformer, boolean unique)
-    {
-        return new FunctionalTransformer(transformer, unique).apply(pe);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
     @Override
     public ParsingExpression transform(ParsingExpression pe)
     {
         return transformer.transform(pe);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static Collection<ParsingExpression> apply(
+        Iterable<ParsingExpression> exprs, ExpressionTransformer transformer, boolean unique)
+    {
+        return new FunctionalTransformer(transformer, unique).apply(exprs);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static ParsingExpression[] apply(
+        ParsingExpression[] exprs, ExpressionTransformer transformer, boolean unique)
+    {
+        return new FunctionalTransformer(transformer, unique).apply(exprs);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static ParsingExpression apply(
+        ParsingExpression pe, ExpressionTransformer transformer, boolean unique)
+    {
+        return new FunctionalTransformer(transformer, unique).apply(pe);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -68,7 +84,6 @@ public final class FunctionalTransformer extends ExpressionGraphTransformer
     {
         return super.apply(pe);
     }
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

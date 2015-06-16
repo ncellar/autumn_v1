@@ -3,6 +3,12 @@ TODO
 
 - paper!
 - UI
+- verify left-associativity blocks recursion properly
+
+% - more test setup: OS + java version
+% - update times & average over 100
+% - evaluate memory use
+% - measurement variation
 
 TODO SHOULD
 
@@ -16,10 +22,16 @@ TODO NICETIES
     - round up tokens definitions
 - check that named alternates are only used on allow and forbid clauses
 - print expressions only with recursion as names
+- well formedness check (ford: WF -- can't loop without consuming)
+- re-allow memoization when dropping precedence in both schemes
 
 TODO SUBMISSION
 
 - tree building into the grammar!
+
+TODO SAID
+
+- let user register own passes
 
 --------------------------------------------------------------------------------
 TODO PAPER

@@ -1,10 +1,14 @@
 # IntelliJ IDEA
-.idea/
+/.idea/
 *.iml
 
 # Mac
 .DS_Store
 
 # Output
-out
+/out
 java.hprof.txt
+*.log
+
+# Dependencies
+/deps/

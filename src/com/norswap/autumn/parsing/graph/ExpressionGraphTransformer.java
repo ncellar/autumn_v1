@@ -69,9 +69,10 @@ public abstract class ExpressionGraphTransformer extends ExpressionGraphWalker
             transformations = new HashMap<>();
         }
 
+        walk(exprs);
+
         for (int i = 0; i < exprs.length; ++i)
         {
-            walk(exprs[i]);
             exprs[i] = transform(exprs[i]);
         }
 
@@ -95,9 +96,10 @@ public abstract class ExpressionGraphTransformer extends ExpressionGraphWalker
 
         ArrayList<ParsingExpression> array = new ArrayList<>();
 
+        walk(exprs);
+
         for (ParsingExpression expr: exprs)
         {
-            walk(expr);
             array.add(transform(expr));
         }
 
