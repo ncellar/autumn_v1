@@ -1,14 +1,13 @@
 --------------------------------------------------------------------------------
 TODO
 
-- paper!
-- UI
 - verify left-associativity blocks recursion properly
+- graph transformer: interleave the array item transformation with the walk
 
-% - more test setup: OS + java version
-% - update times & average over 100
-% - evaluate memory use
-% - measurement variation
+TODO GUI
+
+- make it so that the cursor over scrollbars isn't a text cursor
+- don't "blue-en" on click, but only on run
 
 TODO SHOULD
 

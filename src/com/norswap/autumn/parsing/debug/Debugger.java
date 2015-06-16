@@ -56,7 +56,7 @@ public class Debugger
         TextPosition pos = parser.source().position(state.start);
         Platform.runLater(() ->
         {
-            jsWindow.call("pushFrame", pe.toString(), pos.line, pos.column, state.start);
+            jsWindow.call("pushFrame", new Object[]{pe.toString(), pos.line, pos.column, state.start});
         });
     }
 
@@ -65,7 +65,7 @@ public class Debugger
     public void popFrame()
     {
         stack.pop();
-        Platform.runLater(() -> jsWindow.call("popFrame"));
+        Platform.runLater(() -> jsWindow.call("popFrame", new Object[0]));
     }
 
     // ---------------------------------------------------------------------------------------------

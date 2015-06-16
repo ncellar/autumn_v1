@@ -40,8 +40,6 @@ public class AutumnBench
             .filter(rule -> "Spacing".equals(rule.name()))
             .findFirst().get();
 
-        // TODO better entry points
-
         NullabilityCalculator nullCalc = new NullabilityCalculator();
         nullCalc.run(rules);
 
@@ -75,9 +73,8 @@ public class AutumnBench
 
         start = Instant.now();
         int iters = 1;
-        for (int i = 0; i < 1; ++i)
+        for (int i = 0; i < iters; ++i)
         {
-            //parseDirectory("../guava/guava/src/com/google/common/base/", root, whitespace);
             parseDirectory("../guava", root, whitespace);
         }
         end = Instant.now();

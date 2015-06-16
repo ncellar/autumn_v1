@@ -24,13 +24,16 @@ public class ParboiledBench
     public static void main(String[] args) throws IOException
     {
         ParboiledJava6Parser parser = Parboiled.createParser(ParboiledJava6Parser.class);
-        //Rule root = parser.CompilationUnit().suppressNode(); // don't build parse tree
-        Rule root = parser.CompilationUnit();
+        Rule root = parser.CompilationUnit().suppressNode(); // don't build parse tree
 
         Instant start = Instant.now();
-        parseDirectory("../guava", root);
+        int iters = 1;
+        for (int i = 0; i < iters; ++i)
+        {
+            parseDirectory("../guava", root);
+        }
         Instant end = Instant.now();
-        System.out.println("Guava parsed in: " + Duration.between(start, end));
+        System.out.println("Guava parsed in: " + Duration.between(start, end).dividedBy(iters));
     }
 
     // ---------------------------------------------------------------------------------------------

@@ -26,9 +26,13 @@ public class RatsBench
     public static void main(String[] args) throws IOException
     {
         Instant start = Instant.now();
-        parseDirectory("../guava");
+        int iters = 1;
+        for (int i = 0; i < iters; ++i)
+        {
+            parseDirectory("../guava");
+        }
         Instant end = Instant.now();
-        System.out.println("Guava parsed in: " + Duration.between(start, end));
+        System.out.println("Guava parsed in: " + Duration.between(start, end).dividedBy(iters));
     }
 
     // ---------------------------------------------------------------------------------------------

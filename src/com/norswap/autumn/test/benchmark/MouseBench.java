@@ -20,9 +20,13 @@ public class MouseBench
         MouseJava8Parser parser = new MouseJava8Parser();
 
         Instant start = Instant.now();
-        parseDirectory("../guava", parser);
+        int iters = 1;
+        for (int i = 0; i < iters; ++i)
+        {
+            parseDirectory("../guava", parser);
+        }
         Instant end = Instant.now();
-        System.out.println("Guava parsed in: " + Duration.between(start, end));
+        System.out.println("Guava parsed in: " + Duration.between(start, end).dividedBy(iters));
     }
 
     // ---------------------------------------------------------------------------------------------
