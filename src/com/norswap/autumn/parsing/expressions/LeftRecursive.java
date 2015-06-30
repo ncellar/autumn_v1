@@ -3,7 +3,6 @@ package com.norswap.autumn.parsing.expressions;
 import com.norswap.autumn.parsing.OutputChanges;
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
 
 public final class LeftRecursive extends UnaryParsingExpression
@@ -48,7 +47,7 @@ public final class LeftRecursive extends UnaryParsingExpression
         // with {@link ParseInput#advance()}.
 
         int oldFlags = state.flags;
-        state.forbidMemoizationAtPosition();
+        state.forbidMemoization();
 
         // Keep parsing the operand, as long as long as the seed keeps growing.
 
@@ -68,7 +67,6 @@ public final class LeftRecursive extends UnaryParsingExpression
                 changes = new OutputChanges(state);
                 state.setSeed(changes);
                 state.resetAllOutput();
-                state.forbidMemoizationAtPosition();
             }
         }
 

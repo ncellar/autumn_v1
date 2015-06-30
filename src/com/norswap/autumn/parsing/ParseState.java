@@ -130,7 +130,6 @@ public final class ParseState
         if (end > start)
         {
             seeds = null;
-            clearFlags(PSF_DONT_MEMOIZE_POSITION);
         }
 
         start = end;
@@ -214,16 +213,9 @@ public final class ParseState
 
     // ---------------------------------------------------------------------------------------------
 
-    public void forbidMemoizationAtPosition()
-    {
-        setFlags(PSF_DONT_MEMOIZE_POSITION);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
     public boolean isMemoizationForbidden()
     {
-        return hasFlagsSet(PSF_DONT_MEMOIZE | PSF_DONT_MEMOIZE_POSITION);
+        return hasFlagsSet(PSF_DONT_MEMOIZE);
     }
 
     // ---------------------------------------------------------------------------------------------

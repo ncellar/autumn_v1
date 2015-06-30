@@ -1,7 +1,6 @@
 --------------------------------------------------------------------------------
 TODO
 
-- verify left-associativity blocks recursion properly
 - graph transformer: interleave the array item transformation with the walk
 
 TODO GUI

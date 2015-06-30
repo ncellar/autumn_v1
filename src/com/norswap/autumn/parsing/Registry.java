@@ -84,12 +84,6 @@ public final class Registry
         = ParseStateFlagsFactory.next();
 
     /**
-     * Indicates that we shouldn't memoize any expression at the current position.
-     */
-    public static final int PSF_DONT_MEMOIZE_POSITION
-        = ParseStateFlagsFactory.next();
-
-    /**
      * Indicates that we shouldn't record errors when sub-expressions of the expression
      * associated with this parse state fail to parse.
      */
