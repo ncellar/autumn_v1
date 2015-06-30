@@ -17,7 +17,7 @@ import java.util.HashMap;
  * pruned from the expression tree and replaced with edge towards the expression they referenced,
  * hence making the tree a graph.
  *
- * This is the preferred way to resolve references in a expression that was constructed
+ * This is the preferred way to resolve references in an expression that was constructed
  * automatically. If you use factory methods, the method {@link ParsingExpressionFactory#recursive$}
  * which uses a {@link IncrementalReferenceResolver} is an alternative.
  *
@@ -89,6 +89,7 @@ public final class ReferenceResolver extends ExpressionGraphTransformer
         unresolved = new MultiMap<>();
 
         walk(expr);
+        //expr = apply(expr);
 
         if (!unresolved.isEmpty())
         {
@@ -114,9 +115,13 @@ public final class ReferenceResolver extends ExpressionGraphTransformer
         named = new HashMap<>();
         unresolved = new MultiMap<>();
 
+        // TODO replace in the array with apply
+        //apply(exprs);
         walk(exprs);
 
         // Replace the references inside the array by their targets.
+
+        unresolvedTarget = null;
 
         for (int i = 0; i < exprs.length; ++i)
         {
@@ -182,12 +187,11 @@ public final class ReferenceResolver extends ExpressionGraphTransformer
     {
         String name = pe.name();
 
-        if (name == null) {
-            return;
+        if (name != null)
+        {
+            named.put(name, pe);
+            updateSlotsResolution(name);
         }
-
-        named.put(name, pe);
-        updateSlotsResolution(name);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -195,7 +199,9 @@ public final class ReferenceResolver extends ExpressionGraphTransformer
     @Override
     protected void afterChild(ParsingExpression pe, ParsingExpression child, int index, State state)
     {
+        // Apply the transform.
         super.afterChild(pe, child, index, state);
+
         updateSlotResolution(new Slot(pe, index));
     }
 
@@ -205,6 +211,7 @@ public final class ReferenceResolver extends ExpressionGraphTransformer
     {
         for (Slot slot: unresolved.remove(name))
         {
+            unresolvedTarget = null;
             slot.set(transform(slot.get()));
             updateSlotResolution(slot);
         }

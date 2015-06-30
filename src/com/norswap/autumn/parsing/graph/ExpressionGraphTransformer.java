@@ -28,6 +28,10 @@ public abstract class ExpressionGraphTransformer extends ExpressionGraphWalker
 
     private Map<ParsingExpression, ParsingExpression> transformations;
 
+    private ArrayList<ParsingExpression> transformedArray;
+
+    private int transformedArrayIndex;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public ExpressionGraphTransformer(boolean unique)
@@ -51,7 +55,7 @@ public abstract class ExpressionGraphTransformer extends ExpressionGraphWalker
             transformations = new HashMap<>();
         }
 
-        walk(pe);
+        super.walk(pe);
         ParsingExpression out = transform(pe);
         transformations = null;
         return out;
@@ -69,14 +73,14 @@ public abstract class ExpressionGraphTransformer extends ExpressionGraphWalker
             transformations = new HashMap<>();
         }
 
-        walk(exprs);
+        transformedArray = new ArrayList<>();
+        super.walk(exprs);
 
-        for (int i = 0; i < exprs.length; ++i)
-        {
-            exprs[i] = transform(exprs[i]);
-        }
-
+        exprs = transformedArray.toArray(new ParsingExpression[transformedArray.size()]);
+        transformedArray = null;
+        transformedArrayIndex = 0;
         transformations = null;
+
         return exprs;
     }
 
@@ -94,17 +98,39 @@ public abstract class ExpressionGraphTransformer extends ExpressionGraphWalker
             transformations = new HashMap<>();
         }
 
-        ArrayList<ParsingExpression> array = new ArrayList<>();
+        transformedArray = new ArrayList<>();
+        super.walk(exprs);
 
-        walk(exprs);
-
-        for (ParsingExpression expr: exprs)
-        {
-            array.add(transform(expr));
-        }
-
+        ArrayList<ParsingExpression> out = transformedArray;
+        transformedArray = null;
+        transformedArrayIndex = 0;
         transformations = null;
-        return array;
+
+        return out;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    protected void walk(ParsingExpression[] exprs)
+    {
+        apply(exprs);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    protected void walk(Iterable<ParsingExpression> exprs)
+    {
+        apply(exprs);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    protected void walk(ParsingExpression pe)
+    {
+        apply(pe);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,10 +138,24 @@ public abstract class ExpressionGraphTransformer extends ExpressionGraphWalker
     @Override
     protected void afterChild(ParsingExpression pe, ParsingExpression child, int index, State state)
     {
-        pe.setChild(index,
-            unique
-                ? transformations.computeIfAbsent(child, this::transform)
-                : transform(child));
+        pe.setChild(index, unique
+            ? transformations.computeIfAbsent(child, this::transform)
+            : transform(child));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    protected void afterEach(ParsingExpression pe)
+    {
+        ParsingExpression transformed = unique
+            ? transformations.computeIfAbsent(pe, this::transform)
+            : transform(pe);
+
+        if (transformedArray != null)
+        {
+            transformedArray.add(transformed);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

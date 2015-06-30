@@ -1,7 +1,16 @@
 --------------------------------------------------------------------------------
 TODO
 
-- graph transformer: interleave the array item transformation with the walk
+- fix null setting of unresolvedTarget in reference resolver
+    - caused by afterEach invocations setting unresolvedTarget but never clearing it
+    - issue: the notion of slot should encapsulate array positions too!
+    - (can fix "remove additional replacement" below)
+    - generalize the notion of slot/backpropagation?
+    - what are the notions: trigger (string), slot, what functions?
+    ---> look at breaker / first calculator for related problems?
+- replace walk with apply in reference resolver
+- remove additional replacement logic in the reference resolver?
+- rename and document afterEach in walker
 
 TODO GUI
 

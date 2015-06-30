@@ -3,7 +3,6 @@ package com.norswap.autumn.parsing.graph;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 import static com.norswap.autumn.parsing.graph.ExpressionGraphWalker.State.*;
@@ -33,6 +32,8 @@ public abstract class ExpressionGraphWalker
     protected void afterChild(ParsingExpression pe, ParsingExpression child, int index, State state) {}
 
     protected void afterAll(ParsingExpression pe) {}
+
+    protected void afterEach(ParsingExpression pe) {}
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -75,6 +76,7 @@ public abstract class ExpressionGraphWalker
         for (ParsingExpression pe: exprs)
         {
             _walk(pe);
+            afterEach(pe);
         }
 
         states = null;
@@ -91,6 +93,7 @@ public abstract class ExpressionGraphWalker
         for (ParsingExpression pe: exprs)
         {
             _walk(pe);
+            afterEach(pe);
         }
 
         states = null;
@@ -109,7 +112,7 @@ public abstract class ExpressionGraphWalker
     /**
      * Returns the state to be passed to pe's parent's {@link #afterChild} invocation for pe.
      */
-    private final State _walk(ParsingExpression pe)
+    private State _walk(ParsingExpression pe)
     {
         switch (states.getOrDefault(pe, ABSENT))
         {
