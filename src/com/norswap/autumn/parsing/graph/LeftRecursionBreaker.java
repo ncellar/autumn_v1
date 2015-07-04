@@ -2,6 +2,8 @@ package com.norswap.autumn.parsing.graph;
 
 import com.norswap.autumn.parsing.expressions.LeftRecursive;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.graph.slot.ChildSlot;
+import com.norswap.autumn.parsing.graph.slot.Slot;
 import com.norswap.autumn.util.Array;
 
 import java.util.HashMap;
@@ -14,7 +16,7 @@ import static com.norswap.autumn.parsing.ParsingExpressionFactory.leftRecursive;
  * occurrence of expressions that the detector has recorded in a {@link LeftRecursive} expression.
  *
  * To do so, the breaker starts by creating the LeftRecursive replacement for each node recorded
- * by the detector. It then walks the graph and records the location (a {@link Slot}) where each
+ * by the detector. It then walks the graph and records the location (a {@link ChildSlot}) where each
  * recorded node occur. We can't replace nodes during the walk as that would break the walking
  * algorithm. Finally, it replaces each recorded location by its proper replacement.
  */
@@ -24,7 +26,7 @@ public final class LeftRecursionBreaker extends ExpressionGraphWalker
 
     private static final class Mod
     {
-        Slot slot;
+        Slot<ParsingExpression> slot;
         LeftRecursive replacement;
     }
 
@@ -85,14 +87,14 @@ public final class LeftRecursionBreaker extends ExpressionGraphWalker
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    protected void afterChild(ParsingExpression pe, ParsingExpression child, int index, State state)
+    protected void afterChild(ParsingExpression pe, Slot<ParsingExpression> slot, State state)
     {
-        LeftRecursive replacement = replacements.get(child);
+        LeftRecursive replacement = replacements.get(slot.get());
 
         if (replacement != null)
         {
             Mod mod = new Mod();
-            mod.slot = new Slot(pe, index);
+            mod.slot = slot;
             mod.replacement = replacement;
             mods.add(mod);
         }

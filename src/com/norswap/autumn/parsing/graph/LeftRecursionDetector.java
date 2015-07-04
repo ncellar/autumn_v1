@@ -2,6 +2,7 @@ package com.norswap.autumn.parsing.graph;
 
 import com.norswap.autumn.parsing.expressions.LeftRecursive;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.graph.slot.Slot;
 import com.norswap.autumn.util.Array;
 
 import java.util.HashMap;
@@ -89,14 +90,14 @@ public final class LeftRecursionDetector extends ExpressionGraphWalker
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    protected void afterChild(ParsingExpression pe, ParsingExpression child, int index, State state)
+    protected void afterChild(ParsingExpression pe, Slot<ParsingExpression> slot, State state)
     {
         Integer leftPos = leftRecursiveStackPositions.peekOrNull();
 
         if (state == State.VISITING
-            && stackPositions.get(child) > (leftPos != null ? leftPos : -1))
+            && stackPositions.get(slot.get()) > (leftPos != null ? leftPos : -1))
         {
-            leftRecursives.add(child);
+            leftRecursives.add(slot.get());
         }
     }
 

@@ -30,14 +30,13 @@ public class GUI extends Application
     public static void main(String[] args) throws IOException
     {
         String grammarFile = "src/com/norswap/autumn/test/grammars/Java8.autumn";
-        DEBUGGER.grammar = FunctionalTransformer.apply(
-            GrammarDriver.compile(grammarFile),
-            pe -> {
-                Breakpoint out = new Breakpoint();
-                out.operand = pe;
-                return out;
-            },
-            true);
+    DEBUGGER.grammar = new FunctionalTransformer(
+        pe -> {
+            Breakpoint out = new Breakpoint();
+            out.operand = pe;
+            return out;
+        })
+        .walk(GrammarDriver.compile(grammarFile));
 
         file = "src/com/norswap/autumn/parsing/Parser.java";
         launch(args);

@@ -1,7 +1,10 @@
 package com.norswap.autumn.parsing.graph;
 
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.graph.slot.*;
+import com.norswap.autumn.util.Array;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,10 +21,8 @@ import static com.norswap.autumn.parsing.graph.ExpressionGraphWalker.State.*;
  *
  * The algorithm never enters a node twice: {@link #before} and {@link #afterAll} are called only
  * once per node, hence recursion is cutoff when we encounter nodes we have already visited.
- *
- * When you extend the methods, you should give it (a) clean entry point(s). These should call
- * one of the {@link #walk} methods available.
  */
+
 public abstract class ExpressionGraphWalker
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -29,11 +30,11 @@ public abstract class ExpressionGraphWalker
 
     protected void before(ParsingExpression pe) {}
 
-    protected void afterChild(ParsingExpression pe, ParsingExpression child, int index, State state) {}
+    protected void afterChild(ParsingExpression parent, Slot<ParsingExpression> slot, State state) {}
 
     protected void afterAll(ParsingExpression pe) {}
 
-    protected void afterEach(ParsingExpression pe) {}
+    protected void afterRoot(Slot<ParsingExpression> slot) {}
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -41,7 +42,9 @@ public abstract class ExpressionGraphWalker
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private Map<ParsingExpression, State> states = new HashMap<>();
+    private Map<ParsingExpression, State> states;
+
+    protected boolean transform = false;
 
     private boolean cutoff = false;
 
@@ -60,9 +63,16 @@ public abstract class ExpressionGraphWalker
 
     // ---------------------------------------------------------------------------------------------
 
-    public boolean isCutoff()
+    protected void setup()
     {
-        return cutoff;
+        states = new HashMap<>();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    protected void teardown()
+    {
+        states = null;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -71,15 +81,18 @@ public abstract class ExpressionGraphWalker
      * Walks all the expression in the array, using the same state for all. This means that
      * expressions reachable from two entries in the array will still be entered only once.
      */
-    protected void walk(ParsingExpression[] exprs)
+    public ParsingExpression[] walk(ParsingExpression[] exprs)
     {
-        for (ParsingExpression pe: exprs)
+        setup();
+
+        for (int i = 0; i < exprs.length; ++i)
         {
-            _walk(pe);
-            afterEach(pe);
+            _walk(exprs[i]);
+            afterRoot(new ArraySlot<>(exprs, i));
         }
 
-        states = null;
+        teardown();
+        return exprs;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -88,23 +101,41 @@ public abstract class ExpressionGraphWalker
      * Walks all the expression in the iterable, using the same state for all. This means that
      * expressions reachable from two entries in the iterable will still be entered only once.
      */
-    protected void walk(Iterable<ParsingExpression> exprs)
+    public Collection<ParsingExpression> walk(Collection<ParsingExpression> exprs)
     {
+        setup();
+
+        Array<ParsingExpression> container = transform ? new Array<>(exprs.size()) : null;
+
+        int i = 0;
         for (ParsingExpression pe: exprs)
         {
             _walk(pe);
-            afterEach(pe);
+            afterRoot(transform
+                ? new ListSlot<>(container, i++).set(pe)
+                : new ImmutableSlot<>(pe));
         }
 
-        states = null;
+        teardown();
+        return transform ? container : exprs;
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    protected void walk(ParsingExpression pe)
+    public ParsingExpression walk(ParsingExpression pe)
     {
+        setup();
+
         _walk(pe);
-        states = null;
+
+        Slot<ParsingExpression> slot = transform
+            ? new SelfSlot<>(pe)
+            : new ImmutableSlot<>(pe);
+
+        afterRoot(slot);
+
+        teardown();
+        return slot.get();
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -138,7 +169,7 @@ public abstract class ExpressionGraphWalker
 
         for (int i = 0; i < children.length; ++i)
         {
-            afterChild(pe, children[i], i, _walk(children[i]));
+            afterChild(pe, new ChildSlot(pe, i), _walk(children[i]));
             if (cutoff) { break cleanup; }
         }
 

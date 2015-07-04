@@ -4,6 +4,8 @@ import com.norswap.autumn.parsing.IncrementalReferenceResolver;
 import com.norswap.autumn.parsing.ParsingExpressionFactory;
 import com.norswap.autumn.parsing.expressions.Reference;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.graph.slot.ChildSlot;
+import com.norswap.autumn.parsing.graph.slot.Slot;
 import com.norswap.autumn.util.MultiMap;
 
 import java.util.HashMap;
@@ -24,7 +26,7 @@ import java.util.HashMap;
  * Implementation-wise, this is an expression graph transformer. The walk records named
  * expressions as they are encountered. The transformation replaces a reference with its target, if
  * it has already been encountered. Otherwise the reference stays, but the its
- * location (a {@link Slot}) is recorded as needing to be assigned whenever the target is
+ * location (a {@link ChildSlot}) is recorded as needing to be assigned whenever the target is
  * encountered.
  *
  * A reference's target might be another reference. We handle these cases by recursively
@@ -34,6 +36,11 @@ public final class ReferenceResolver extends ExpressionGraphTransformer
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Max allowed number of chained references. Used to detect reference loops (not be confused
+     * with loops in the grammar -- reference loops involve only references and no actual
+     * parsing expressions).
+     */
     public static int REFERENCE_CHAIN_LIMIT = 10000;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -46,7 +53,7 @@ public final class ReferenceResolver extends ExpressionGraphTransformer
     /**
      * Map target names that can't be resolved to a slot.
      */
-    private MultiMap<String, Slot> unresolved;
+    private MultiMap<String, Slot<ParsingExpression>> unresolved;
 
     /**
      * If {@link #transform} encounters a missing target, it will record its name here for the
@@ -56,110 +63,62 @@ public final class ReferenceResolver extends ExpressionGraphTransformer
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ReferenceResolver()
-    {
-        super(false);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
     public static ParsingExpression resolve(ParsingExpression expr)
     {
-        return new ReferenceResolver().run(expr);
+        return new ReferenceResolver().walk(expr);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Resolves all references within the expressions reachable through {@code exrprs}. If {@code
+     * Resolves all references within the expressions reachable through {@code exprs}. If {@code
      * exprs} contains references, it is modified in place. It is also returned.
      *
      * Throws an exception if there are unresolvable expressions.
      */
     public static ParsingExpression[] resolve(ParsingExpression[] exprs)
     {
-        return new ReferenceResolver().run(exprs);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public ParsingExpression run(ParsingExpression expr)
-    {
-        named = new HashMap<>();
-        unresolved = new MultiMap<>();
-
-        walk(expr);
-        //expr = apply(expr);
-
-        if (!unresolved.isEmpty())
-        {
-            throw new RuntimeException(
-                "There were unresolved references in the grammar: " + unresolved.keySet());
-        }
-
-        named = null;
-        unresolved = null;
-        return expr;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Resolves all references within the expressions reachable through {@code exrprs}. If {@code
-     * exprs} contains references, it is modified in place. It is also returned.
-     *
-     * Throws an exception if there are unresolvable expressions.
-     */
-    public ParsingExpression[] run(ParsingExpression[] exprs)
-    {
-        named = new HashMap<>();
-        unresolved = new MultiMap<>();
-
-        // TODO replace in the array with apply
-        //apply(exprs);
-        walk(exprs);
-
-        // Replace the references inside the array by their targets.
-
-        unresolvedTarget = null;
-
-        for (int i = 0; i < exprs.length; ++i)
-        {
-            exprs[i] = transform(exprs[i]);
-
-            if (unresolvedTarget != null)
-            {
-                // Trigger the exception below.
-                unresolved.add(unresolvedTarget, null);
-                unresolvedTarget = null;
-            }
-        }
-
-        if (!unresolved.isEmpty())
-        {
-            throw new RuntimeException(
-                "There were unresolved references in the grammar: " + unresolved.keySet());
-        }
-
-        named = null;
-        unresolved = null;
-        return exprs;
+        return new ReferenceResolver().walk(exprs);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public ParsingExpression transform(ParsingExpression pe)
+    protected void setup()
     {
-        String targetName;
+        super.setup();
+        named = new HashMap<>();
+        unresolved = new MultiMap<>();
+    }
 
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    protected void teardown()
+    {
+        if (!unresolved.isEmpty())
+        {
+            throw new RuntimeException(
+                "There were unresolved references in the grammar: " + unresolved.keySet());
+        }
+
+        super.teardown();
+        named = null;
+        unresolved = null;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public ParsingExpression doTransform(ParsingExpression pe)
+    {
         int i = 0;
         while (pe instanceof Reference)
         {
-            targetName = ((Reference) pe).target;
+            String targetName = ((Reference) pe).target;
             ParsingExpression target = named.get(targetName);
 
-            if (i > REFERENCE_CHAIN_LIMIT)
+            if (++i > REFERENCE_CHAIN_LIMIT)
             {
                 throw new RuntimeException(
                     "It is likely that you have a rule which is a reference to itself. "
@@ -190,36 +149,46 @@ public final class ReferenceResolver extends ExpressionGraphTransformer
         if (name != null)
         {
             named.put(name, pe);
-            updateSlotsResolution(name);
+            attemptResolvingReferencesTo(name);
         }
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    protected void afterChild(ParsingExpression pe, ParsingExpression child, int index, State state)
+    protected void afterChild(ParsingExpression pe, Slot<ParsingExpression> slot, State state)
     {
         // Apply the transform.
-        super.afterChild(pe, child, index, state);
+        super.afterChild(pe, slot, state);
 
-        updateSlotResolution(new Slot(pe, index));
+        saveUnresolvedReference(slot);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    protected void afterRoot(Slot<ParsingExpression> slot)
+    {
+        // Apply the transform.
+        super.afterRoot(slot);
+
+        saveUnresolvedReference(slot);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private void updateSlotsResolution(String name)
+    private void attemptResolvingReferencesTo(String name)
     {
-        for (Slot slot: unresolved.remove(name))
+        for (Slot<ParsingExpression> slot: unresolved.remove(name))
         {
-            unresolvedTarget = null;
             slot.set(transform(slot.get()));
-            updateSlotResolution(slot);
+            saveUnresolvedReference(slot);
         }
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    private void updateSlotResolution(Slot slot)
+    private void saveUnresolvedReference(Slot<ParsingExpression> slot)
     {
         if (unresolvedTarget != null)
         {

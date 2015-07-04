@@ -37,7 +37,7 @@ public final class JavaGrammarTest
 
         ParsingExpression root = rules[0];
 
-        root = FunctionalTransformer.apply(root, JavaGrammarTest::transform, true);
+        root = new FunctionalTransformer(JavaGrammarTest::transform).walk(root);
 
         ParsingExpression whitespace = Arrays.stream(rules)
             .filter(rule -> "Spacing".equals(rule.name()))
