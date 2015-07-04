@@ -3,15 +3,23 @@ package com.norswap.autumn.util;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.RandomAccess;
 import java.util.function.Function;
 
 /**
- * A dynamic array to serve as minimal substitute to ArrayList.
+ * A dynamic array to serve as substitute to ArrayList.
  *
  * The idea to to be able to implement functions not implemented by ArrayList, such as {@link
  * #truncate}.
+ *
+ * But mostly, I did it for fun.
+ *
+ * Future plans:
+ * - implement Deque
  */
-public final class Array<T> implements Iterable<T>, Cloneable
+public final class Array<T> implements List<T>, RandomAccess, Cloneable
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -49,6 +57,7 @@ public final class Array<T> implements Iterable<T>, Cloneable
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    @Override
     public boolean isEmpty()
     {
         return next == 0;
@@ -56,14 +65,19 @@ public final class Array<T> implements Iterable<T>, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
+    @Override
     public int size()
     {
         return next;
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // INSERTIONS
+
     // ---------------------------------------------------------------------------------------------
 
-    public void add(T t)
+    @Override
+    public boolean add(T t)
     {
         if (next == array.length)
         {
@@ -71,10 +85,28 @@ public final class Array<T> implements Iterable<T>, Cloneable
         }
 
         array[next++] = t;
+
+        return true;
     }
 
     // ---------------------------------------------------------------------------------------------
 
+    @Override
+    public void add(int index, T element)
+    {
+        if (next == array.length)
+        {
+            grow(array.length + 1);
+        }
+
+        System.arraycopy(array, index, array, index + 1, next - index - 1);
+        array[index] = element;
+        next++;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
     public T get(int index)
     {
         return Caster.cast(array[index]);
@@ -82,10 +114,50 @@ public final class Array<T> implements Iterable<T>, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
-    public void set(int index, T t)
+    @Override
+    public T set(int index, T t)
     {
+        @SuppressWarnings("unchecked")
+        T element = (T) array[index];
         array[index] = t;
+        return t;
     }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public boolean addAll(Collection<? extends T> collection)
+    {
+        int size = next;
+        collection.forEach(this::add);
+        return size != next;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public boolean addAll(int index, Collection<? extends T> c)
+    {
+        int csize = c.size();
+
+        if (array.length < next + csize)
+        {
+            grow(next + csize);
+        }
+
+        System.arraycopy(array, index, array, index + csize, next - index - 1);
+
+        int i = index;
+        for (T t: c)
+        {
+            array[i++] = t;
+        }
+
+        return csize != 0;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // NEW OPERATIONS
 
     // ---------------------------------------------------------------------------------------------
 
@@ -93,12 +165,15 @@ public final class Array<T> implements Iterable<T>, Cloneable
     {
         int size = array.length;
 
-        while (size < capacity)
+        if (size < capacity)
         {
-            size = (int) (size * GROWTH_FACTOR);
-        }
+            while (size < capacity)
+            {
+                size = (int) (size * GROWTH_FACTOR);
+            }
 
-        array = Arrays.copyOf(array, size);
+            array = Arrays.copyOf(array, size);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -114,27 +189,6 @@ public final class Array<T> implements Iterable<T>, Cloneable
         {
             next = size;
         }
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public void clear()
-    {
-        truncate(0);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public void addAll(Collection<? extends T> collection)
-    {
-        collection.forEach(this::add);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public void addAll(Array<? extends T> array)
-    {
-        array.forEach(this::add);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -172,17 +226,25 @@ public final class Array<T> implements Iterable<T>, Cloneable
         return next == 0 ? null : peek();
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // REMOVALS
+
     // ---------------------------------------------------------------------------------------------
 
-    public void remove(int index)
+    @Override
+    public T remove(int index)
     {
+        @SuppressWarnings("unchecked")
+        T item = (T) array[index];
         System.arraycopy(array, index + 1, array, index, next - index - 1);
         --next;
+        return item;
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public boolean remove(T t)
+    @Override
+    public boolean remove(Object t)
     {
         for (int i = 0; i < next; ++i)
         {
@@ -214,7 +276,47 @@ public final class Array<T> implements Iterable<T>, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
-    public int indexOf(T t)
+    @Override
+    public boolean removeAll(Collection<?> c)
+    {
+        int size = next;
+        c.forEach(this::remove);
+        return size != next;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public boolean retainAll(Collection<?> c)
+    {
+        int size = next;
+
+        for (int i = 0; i < next; ++i)
+        {
+            if (!c.contains(array[i]))
+            {
+                remove(i--);
+            }
+        }
+
+        return size != next;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void clear()
+    {
+        truncate(0);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // MISC
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public int indexOf(Object t)
     {
         for (int i = 0; i < next; ++i)
         {
@@ -229,9 +331,198 @@ public final class Array<T> implements Iterable<T>, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
-    public boolean contains(T t)
+    @Override
+    public int lastIndexOf(Object t)
     {
-        return indexOf(t) >= 0;
+        for (int i = next - 1; i >= 0; --i)
+        {
+            if (t == null ? array[i] == null : t.equals(array[i]))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public boolean contains(Object t)
+    {
+        return indexOf(Caster.cast(t)) >= 0;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public boolean containsAll(Collection<?> c)
+    {
+        for (Object o: c)
+        {
+            if (!contains(o)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public List<T> subList(int fromIndex, int toIndex)
+    {
+        throw new UnsupportedOperationException("Array doesn't support sublist for now");
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // ITERATORS
+
+    // ---------------------------------------------------------------------------------------------
+
+    private class ArrayIterator implements ListIterator<T>
+    {
+        int index;
+        int direction;
+
+        @Override
+        public boolean hasNext()
+        {
+            return index < next;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public T next()
+        {
+            direction = 1;
+            return (T) array[index++];
+        }
+
+        @Override
+        public boolean hasPrevious()
+        {
+            return index > 0;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public T previous()
+        {
+            direction = -1;
+            return (T) array[--index];
+        }
+
+        @Override
+        public int nextIndex()
+        {
+            return index;
+        }
+
+        @Override
+        public int previousIndex()
+        {
+            return index - 1;
+        }
+
+        @Override
+        public void remove()
+        {
+            if (direction > 0)
+            {
+                Array.this.remove(index - 1);
+                --index;
+            }
+            else if (direction < 0)
+            {
+                Array.this.remove(index);
+            }
+            else {
+                throw new IllegalStateException(
+                    "Calling remove twice, or after add, or before calling next.");
+            }
+
+            direction = 0;
+        }
+
+        @Override
+        public void set(T t)
+        {
+            if (direction > 0)
+            {
+                array[index - 1] = t;
+            }
+            else if (direction < 0)
+            {
+                array[index] = t;
+            }
+            else {
+                throw new IllegalStateException(
+                    "Calling set after remove or add, or before calling next.");
+            }
+        }
+
+        @Override
+        public void add(T t)
+        {
+            Array.this.add(index, t);
+            ++index;
+            direction = 0;
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private final class ReverseArrayIterator extends ArrayIterator
+    {
+        {
+            index = next - 1;
+        }
+
+        @Override
+        public boolean hasNext()
+        {
+            return super.hasPrevious();
+        }
+
+        @Override
+        public T next()
+        {
+            return super.previous();
+        }
+
+        @Override
+        public boolean hasPrevious()
+        {
+            return super.hasNext();
+        }
+
+        @Override
+        public T previous()
+        {
+            return super.next();
+        }
+
+        @Override
+        public int nextIndex()
+        {
+            return super.previousIndex();
+        }
+
+        @Override
+        public int previousIndex()
+        {
+            return super.nextIndex();
+        }
+
+        @Override
+        public void add(T t)
+        {
+            Array.this.add(index, t);
+            // ++index; // remove this from superclass to satisfy method contract
+            direction = 0;
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -239,22 +530,25 @@ public final class Array<T> implements Iterable<T>, Cloneable
     @Override
     public Iterator<T> iterator()
     {
-        return new Iterator<T>()
-        {
-            private int index;
+        return new ArrayIterator();
+    }
 
-            @Override
-            public boolean hasNext()
-            {
-                return index < next;
-            }
+    // ---------------------------------------------------------------------------------------------
 
-            @Override
-            public T next()
-            {
-                return Caster.cast(array[index++]);
-            }
-        };
+    @Override
+    public ListIterator<T> listIterator()
+    {
+        return new ArrayIterator();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public ListIterator<T> listIterator(int index)
+    {
+        ArrayIterator out = new ArrayIterator();
+        out.index = index;
+        return out;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -266,32 +560,52 @@ public final class Array<T> implements Iterable<T>, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
-    public Iterator<T> reverseIterator()
+    public ListIterator<T> reverseIterator()
     {
-        return new Iterator<T>()
-        {
-            private int index = next - 1;
-
-            @Override
-            public boolean hasNext()
-            {
-                return index >= 0;
-            }
-
-            @Override
-            public T next()
-            {
-                return Caster.cast(array[index--]);
-            }
-        };
+        return new ReverseArrayIterator();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    // TO ARRAY
+
+    // ---------------------------------------------------------------------------------------------
 
     public T[] toArray(Function<Integer, T[]> supplier)
     {
         T[] out = supplier.apply(next);
         System.arraycopy(array, 0, out, 0, next);
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public Object[] toArray()
+    {
+        Object[] out = new Object[next];
+        System.arraycopy(array, 0, out, 0, next);
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <U> U[] toArray(U[] out)
+    {
+        if (out.length < next)
+        {
+            out = (U[])
+                java.lang.reflect.Array.newInstance(out.getClass().getComponentType(), next);
+        }
+
+        System.arraycopy(array, 0, out, 0, next);
+
+        if (out.length != next)
+        {
+            out[next] = null;
+        }
+
         return out;
     }
 
