@@ -1,8 +1,8 @@
 package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-import com.norswap.autumn.util.Array;
-import com.norswap.autumn.util.HandleMap;
+import com.norswap.util.Array;
+import com.norswap.util.HandleMap;
 
 import static com.norswap.autumn.parsing.Registry.*; // PSF_*
 

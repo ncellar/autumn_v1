@@ -1,7 +1,7 @@
 package com.norswap.autumn.parsing;
 
-import com.norswap.autumn.util.FlagFactory;
-import com.norswap.autumn.util.HandleFactory;
+import com.norswap.util.FlagFactory;
+import com.norswap.util.HandleFactory;
 
 /**
  * The registry manages flags and handle spaces for the parser.

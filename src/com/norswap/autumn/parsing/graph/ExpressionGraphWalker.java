@@ -1,8 +1,12 @@
 package com.norswap.autumn.parsing.graph;
 
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-import com.norswap.autumn.parsing.graph.slot.*;
-import com.norswap.autumn.util.Array;
+import com.norswap.util.Array;
+import com.norswap.util.slot.ArraySlot;
+import com.norswap.util.slot.ImmutableSlot;
+import com.norswap.util.slot.ListSlot;
+import com.norswap.util.slot.SelfSlot;
+import com.norswap.util.slot.Slot;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -63,36 +67,26 @@ public abstract class ExpressionGraphWalker
 
     // ---------------------------------------------------------------------------------------------
 
-    protected void setup()
+    public void setup()
     {
         states = new HashMap<>();
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    protected void teardown()
+    public void teardown()
     {
         states = null;
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    /**
-     * Walks all the expression in the array, using the same state for all. This means that
-     * expressions reachable from two entries in the array will still be entered only once.
-     */
-    public ParsingExpression[] walk(ParsingExpression[] exprs)
+    public ParsingExpression walk(ParsingExpression pe)
     {
         setup();
-
-        for (int i = 0; i < exprs.length; ++i)
-        {
-            _walk(exprs[i]);
-            afterRoot(new ArraySlot<>(exprs, i));
-        }
-
+        Slot<ParsingExpression> slot = partialWalk(pe);
         teardown();
-        return exprs;
+        return slot.get();
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -104,28 +98,29 @@ public abstract class ExpressionGraphWalker
     public Collection<ParsingExpression> walk(Collection<ParsingExpression> exprs)
     {
         setup();
-
-        Array<ParsingExpression> container = transform ? new Array<>(exprs.size()) : null;
-
-        int i = 0;
-        for (ParsingExpression pe: exprs)
-        {
-            _walk(pe);
-            afterRoot(transform
-                ? new ListSlot<>(container, i++).set(pe)
-                : new ImmutableSlot<>(pe));
-        }
-
+        Collection<ParsingExpression> out = partialWalk(exprs);
         teardown();
-        return transform ? container : exprs;
+        return out;
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public ParsingExpression walk(ParsingExpression pe)
+    /**
+     * Walks all the expression in the array, using the same state for all. This means that
+     * expressions reachable from two entries in the array will still be entered only once.
+     */
+    public ParsingExpression[] walk(ParsingExpression[] exprs)
     {
         setup();
+        partialWalk(exprs);
+        teardown();
+        return exprs;
+    }
 
+    // ---------------------------------------------------------------------------------------------
+
+    public Slot<ParsingExpression> partialWalk(ParsingExpression pe)
+    {
         _walk(pe);
 
         Slot<ParsingExpression> slot = transform
@@ -134,8 +129,41 @@ public abstract class ExpressionGraphWalker
 
         afterRoot(slot);
 
-        teardown();
-        return slot.get();
+        return slot;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public Collection<ParsingExpression> partialWalk(Collection<ParsingExpression> exprs)
+    {
+        Array<ParsingExpression> container = transform
+            ? new Array<>(new ParsingExpression[exprs.size()])
+            : null;
+
+        int i = 0;
+        for (ParsingExpression pe: exprs)
+        {
+            _walk(pe);
+
+            afterRoot(transform
+                ? new ListSlot<>(container, i++).set(pe)
+                : new ImmutableSlot<>(pe));
+        }
+
+        return transform ? container : exprs;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public ParsingExpression[] partialWalk(ParsingExpression[] exprs)
+    {
+        for (int i = 0; i < exprs.length; ++i)
+        {
+            _walk(exprs[i]);
+            afterRoot(new ArraySlot<>(exprs, i));
+        }
+
+        return exprs;
     }
 
     // ---------------------------------------------------------------------------------------------

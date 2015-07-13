@@ -1,11 +1,12 @@
 package com.norswap.autumn.parsing.expressions;
 
+import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.OutputChanges;
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.graph.nullability.Nullability;
-import com.norswap.autumn.util.DeepCopy;
+import com.norswap.util.DeepCopy;
 
 import java.util.Arrays;
 
@@ -270,15 +271,15 @@ public final class ExpressionCluster extends ParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public Nullability nullability()
+    public Nullability nullability(Grammar grammar)
     {
-        return Nullability.any(this, firsts());
+        return Nullability.any(this, firsts(grammar));
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public ParsingExpression[] firsts()
+    public ParsingExpression[] firsts(Grammar grammar)
     {
         return Arrays.stream(groups)
             .flatMap(Arrays::stream)

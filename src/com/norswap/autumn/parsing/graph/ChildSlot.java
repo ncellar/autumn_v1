@@ -1,6 +1,7 @@
-package com.norswap.autumn.parsing.graph.slot;
+package com.norswap.autumn.parsing.graph;
 
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.util.slot.Slot;
 
 /**
  * A slot corresponding to an indexed child of a parsing expression.

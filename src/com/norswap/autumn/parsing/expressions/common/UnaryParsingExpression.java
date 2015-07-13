@@ -1,8 +1,7 @@
 package com.norswap.autumn.parsing.expressions.common;
 
+import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.graph.nullability.Nullability;
-
-import java.util.stream.Stream;
 
 /**
  * Base implementation for parsing expression with a single operand.
@@ -62,7 +61,7 @@ public abstract class UnaryParsingExpression extends ParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public Nullability nullability()
+    public Nullability nullability(Grammar grammar)
     {
         if (operand == null)
         {
@@ -75,7 +74,7 @@ public abstract class UnaryParsingExpression extends ParsingExpression
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public ParsingExpression[] firsts()
+    public ParsingExpression[] firsts(Grammar grammar)
     {
         return new ParsingExpression[]{operand};
     }

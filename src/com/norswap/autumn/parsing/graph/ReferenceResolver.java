@@ -4,9 +4,8 @@ import com.norswap.autumn.parsing.IncrementalReferenceResolver;
 import com.norswap.autumn.parsing.ParsingExpressionFactory;
 import com.norswap.autumn.parsing.expressions.Reference;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-import com.norswap.autumn.parsing.graph.slot.ChildSlot;
-import com.norswap.autumn.parsing.graph.slot.Slot;
-import com.norswap.autumn.util.MultiMap;
+import com.norswap.util.slot.Slot;
+import com.norswap.util.MultiMap;
 
 import java.util.HashMap;
 
@@ -68,23 +67,10 @@ public final class ReferenceResolver extends ExpressionGraphTransformer
         return new ReferenceResolver().walk(expr);
     }
 
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Resolves all references within the expressions reachable through {@code exprs}. If {@code
-     * exprs} contains references, it is modified in place. It is also returned.
-     *
-     * Throws an exception if there are unresolvable expressions.
-     */
-    public static ParsingExpression[] resolve(ParsingExpression[] exprs)
-    {
-        return new ReferenceResolver().walk(exprs);
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    protected void setup()
+    public void setup()
     {
         super.setup();
         named = new HashMap<>();
@@ -94,17 +80,22 @@ public final class ReferenceResolver extends ExpressionGraphTransformer
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    protected void teardown()
+    public void teardown()
     {
-        if (!unresolved.isEmpty())
+        try
         {
-            throw new RuntimeException(
-                "There were unresolved references in the grammar: " + unresolved.keySet());
+            if (!unresolved.isEmpty())
+            {
+                throw new RuntimeException(
+                    "There were unresolved references in the grammar: " + unresolved.keySet());
+            }
         }
-
-        super.teardown();
-        named = null;
-        unresolved = null;
+        finally
+        {
+            super.teardown();
+            named = null;
+            unresolved = null;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

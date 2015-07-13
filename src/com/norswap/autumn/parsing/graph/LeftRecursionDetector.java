@@ -1,9 +1,10 @@
 package com.norswap.autumn.parsing.graph;
 
+import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.expressions.LeftRecursive;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-import com.norswap.autumn.parsing.graph.slot.Slot;
-import com.norswap.autumn.util.Array;
+import com.norswap.util.slot.Slot;
+import com.norswap.util.Array;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,37 +45,38 @@ public final class LeftRecursionDetector extends ExpressionGraphWalker
     private int stackDepth = 0;
     private HashMap<ParsingExpression, Integer> stackPositions = new HashMap<>();
     private Array<Integer> leftRecursiveStackPositions = new Array<>();
+    private Grammar grammar;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * Runs the detector then returns {@link #leftRecursives}.
-     */
-    public static Set<ParsingExpression> detect(ParsingExpression[] rules)
+    public LeftRecursionDetector(Grammar grammar)
     {
-        return new LeftRecursionDetector().run(rules);
+        this.grammar = grammar;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * Runs the detector then returns {@link #leftRecursives}.
-     */
-    public Set<ParsingExpression> run(ParsingExpression[] rules)
+    @Override
+    public void setup()
     {
+        super.setup();
         leftRecursives = new HashSet<>();
         stackDepth = 0;
         stackPositions = new HashMap<>();
         leftRecursiveStackPositions = new Array<>();
-
-        walk(rules);
-
-        stackPositions = null;
-        leftRecursiveStackPositions = null;
-        return leftRecursives;
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void teardown()
+    {
+        super.teardown();
+        stackPositions = null;
+        leftRecursiveStackPositions = null;
+    }
+
+    // ---------------------------------------------------------------------------------------------
 
     @Override
     protected void before(ParsingExpression pe)
@@ -115,13 +117,12 @@ public final class LeftRecursionDetector extends ExpressionGraphWalker
         --stackDepth;
     }
 
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
     protected ParsingExpression[] children(ParsingExpression pe)
     {
-        return pe.firsts();
+        return pe.firsts(grammar);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

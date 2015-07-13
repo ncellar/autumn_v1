@@ -2,10 +2,10 @@ package com.norswap.autumn.test.mouse;
 
 import com.norswap.autumn.parsing.ParseTree;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-import com.norswap.autumn.util.Streams;
+import com.norswap.util.Streams;
 
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
-import static com.norswap.autumn.util.StringEscape.unescape;
+import static com.norswap.util.StringEscape.unescape;
 
 /**
  * Compiles Mouse grammars into parsing expressions.

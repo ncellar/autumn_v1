@@ -1,9 +1,8 @@
 package com.norswap.autumn.parsing.graph;
 
-import com.norswap.autumn.parsing.expressions.Sequence;
+import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-import com.norswap.autumn.parsing.graph.nullability.NullabilityCalculator;
-import com.norswap.autumn.util.MultiMap;
+import com.norswap.util.MultiMap;
 
 import java.util.Set;
 
@@ -29,62 +28,52 @@ import java.util.Set;
  * So a FIRST set can change as part of our normal walk, or due to a cascading update via the
  * reverse set. Note that we need to ensure that the set actually changed (i.e. grew) before
  * propagating changes, otherwise we are faced with infinite propagation.
- *
- * ----
- *
- * NOTE: {@link Sequence#firsts()} relies on {@link #nullCalc} being set to a completed
- * nullability calculator. Even if this method is not used in the context of FirstCalculator!
  */
 public final class FirstCalculator extends ExpressionGraphWalker
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Nullability calculator required by {@link Sequence#firsts()}.
-     */
-    public static NullabilityCalculator nullCalc;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
      * The x -> FIRST(x) mapping. Can be freely accessed after the calculator has run.
      */
-    public MultiMap<ParsingExpression, ParsingExpression> first = new MultiMap<>();
+    public MultiMap<ParsingExpression, ParsingExpression> first;
 
-    //----------------------------------------------------------------------------------------------
+    private MultiMap<ParsingExpression, ParsingExpression> reverse;
 
-    private MultiMap<ParsingExpression, ParsingExpression> reverse = new MultiMap<>();
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Computes and returns the FIRST sets for all parsing expression reachable through the the
-     * given rules ({@link #first}).
-     */
-    public static MultiMap<ParsingExpression, ParsingExpression> compute(ParsingExpression[] rules)
-    {
-        return new FirstCalculator().run(rules);
-    }
+    private Grammar grammar;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * Computes and returns the FIRST sets for all parsing expression reachable through the the
-     * given rules ({@link #first}).
-     */
-    public MultiMap<ParsingExpression, ParsingExpression> run(ParsingExpression[] rules)
+    public FirstCalculator(Grammar grammar)
     {
-        walk(rules);
-        reverse = null;
-        return first;
+        this.grammar = grammar;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
+    public void setup()
+    {
+        super.setup();
+        first = new MultiMap<>();
+        reverse = new MultiMap<>();
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    @Override
+    public void teardown()
+    {
+        super.teardown();
+        reverse = null;
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    @Override
     protected void afterAll(ParsingExpression pe)
     {
-        ParsingExpression[] peFirsts = pe.firsts();
+        ParsingExpression[] peFirsts = pe.firsts(grammar);
         add(pe, peFirsts);
 
         for (ParsingExpression expr: peFirsts)

@@ -1,7 +1,7 @@
 package com.norswap.autumn.test.benchmark;
 
 import com.norswap.autumn.test.rats.RatsJava7Parser;
-import com.norswap.autumn.util.Glob;
+import com.norswap.util.Glob;
 import xtc.parser.ParseError;
 import xtc.parser.Result;
 import xtc.parser.SemanticValue;

@@ -1,7 +1,7 @@
 package com.norswap.autumn.parsing.graph;
 
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-import com.norswap.autumn.parsing.graph.slot.Slot;
+import com.norswap.util.slot.Slot;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +43,7 @@ public abstract class ExpressionGraphTransformer extends ExpressionGraphWalker
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    protected void setup()
+    public void setup()
     {
         super.setup();
 
@@ -55,7 +55,7 @@ public abstract class ExpressionGraphTransformer extends ExpressionGraphWalker
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    protected void teardown()
+    public void teardown()
     {
         super.teardown();
         transformations = null;

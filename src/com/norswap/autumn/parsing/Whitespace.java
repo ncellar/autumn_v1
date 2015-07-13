@@ -41,6 +41,5 @@ public final class Whitespace
             whitespaceChars,
             lineComment,
             blockComment)))
-
     ;
 }

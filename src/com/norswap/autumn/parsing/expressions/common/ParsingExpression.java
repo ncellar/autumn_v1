@@ -1,13 +1,14 @@
 package com.norswap.autumn.parsing.expressions.common;
 
+import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.Registry;
 import com.norswap.autumn.parsing.graph.nullability.Nullability;
-import com.norswap.autumn.util.Caster;
-import com.norswap.autumn.util.DeepCopy;
-import com.norswap.autumn.util.Exceptions;
-import com.norswap.autumn.util.HandleMap;
+import com.norswap.util.Caster;
+import com.norswap.util.DeepCopy;
+import com.norswap.util.Exceptions;
+import com.norswap.util.HandleMap;
 
 /**
  * A parsing expression is matched to the source text by recursively invoking the {@link #parse}
@@ -142,14 +143,14 @@ public abstract class ParsingExpression implements DeepCopy
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // PROPERTIES
 
-    public Nullability nullability()
+    public Nullability nullability(Grammar grammar)
     {
         return Nullability.no(this);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public ParsingExpression[] firsts()
+    public ParsingExpression[] firsts(Grammar grammar)
     {
         return new ParsingExpression[0];
     }

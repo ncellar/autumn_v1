@@ -1,5 +1,7 @@
 package com.norswap.autumn.parsing.support;
 
+import com.norswap.autumn.Autumn;
+import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
@@ -197,5 +199,11 @@ public final class GrammarGrammar
         ruleRhs,
         optional(diagName), semi)),
 
-    grammar = named$("grammar", oneMore(captureGrouped("rules", rule)));
+    root = named$("grammar", oneMore(captureGrouped("rules", rule)));
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static final Grammar grammar = Autumn.grammarFromExpression(root);
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 }

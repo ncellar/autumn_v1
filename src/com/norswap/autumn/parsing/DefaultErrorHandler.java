@@ -2,7 +2,7 @@ package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.parsing.expressions.Token;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-import com.norswap.autumn.util.Array;
+import com.norswap.util.Array;
 
 import static com.norswap.autumn.parsing.Registry.PEF_ERROR_RECORDING;
 import static com.norswap.autumn.parsing.Registry.PSH_STACK_TRACE;

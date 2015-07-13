@@ -1,12 +1,12 @@
 package com.norswap.autumn.parsing.graph.nullability;
 
+import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.graph.ExpressionGraphWalker;
-import com.norswap.autumn.util.MultiMap;
+import com.norswap.util.MultiMap;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.stream.Stream;
 
 /**
  * Determines which rules in a parsing expression graph are nullable.
@@ -34,25 +34,20 @@ public class NullabilityCalculator extends ExpressionGraphWalker
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private HashMap<ParsingExpression, Nullability> nullabilities = new HashMap<>();
+    private HashMap<ParsingExpression, Nullability> nullabilities;
 
-    private MultiMap<ParsingExpression, ParsingExpression> dependants = new MultiMap<>();
+    private MultiMap<ParsingExpression, ParsingExpression> dependants;
+
+    private Grammar grammar;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * Returns a stream of nullable parsing expression. Call only after the calculator has run.
-     */
-    public Stream<ParsingExpression> nullables()
+    public NullabilityCalculator(Grammar grammar)
     {
-        return nullabilities
-            .entrySet()
-            .stream()
-            .filter(e -> e.getValue().yes())
-            .map(e -> e.getKey());
+        this.grammar = grammar;
     }
 
-    // -----------------------------------------------------------------------------------------
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Indicate whether the supplied parsing expression is nullable.
@@ -65,34 +60,29 @@ public class NullabilityCalculator extends ExpressionGraphWalker
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * Computes and returns a stream of nullable expressions ({@link #nullables})reachable through
-     * the given rules.
-     */
-    public static Stream<ParsingExpression> compute(ParsingExpression[] rules)
+    @Override
+    public void setup()
     {
-        return new NullabilityCalculator().run(rules);
+        super.setup();
+        nullabilities = new HashMap<>();
+        dependants = new MultiMap<>();
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // -----------------------------------------------------------------------------------------
 
-    /**
-     * Computes and returns a stream of nullable expressions ({@link #nullables})reachable through
-     * the given rules.
-     */
-    public Stream<ParsingExpression> run(ParsingExpression[] rules)
+    @Override
+    public void teardown()
     {
-        walk(rules);
+        super.teardown();
         dependants = null;
-        return nullables();
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // -----------------------------------------------------------------------------------------
 
     @Override
     protected void before(ParsingExpression pe)
     {
-        nullabilities.put(pe, pe.nullability());
+        nullabilities.put(pe, pe.nullability(grammar));
     }
 
     // -----------------------------------------------------------------------------------------

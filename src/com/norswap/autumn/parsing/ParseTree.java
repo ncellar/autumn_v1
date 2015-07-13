@@ -1,6 +1,6 @@
 package com.norswap.autumn.parsing;
 
-import com.norswap.autumn.util.Array;
+import com.norswap.util.Array;
 
 import java.util.Collections;
 import java.util.Iterator;

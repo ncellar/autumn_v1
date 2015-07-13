@@ -4,7 +4,7 @@ import com.norswap.autumn.test.antlr.Java7Lexer;
 import com.norswap.autumn.test.antlr.Java7Parser;
 import com.norswap.autumn.test.antlr.Java8Lexer;
 import com.norswap.autumn.test.antlr.Java8Parser;
-import com.norswap.autumn.util.Glob;
+import com.norswap.util.Glob;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
@@ -16,7 +16,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 
-public final class AntlrBenchmark
+public final class AntlrBench
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

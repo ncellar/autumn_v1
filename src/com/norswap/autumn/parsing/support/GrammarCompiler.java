@@ -1,19 +1,25 @@
 package com.norswap.autumn.parsing.support;
 
+import com.norswap.autumn.Autumn;
+import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParseTree;
+import com.norswap.autumn.parsing.Whitespace;
 import com.norswap.autumn.parsing.expressions.DropPrecedence;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.ParsingExpressionFactory;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster.Operand;
 import com.norswap.autumn.parsing.expressions.Reference;
-import com.norswap.autumn.util.Array;
-import com.norswap.autumn.util.Streams;
+import com.norswap.autumn.parsing.graph.LeftRecursionBreaker;
+import com.norswap.autumn.parsing.graph.ReferenceResolver;
+import com.norswap.util.Array;
+import com.norswap.util.Streams;
 
+import java.util.Arrays;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
-import static com.norswap.autumn.util.StringEscape.unescape;
+import static com.norswap.util.StringEscape.unescape;
 
 public final class GrammarCompiler
 {
@@ -33,9 +39,23 @@ public final class GrammarCompiler
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static ParsingExpression[] compile(ParseTree tree)
+    public static Grammar compile(ParseTree tree)
     {
-        return new GrammarCompiler().run(tree);
+        ParsingExpression[] exprs = new GrammarCompiler().run(tree);
+
+        ParsingExpression whitespace = Arrays.stream(exprs)
+            .filter(rule -> "Spacing".equals(rule.name()))
+            .findFirst().orElse(Whitespace.whitespace.deepCopy());
+
+        // TODO enable setting whitespace & root from grammar file
+
+        Grammar grammar = Autumn.grammarFromExpression(
+            exprs[0], Arrays.asList(exprs), whitespace, true);
+
+        grammar.transform(new ReferenceResolver());
+        grammar.transform(new LeftRecursionBreaker(grammar));
+
+        return grammar;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -234,10 +254,7 @@ public final class GrammarCompiler
 
             }).toArray(Operand[]::new));
 
-        for (int i = 0; i < namedAlternates.size(); ++i)
-        {
-            namedClusterAlternates.push(namedAlternates.get(i));
-        }
+        namedAlternates.forEach(namedClusterAlternates::push);
 
         return cluster;
     }

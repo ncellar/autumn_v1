@@ -1,7 +1,7 @@
 package com.norswap.autumn.test.benchmark;
 
 import com.norswap.autumn.test.parboiled.ParboiledJava6Parser;
-import com.norswap.autumn.util.Glob;
+import com.norswap.util.Glob;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
 import org.parboiled.parserunners.ReportingParseRunner;

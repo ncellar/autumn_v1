@@ -3,12 +3,15 @@ package com.norswap.autumn.parsing;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster;
 import com.norswap.autumn.parsing.expressions.LeftRecursive;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-import com.norswap.autumn.util.Array;
-import com.norswap.autumn.util.HandleMap;
+import com.norswap.autumn.parsing.graph.nullability.NullabilityCalculator;
+import com.norswap.util.Array;
+import com.norswap.util.HandleMap;
 
 public final class Parser
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private Grammar grammar;
 
     private Source source;
 
@@ -39,20 +42,30 @@ public final class Parser
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public Parser(Source source, ParserConfiguration config)
+    public static ParseResult parse(Grammar grammar, Source source)
     {
+        return new Parser(grammar, source, ParserConfiguration.DEFAULT).parse(grammar.root());
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static ParseResult parse(Grammar grammar, Source source, ParserConfiguration config)
+    {
+        return new Parser(grammar, source, config).parse(grammar.root());
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public Parser(Grammar grammar, Source source, ParserConfiguration config)
+    {
+        this.grammar = grammar;
         this.source = source;
         this.text = source.text();
 
         this.errorHandler = config.errorHandler.get();
-        this.whitespace = config.whitespace.get();
         this.memoizationStrategy = config.memoizationStrategy.get();
-        this.processLeadingWhitespace = config.processLeadingWhitespace;
-    }
-
-    public Parser(Source source)
-    {
-        this(source, ParserConfiguration.DEFAULT);
+        this.whitespace = grammar.whitespace();
+        this.processLeadingWhitespace = grammar.processLeadingWhitespace();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -66,7 +79,7 @@ public final class Parser
      * If the parse failed ({@code failed() == true}) or a partial match ({@code
      * matchedWholeSource() == false}), errors can be reported with {@link #report()}.
      */
-    public void parse(ParsingExpression pe)
+    public ParseResult parse(ParsingExpression pe)
     {
         this.blocked = new Array<>();
         this.minPrecedence = new Array<>();
@@ -90,6 +103,9 @@ public final class Parser
         {
             rootState.resetAllOutput();
         }
+
+        // TODO
+        return new ParseResult(succeeded(), endPosition >= 0, endPosition, tree, null, error());
     }
 
     //----------------------------------------------------------------------------------------------
@@ -111,6 +127,14 @@ public final class Parser
             errorHandler.reportErrors(this);
         }
 
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    public ParseError error()
+    {
+        // TODO
+        return new ParseError();
     }
 
     //----------------------------------------------------------------------------------------------
