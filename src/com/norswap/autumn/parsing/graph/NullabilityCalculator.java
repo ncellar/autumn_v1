@@ -1,12 +1,15 @@
-package com.norswap.autumn.parsing.graph.nullability;
+package com.norswap.autumn.parsing.graph;
 
 import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-import com.norswap.autumn.parsing.graph.ExpressionGraphWalker;
 import com.norswap.util.MultiMap;
+import com.norswap.util.graph_visit.GraphVisitor;
+import com.norswap.util.graph_visit.NodeState;
+import com.norswap.util.slot.Slot;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Determines which rules in a parsing expression graph are nullable.
@@ -23,20 +26,20 @@ import java.util.HashMap;
  *
  * To resolve this issue, whenever a nullability cannot be resolved right away, we register the
  * expression as a "dependant" of its children. Whenever a child becomes resolved, we re-reduce
- * all its dependants. Note a child can be become resolved through our walk, or because it was
+ * all its dependants. Note a child can be become resolved by visiting it, or because it was
  * itself re-reduced because one of its own child became resolved.
  *
  * After running the calculator, the remaining unresolved nullabilities come from infinite
  * recursion (e.g., "X = X"). Since our handling of left-recursion will ensure that these rules
  * always fail, we don't need to consider them nullable.
  */
-public class NullabilityCalculator extends ExpressionGraphWalker
+public class NullabilityCalculator extends GraphVisitor<ParsingExpression>
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private HashMap<ParsingExpression, Nullability> nullabilities;
+    private HashMap<ParsingExpression, Nullability> nullabilities = new HashMap<>();
 
-    private MultiMap<ParsingExpression, ParsingExpression> dependants;
+    private MultiMap<ParsingExpression, ParsingExpression> dependants = new MultiMap<>();
 
     private Grammar grammar;
 
@@ -44,6 +47,7 @@ public class NullabilityCalculator extends ExpressionGraphWalker
 
     public NullabilityCalculator(Grammar grammar)
     {
+        super(Walks.readOnly);
         this.grammar = grammar;
     }
 
@@ -61,26 +65,7 @@ public class NullabilityCalculator extends ExpressionGraphWalker
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void setup()
-    {
-        super.setup();
-        nullabilities = new HashMap<>();
-        dependants = new MultiMap<>();
-    }
-
-    // -----------------------------------------------------------------------------------------
-
-    @Override
-    public void teardown()
-    {
-        super.teardown();
-        dependants = null;
-    }
-
-    // -----------------------------------------------------------------------------------------
-
-    @Override
-    protected void before(ParsingExpression pe)
+    public void before(ParsingExpression pe)
     {
         nullabilities.put(pe, pe.nullability(grammar));
     }
@@ -88,7 +73,7 @@ public class NullabilityCalculator extends ExpressionGraphWalker
     // -----------------------------------------------------------------------------------------
 
     @Override
-    protected void afterAll(ParsingExpression pe)
+    public void after(ParsingExpression pe, List<Slot<ParsingExpression>> children, NodeState state)
     {
         Nullability n = nullabilities.get(pe);
 
@@ -96,21 +81,40 @@ public class NullabilityCalculator extends ExpressionGraphWalker
             return;
         }
 
-        n = reduce(n);
-        nullabilities.put(pe, n);
-
-        if (n.resolved) {
-            propagateResolution(n);
-        }
+        reduce(n);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private Nullability update(Nullability n)
+    {
+        Nullability updated = n.update(n);
+
+        if (updated == null)
+        {
+            return reduce(n);
+        }
+        else
+        {
+            nullabilities.put(updated.pe, updated);
+            propagateResolution(updated);
+            return updated;
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
 
     private Nullability reduce(Nullability n)
     {
         n = n.reduce(nullabilities(n.toReduce));
 
-        if (!n.resolved)
+        nullabilities.put(n.pe, n);
+
+        if (n.resolved)
+        {
+            propagateResolution(n);
+        }
+        else
         {
             for (ParsingExpression pe: n.toReduce)
             {
@@ -133,17 +137,7 @@ public class NullabilityCalculator extends ExpressionGraphWalker
                 continue;
             }
 
-            Nullability tmp;
-
-            n = (tmp = n.update(n)) != null
-                ? tmp
-                : reduce(n);
-
-            nullabilities.put(expr, n);
-
-            if (n.resolved) {
-                propagateResolution(n);
-            }
+            update(n);
         }
     }
 

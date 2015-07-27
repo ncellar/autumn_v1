@@ -1,15 +1,17 @@
-package com.norswap.autumn.parsing;
+package com.norswap.autumn.parsing.config;
 
+import com.norswap.autumn.parsing.OutputChanges;
+import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 
 /**
  * The default memoization strategy memoizes every changeset that it is asked to.
- *
- * It is implement an open-addressing (position -> node) map. Each node includes the position and
+ * <p>
+ * It is implement as an open-addressing (position -> node) map. Each node includes the position and
  * memoized expression. Multiple nodes changesets for the same position are linked together using
  * their {@code next} field. New changesets are put at the front of this list.
  */
-public final class DefaultMemoizationStrategy implements MemoizationStrategy
+public final class DefaultMemoHandler implements MemoHandler
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -27,7 +29,7 @@ public final class DefaultMemoizationStrategy implements MemoizationStrategy
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static class MemoNode
+    private static final class MemoNode
     {
         int position;
         ParsingExpression pe;

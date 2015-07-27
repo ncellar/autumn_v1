@@ -1,70 +1,20 @@
 --------------------------------------------------------------------------------
 TODO
 
-- rework parser configuration
-
 TODO GRAPH
 
-- change LeftRecursionBreaker to modify in place & not record changes & use afterRoot
-
-- shift to a generic & refactored version
-
-- improve documentation
-
-- make parsing expressions immutable ?
-
------
-
-- plan for copy construction via slots
-
-- custom walks in nuthatch
-    - does it allow things like breadth-first?
-        - actually what about "implicit" or lazy trees?
-    - use cases, except default one?
-        - backward (in general, change order)
-        - filtering
-        - seem to be no other in the paper, except skipping (not even filtering)
-
-- handle mutations before? (like nuthatch which allows before or after mutations only)
-
-- idea: children as part of GraphVisitor
-    - or better, let it manipulate a queue of nodes to process?
-
-- endogenous vs extrageneous
-    - nuthatch: tree builders + move actions
-
-- custom slots
-
-
-- idea
-    - change to abstract class, add queue field
-    - add expandWalk() method (but can inspect / modify the queue from other methods
-        - allow reuse via inheritance
-
-- still to do
-    - custom slots
-    - extrageneous / copy builders
-
-- open questions
-    - enqueue further actions / continuations?
-    - multiple visitations?
-
-    must have a relship between children and afterchild / after
-
-    queue of what ???
-
-
-suspended operation? --> how to create immutable trees ?
-
-TODO GUI
-
-- make it so that the cursor over scrollbars isn't a text cursor
-- don't "blue-en" on click, but only on run
+- pretty printing as tree walking
+    - enable non-recursive full-tree printing
 
 TODO SHOULD
 
 - make output changes hookable
 - make reset hookable
+
+TODO GUI
+
+- make it so that the cursor over scrollbars isn't a text cursor
+- don't "blue-en" on click, but only on run
 
 TODO NICETIES
 
@@ -72,27 +22,25 @@ TODO NICETIES
 - improve diagnostics ("unexpected X" ?)
     - round up tokens definitions
 - check that named alternates are only used on allow and forbid clauses
-- print expressions only with recursion as names
 - well formedness check (ford: WF -- can't loop without consuming)
 - re-allow memoization when dropping precedence in both schemes
 
 TODO FURTHER
 
 - tree building into the grammar!
+- trees: topological sort
 
 TODO UX
 
 - think about entry points
 - let user register own passes
 
---------------------------------------------------------------------------------
-TODO PAPER
+TODO OTHER
 
-- cite pure and declarative syntax definition
-- cite Left Recursion in Parsing Expression Grammars
-- mention semantic actions
-- must cite Left Recursion in Parsing Expression Grammars
-- mention no memoization inside expressions
+- error handling
+- memo handling
+- allow deep-copying broken left-recursive expressions?
+- named getters for parsing expressions
 
 --------------------------------------------------------------------------------
 TODO MUCH LATER

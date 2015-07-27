@@ -63,14 +63,14 @@ public final class Filter extends UnaryParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void appendTo(StringBuilder builder)
+    public void appendContentTo(StringBuilder builder)
     {
         builder.append("filter(");
         builder.append(new Array<>(allowed));
         builder.append(",");
         builder.append(new Array<>(forbidden));
         builder.append(",");
-        operand.toString(builder);
+        operand.appendTo(builder);
         builder.append(")");
     }
 

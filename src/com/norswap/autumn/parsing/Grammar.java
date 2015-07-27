@@ -2,10 +2,8 @@ package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.Autumn;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-import com.norswap.autumn.parsing.graph.ExpressionGraphWalker;
-import com.norswap.autumn.parsing.graph.ExpressionTransformer;
-import com.norswap.autumn.parsing.graph.FunctionalTransformer;
-import com.norswap.autumn.parsing.graph.nullability.NullabilityCalculator;
+import com.norswap.autumn.parsing.graph.NullabilityCalculator;
+import com.norswap.util.graph_visit.GraphVisitor;
 import com.norswap.util.slot.Slot;
 
 import java.util.Collection;
@@ -134,39 +132,18 @@ public final class Grammar
 
     // ---------------------------------------------------------------------------------------------
 
-    public Grammar transform(ExpressionGraphWalker transformer)
+    public Grammar walk(GraphVisitor<ParsingExpression> visitor)
     {
-        transformer.setup();
+        Slot<ParsingExpression> newRoot = visitor.partialVisit(root);
+        Collection<ParsingExpression> newRules = visitor.partialVisit(rules);
+        Slot<ParsingExpression> newWhitespace = visitor.partialVisit(whitespace);
 
-        Slot<ParsingExpression> newRoot = transformer.partialWalk(root);
-        Collection<ParsingExpression> newRules = transformer.partialWalk(rules);
-        Slot<ParsingExpression> newWhitespace = transformer.partialWalk(whitespace);
-
-        transformer.teardown();
+        visitor.conclude();
 
         root = newRoot.get();
         rules = newRules;
         whitespace = newWhitespace.get();
-
         return this;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public Grammar transform(ExpressionTransformer transformer)
-    {
-        return transform(new FunctionalTransformer(transformer));
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public void walk(ExpressionGraphWalker walker)
-    {
-        walker.setup();
-        walker.partialWalk(root);
-        walker.partialWalk(rules);
-        walker.partialWalk(whitespace);
-        walker.teardown();
     }
 
     // ---------------------------------------------------------------------------------------------

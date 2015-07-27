@@ -59,12 +59,12 @@ public final class Capture extends UnaryParsingExpression
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void appendTo(StringBuilder builder)
+    public void appendContentTo(StringBuilder builder)
     {
         builder.append("capture(\"");
         builder.append(name);
         builder.append("\", ");
-        operand.toString(builder);
+        operand.appendTo(builder);
         builder.append(")");
     }
 

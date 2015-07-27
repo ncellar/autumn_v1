@@ -6,10 +6,26 @@ import com.norswap.util.slot.Slot;
 /**
  * A slot corresponding to an indexed child of a parsing expression.
  */
-public final class ChildSlot implements Slot<ParsingExpression>
+public class ChildSlot implements Slot<ParsingExpression>
 {
-    public final ParsingExpression pe;
-    public final int index;
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * A read-only child slot ({@link #set} is a no-op).
+     */
+    public static final class ReadOnly extends ChildSlot
+    {
+        public ReadOnly(ParsingExpression pe, int index)
+        {
+            super(pe, index);
+        }
+
+        @Override
+        public Slot<ParsingExpression> set(ParsingExpression child)
+        {
+            return this;
+        }
+    }
 
     public ChildSlot(ParsingExpression pe, int index)
     {
@@ -24,9 +40,26 @@ public final class ChildSlot implements Slot<ParsingExpression>
         return this;
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public final ParsingExpression pe;
+    public final int index;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     @Override
     public ParsingExpression get()
     {
         return pe.children()[index];
     }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public String toString()
+    {
+        return "child [" + index + "] of " + pe;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 }

@@ -1,6 +1,8 @@
-package com.norswap.autumn.parsing.graph.nullability;
+package com.norswap.autumn.parsing.graph;
 
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+
+import java.util.Arrays;
 
 /**
  * A nullability indicates whether a parsing expression is nullable; or, if it can't be determined
@@ -47,7 +49,7 @@ public class Nullability
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    Nullability(ParsingExpression pe, boolean resolved, boolean nullable, ParsingExpression[] tr)
+    protected Nullability(ParsingExpression pe, boolean resolved, boolean nullable, ParsingExpression[] tr)
     {
         this.pe = pe;
         this.resolved = resolved;
@@ -88,44 +90,153 @@ public class Nullability
     /**
      * {@code bool ? yes(pe) : no(pe)}
      */
-    public static final Nullability bool(ParsingExpression pe, boolean bool)
+    public static Nullability bool(ParsingExpression pe, boolean bool)
     {
         return new Nullability(pe, true, bool, null);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public static final Nullability yes(ParsingExpression pe)
+    public static Nullability yes(ParsingExpression pe)
     {
         return new Nullability(pe, true, true, null);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public static final Nullability no(ParsingExpression pe)
+    public static Nullability no(ParsingExpression pe)
     {
         return new Nullability(pe, true, false, null);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public static final AllNullable all(ParsingExpression pe, ParsingExpression[] toReduce)
+    public static Nullability all(ParsingExpression pe, ParsingExpression[] toReduce)
     {
-        return new AllNullable(pe, toReduce);
+        return new Nullability(pe, false, false, toReduce)
+        {
+            @Override
+            public Nullability reduce(Nullability[] nullabilities)
+            {
+                boolean allYes = true;
+
+                for (Nullability n : nullabilities)
+                {
+                    if (n.resolved)
+                    {
+                        if (!n.nullable)
+                        {
+                            return no(pe);
+                        }
+                    }
+                    else if (allYes)
+                    {
+                        allYes = false;
+                    }
+                }
+
+                if (allYes)
+                {
+                    return yes(pe);
+                }
+
+                return all(pe, Arrays.stream(nullabilities)
+                    .filter(n -> !n.resolved)
+                    .map(n -> n.pe)
+                    .toArray(ParsingExpression[]::new));
+            }
+
+            @Override
+            public Nullability update(Nullability n)
+            {
+                return n.no()
+                    ? no(pe)
+                    : null;
+            }
+        };
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public static final AnyNullable any(ParsingExpression pe, ParsingExpression[] toReduce)
+    public static final Nullability any(ParsingExpression pe, ParsingExpression[] toReduce)
     {
-        return new AnyNullable(pe, toReduce);
+        return new Nullability(pe, false, false, toReduce)
+        {
+            @Override
+            public Nullability reduce(Nullability[] nullabilities)
+            {
+                boolean allNo = true;
+
+                for (Nullability n : nullabilities)
+                {
+                    if (n.resolved)
+                    {
+                        if (n.nullable)
+                        {
+                            return yes(pe);
+                        }
+                    }
+                    else if (allNo)
+                    {
+                        allNo = false;
+                    }
+                }
+
+                if (allNo)
+                {
+                    return no(pe);
+                }
+
+                return any(pe, Arrays.stream(nullabilities)
+                    .filter(n -> !n.resolved)
+                    .map(n -> n.pe)
+                    .toArray(ParsingExpression[]::new));
+            }
+
+            @Override
+            public Nullability update(Nullability n)
+            {
+                return n.yes()
+                    ? yes(pe)
+                    : null;
+            }
+        };
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public static final SingleNullable single(ParsingExpression pe, ParsingExpression operand)
+    public static Nullability single(ParsingExpression pe, ParsingExpression operand)
     {
-        return new SingleNullable(pe, operand);
+        return new Nullability(pe, false, false, new ParsingExpression[]{operand})
+        {
+            @Override
+            public Nullability reduce(Nullability[] nullabilities)
+            {
+                Nullability n = nullabilities[0];
+
+                if (n.resolved)
+                {
+                    return n.nullable
+                        ? yes(pe)
+                        : no(pe);
+                }
+
+                return this;
+            }
+
+            @Override
+            public Nullability update(Nullability n)
+            {
+                if (n.resolved)
+                {
+                    return n.nullable
+                        ? yes(pe)
+                        : no(pe);
+                }
+
+                return null;
+            }
+        };
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -5,7 +5,7 @@ import com.norswap.autumn.parsing.OutputChanges;
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-import com.norswap.autumn.parsing.graph.nullability.Nullability;
+import com.norswap.autumn.parsing.graph.Nullability;
 import com.norswap.util.DeepCopy;
 
 import java.util.Arrays;
@@ -198,13 +198,13 @@ public final class ExpressionCluster extends ParsingExpression
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void appendTo(StringBuilder builder)
+    public void appendContentTo(StringBuilder builder)
     {
         builder.append("expr(");
 
         for (ParsingExpression operand: children())
         {
-            operand.toString(builder);
+            operand.appendTo(builder);
             builder.append(", ");
         }
 
@@ -247,6 +247,25 @@ public final class ExpressionCluster extends ParsingExpression
 
         throw new RuntimeException(
             "Requesting child " + position + " of an expression with only " + pos + "children.");
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public ExpressionCluster clone()
+    {
+        ExpressionCluster clone = (ExpressionCluster) super.clone();
+
+        clone.groups = new Operand[groups.length][];
+        clone.recursiveGroups = new Operand[groups.length][];
+
+        for (int i = 0; i < groups.length; ++i)
+        {
+            clone.groups[i] = DeepCopy.deepClone(groups[i]);
+            clone.recursiveGroups[i] = DeepCopy.deepClone(recursiveGroups[i]);
+        }
+
+        return clone;
     }
 
     // ---------------------------------------------------------------------------------------------

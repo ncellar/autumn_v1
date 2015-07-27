@@ -5,7 +5,9 @@ import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParseResult;
 import com.norswap.autumn.parsing.expressions.instrument.StackTrace;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.graph.Walks;
 import com.norswap.util.Glob;
+import com.norswap.util.graph_visit.GraphTransformer;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -27,7 +29,7 @@ public final class JavaGrammarTest
 
         if (trace)
         {
-            grammar.transform(JavaGrammarTest::transform);
+            grammar.walk(GraphTransformer.from(JavaGrammarTest::transform, Walks.inPlace));
         }
 
         for (Path path: Glob.glob("**/*.java", Paths.get("../guava")))

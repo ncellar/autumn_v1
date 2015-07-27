@@ -4,7 +4,7 @@ import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
-import com.norswap.autumn.parsing.graph.nullability.Nullability;
+import com.norswap.autumn.parsing.graph.Nullability;
 
 /**
  * Repeatedly invokes its operand over the input, until it fails. Each invocation occurs at

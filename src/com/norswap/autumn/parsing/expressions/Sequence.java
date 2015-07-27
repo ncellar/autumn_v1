@@ -5,7 +5,7 @@ import com.norswap.autumn.parsing.expressions.common.NaryParsingExpression;
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-import com.norswap.autumn.parsing.graph.nullability.Nullability;
+import com.norswap.autumn.parsing.graph.Nullability;
 import com.norswap.util.Array;
 
 /**

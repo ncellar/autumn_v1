@@ -58,7 +58,7 @@ public final class CharSet extends ParsingExpression
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void appendTo(StringBuilder builder)
+    public void appendContentTo(StringBuilder builder)
     {
         builder.append("charSet(\"");
         builder.append(StringEscape.escape(new String(chars)));

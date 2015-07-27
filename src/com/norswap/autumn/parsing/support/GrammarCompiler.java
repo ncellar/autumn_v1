@@ -9,8 +9,6 @@ import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.ParsingExpressionFactory;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster.Operand;
 import com.norswap.autumn.parsing.expressions.Reference;
-import com.norswap.autumn.parsing.graph.LeftRecursionBreaker;
-import com.norswap.autumn.parsing.graph.ReferenceResolver;
 import com.norswap.util.Array;
 import com.norswap.util.Streams;
 
@@ -45,17 +43,12 @@ public final class GrammarCompiler
 
         ParsingExpression whitespace = Arrays.stream(exprs)
             .filter(rule -> "Spacing".equals(rule.name()))
-            .findFirst().orElse(Whitespace.whitespace.deepCopy());
+            .findFirst().orElse(Whitespace.DEFAULT());
 
         // TODO enable setting whitespace & root from grammar file
 
-        Grammar grammar = Autumn.grammarFromExpression(
-            exprs[0], Arrays.asList(exprs), whitespace, true);
-
-        grammar.transform(new ReferenceResolver());
-        grammar.transform(new LeftRecursionBreaker(grammar));
-
-        return grammar;
+        return Autumn.grammarFromExpression(
+            exprs[0], Arrays.asList(exprs), whitespace, true, true);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

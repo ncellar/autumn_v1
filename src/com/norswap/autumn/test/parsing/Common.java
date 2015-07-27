@@ -6,9 +6,6 @@ import com.norswap.autumn.parsing.ParseTree;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.test.TestFailed;
 
-/**
- * TODO
- */
 public final class Common
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////

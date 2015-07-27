@@ -4,11 +4,19 @@ import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.Registry;
-import com.norswap.autumn.parsing.graph.nullability.Nullability;
+import com.norswap.autumn.parsing.graph.ChildSlot;
+import com.norswap.autumn.parsing.graph.Nullability;
+import com.norswap.util.Array;
 import com.norswap.util.Caster;
 import com.norswap.util.DeepCopy;
 import com.norswap.util.Exceptions;
 import com.norswap.util.HandleMap;
+import com.norswap.util.graph_visit.GraphVisitor;
+import com.norswap.util.i;
+import com.norswap.util.slot.Slot;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * A parsing expression is matched to the source text by recursively invoking the {@link #parse}
@@ -38,7 +46,7 @@ public abstract class ParsingExpression implements DeepCopy
     public int parseDumb(Parser parser, int position)
     {
         throw new UnsupportedOperationException(
-            "Parsing expression class "
+            "Parsing expression [" + this + "] of class "
             + this.getClass().getSimpleName()
             + " doesn't support dumb parsing.");
     }
@@ -57,19 +65,16 @@ public abstract class ParsingExpression implements DeepCopy
     public final String toString()
     {
         StringBuilder builder = new StringBuilder();
-        toString(builder);
+        appendTo(builder);
         return builder.toString();
     }
 
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Similar to {@code builder.append(this.toString())}.
-     * {@link #toString} uses this method internally.
-     *
-     * Implemented by writing the name if there is one or else by calling {@link #appendTo}.
+     * {@code builder.append(this.toString())}
      */
-    public final void toString(StringBuilder builder)
+    public final void appendTo(StringBuilder builder)
     {
         String name = name();
 
@@ -79,7 +84,7 @@ public abstract class ParsingExpression implements DeepCopy
         }
         else
         {
-            appendTo(builder);
+            appendContentTo(builder);
         }
     }
 
@@ -89,10 +94,10 @@ public abstract class ParsingExpression implements DeepCopy
      * Like {@link #toString()}, but never writes the name of an expression instead of its content.
      * As a result, this *can not* be used to print recursive expressions.
      */
-    public final String toStringFull()
+    public final String toContentString()
     {
         StringBuilder builder = new StringBuilder();
-        appendTo(builder);
+        appendContentTo(builder);
         return builder.toString();
     }
 
@@ -100,11 +105,14 @@ public abstract class ParsingExpression implements DeepCopy
 
     /**
      * Appends a string representation of this expression (but never its name) to the builder.
+     * <p>
+     * Called by {@link #toString()} and {@link #appendTo(StringBuilder)} if the expression isn't
+     * named; and by {@link #toContentString()}.
      */
-    public abstract void appendTo(StringBuilder builder);
+    public abstract void appendContentTo(StringBuilder builder);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // TREE WALKING
+    // GRAPH WALKING
 
     // ---------------------------------------------------------------------------------------------
 

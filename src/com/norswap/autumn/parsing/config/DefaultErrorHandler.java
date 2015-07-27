@@ -1,5 +1,7 @@
-package com.norswap.autumn.parsing;
+package com.norswap.autumn.parsing.config;
 
+import com.norswap.autumn.parsing.ParseState;
+import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.expressions.Token;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.util.Array;
@@ -8,12 +10,12 @@ import static com.norswap.autumn.parsing.Registry.PEF_ERROR_RECORDING;
 import static com.norswap.autumn.parsing.Registry.PSH_STACK_TRACE;
 
 /**
- * The default error handling strategy consist of reporting the error(s) occuring at the farthest
- * error positions, under the assumption that the parse that makes the most progress is the
- * "most correct".
- *
- * This strategy only considers errors that result from a failure to match a parsing expression
- * marked as "error-recording" or as a token.
+ * The default error handling strategy consist of keeping only the error(s) occuring at the farthest
+ * error positions, under the assumption that the parse that makes the most progress is the "most
+ * correct".
+ * <p>
+ * This strategy only considers failures to match "error-recording" parsing expression, as well as
+ * tokens.
  */
 public final class DefaultErrorHandler implements ErrorHandler
 {
@@ -53,7 +55,9 @@ public final class DefaultErrorHandler implements ErrorHandler
 
     // ---------------------------------------------------------------------------------------------
 
-    @Override
+    /**
+     * TODO
+     */
     public void reportErrors(Parser parser)
     {
         System.err.println(

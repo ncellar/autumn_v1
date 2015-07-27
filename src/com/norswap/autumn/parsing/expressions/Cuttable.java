@@ -5,7 +5,7 @@ import com.norswap.autumn.parsing.expressions.common.NaryParsingExpression;
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-import com.norswap.autumn.parsing.graph.nullability.Nullability;
+import com.norswap.autumn.parsing.graph.Nullability;
 
 public final class Cuttable extends NaryParsingExpression
 {
@@ -60,7 +60,7 @@ public final class Cuttable extends NaryParsingExpression
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void appendTo(StringBuilder builder)
+    public void appendContentTo(StringBuilder builder)
     {
         builder.append("cuttable(");
         builder.append("\"");
@@ -69,7 +69,7 @@ public final class Cuttable extends NaryParsingExpression
 
         for (ParsingExpression operand: operands)
         {
-            operand.toString(builder);
+            operand.appendTo(builder);
             builder.append(", ");
         }
 

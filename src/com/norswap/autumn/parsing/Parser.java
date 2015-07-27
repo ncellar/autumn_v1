@@ -1,9 +1,11 @@
 package com.norswap.autumn.parsing;
 
+import com.norswap.autumn.parsing.config.ErrorHandler;
+import com.norswap.autumn.parsing.config.MemoHandler;
+import com.norswap.autumn.parsing.config.ParserConfiguration;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster;
 import com.norswap.autumn.parsing.expressions.LeftRecursive;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-import com.norswap.autumn.parsing.graph.nullability.NullabilityCalculator;
 import com.norswap.util.Array;
 import com.norswap.util.HandleMap;
 
@@ -36,7 +38,7 @@ public final class Parser
 
     public final ParsingExpression whitespace;
 
-    public final MemoizationStrategy memoizationStrategy;
+    public final MemoHandler memoHandler;
 
     public final boolean processLeadingWhitespace;
 
@@ -63,7 +65,7 @@ public final class Parser
         this.text = source.text();
 
         this.errorHandler = config.errorHandler.get();
-        this.memoizationStrategy = config.memoizationStrategy.get();
+        this.memoHandler = config.memoizationStrategy.get();
         this.whitespace = grammar.whitespace();
         this.processLeadingWhitespace = grammar.processLeadingWhitespace();
     }
@@ -77,7 +79,9 @@ public final class Parser
      * {@link #tree()}.
      *
      * If the parse failed ({@code failed() == true}) or a partial match ({@code
-     * matchedWholeSource() == false}), errors can be reported with {@link #report()}.
+     * matchedWholeSource() == false}), errors can be reported with report().
+     *
+     * TODO change
      */
     public ParseResult parse(ParsingExpression pe)
     {
@@ -106,27 +110,6 @@ public final class Parser
 
         // TODO
         return new ParseResult(succeeded(), endPosition >= 0, endPosition, tree, null, error());
-    }
-
-    //----------------------------------------------------------------------------------------------
-
-    /**
-     * Report the outcome of the parse (success or failure) on System.err and in case of failure,
-     * the errors recorded during the parse. The reporting method for the errors is up to the
-     * {@link ErrorHandler}.
-     */
-    public void report()
-    {
-        if (succeeded())
-        {
-            System.err.println("The parse succeeded.");
-        }
-        else
-        {
-            System.err.println("The parse failed.");
-            errorHandler.reportErrors(this);
-        }
-
     }
 
     //----------------------------------------------------------------------------------------------
