@@ -65,5 +65,13 @@ public final class CharSet extends ParsingExpression
         builder.append("\")");
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public String ownPrintableData()
+    {
+        return toString();
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

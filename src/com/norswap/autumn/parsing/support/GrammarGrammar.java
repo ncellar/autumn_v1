@@ -69,6 +69,8 @@ public final class GrammarGrammar
     //   This should eventually use expression clusters, the grammar just precedes
     //   that, and I haven't gotten around changing it.
 
+    private static int i = 0;
+
     public static ParsingExpression
 
     and         = token(literal("&")),
@@ -87,7 +89,6 @@ public final class GrammarGrammar
     underscore  = token(literal("_")),
     until       = token(literal("*+")),
     aloUntil    = token(literal("++")),
-    colEqual    = token(literal(":=")),
     arrow       = token(literal("->")),
     lAnBra      = token(literal("<")),
     rAnBra      = token(literal(">")),
@@ -104,6 +105,8 @@ public final class GrammarGrammar
     dropLit       = token(literal("drop"), not(nameChar)),
     left_assoc    = token(literal("left_assoc"), not(nameChar)),
     left_recur    = token(literal("left_recur"), not(nameChar)),
+
+    reserved      = choice(exprLit, dropLit, left_assoc, left_recur),
 
     escape = named$("escape", choice(
         sequence(literal("\\u"), hexDigit, hexDigit, hexDigit, hexDigit),
@@ -134,20 +137,24 @@ public final class GrammarGrammar
         captureText("literal", zeroMore(not(literal("\"")), character)),
         literal("\""))),
 
-    diagName    = named$("diagName", token(literal("<"), until(character, literal(">")))),
-    name        = named$("name", token(choice(
-                    sequence(letter, zeroMore(nameChar)),
-                    sequence(literal("'"), aloUntil(any(), literal("'")))))),
+    // unused
+    diagName = named$("diagName", token(literal("<"), until(character, literal(">")))),
+
+    name = named$("name", token(choice(
+        sequence(not(reserved), letter, zeroMore(nameChar)),
+        sequence(literal("'"), aloUntil(any(), literal("'")))))),
+
+    reference = sequence(
+        captureText("name", name),
+        optional(token(literal("allow")),
+            lBrace, aloSeparated(captureTextGrouped("allowed", name), comma), rBrace),
+        optional(token(literal("forbid")),
+            lBrace, aloSeparated(captureTextGrouped("forbidden", name), comma), rBrace)),
 
     primary = recursive$("primary", choice(
         sequence(lParen, reference("choice"), rParen),
         capture("drop", sequence(dropLit, reference("primary"))),
-        sequence(capture("ref", sequence(
-            captureText("name", name),
-            optional(token(literal("allow")),
-                lBrace, aloSeparated(captureTextGrouped("allowed", name), comma), rBrace),
-            optional(token(literal("forbid")),
-                lBrace, aloSeparated(captureTextGrouped("forbidden", name), comma), rBrace)))),
+        capture("ref", reference),
         capture("any", underscore),
         capture("charRange", range),
         captureText("stringLit", stringLit),
@@ -167,9 +174,42 @@ public final class GrammarGrammar
         capture("not", sequence(bang, suffixed)),
         suffixed)),
 
-    sequence = named$("sequence", capture("sequence", oneMore(prefixed))),
+    // TODO oneMore
+    sequence = named$("sequence", capture("sequence", sequence(prefixed, zeroMore(prefixed)))),
 
-    exprAnnotation = sequence(literal("@"),
+    choice = recursive$("choice", capture("choice", aloSeparated(sequence, slash))),
+
+    rnew = reference("newthing"),
+
+    newthing = recursive$("newthing", cluster(
+
+        exprAlt(++i,
+            named$("choice2",
+                capture("choice", aloSeparated(exprWithMinPrecedence(i + 1, rnew), slash)))),
+
+        // TODO
+        exprLeftRecur(++i, capture("sequence", sequence(rnew, oneMore(exprWithMinPrecedence(i + 1, rnew))))),
+
+        exprAlt(++i, capture("and", sequence(and, rnew))),
+        exprAlt(i, capture("not", sequence(bang, rnew))),
+
+        exprLeftRecur(++i, capture("until", sequence(rnew, until, rnew))),
+        exprLeftRecur(i, capture("aloUntil", sequence(rnew, aloUntil, rnew))),
+        exprLeftRecur(i, capture("optional", sequence(rnew, qMark))),
+        exprLeftRecur(i, capture("zeroMore", sequence(rnew, star))),
+        exprLeftRecur(i, capture("oneMore", sequence(rnew, plus))),
+
+        exprAlt(++i, sequence(lParen, exprDropPrecedence(rnew), rParen)),
+        exprAlt(i, capture("drop", sequence(dropLit, rnew))),
+        exprAlt(i, capture("ref", reference)),
+        exprAlt(i, capture("any", underscore)),
+        exprAlt(i, capture("charRange", range)),
+        exprAlt(i, captureText("stringLit", stringLit)),
+        exprAlt(i, captureText("charSet", charSet)),
+        exprAlt(i, captureText("notCharSet", notCharSet)))),
+
+    exprAnnotation = sequence(
+        literal("@"),
         choice(
             captureText("precedence", num),
             capture("increment", plus),
@@ -178,26 +218,30 @@ public final class GrammarGrammar
             capture("left_recur", left_recur),
             captureText("name", name))),
 
-    expr = named$("expr", capture("expr", sequence(
+    exprCluster = named$("cluster", capture("cluster", sequence(
         exprLit,
         oneMore(captureGrouped("alts", sequence(
-            arrow, sequence,
+            arrow,
+            capture("expr", filter(null, $(reference("choice2")), newthing)),
             oneMore(captureGrouped("annotations", exprAnnotation)))))))),
 
-    choice = recursive$("choice", capture("choice", aloSeparated(
-        choice(expr, sequence),
-        slash))),
-
-    ruleRhs = named$("ruleRhs", aloSeparated(
-        captureGrouped("alts", choice(expr, sequence)),
-        slash)),
+    exprClusterOld = named$("old_cluster", capture("old_cluster", sequence(
+        exprLit,
+        oneMore(captureGrouped("alts", sequence(
+            arrow,
+            sequence,
+            oneMore(captureGrouped("annotations", exprAnnotation)))))))),
 
     rule = named$("rule", sequence(
         captureText("ruleName", name),
         optional(capture("dumb", literal("!"))),
-        choice(equal, capture("token", colEqual)),
-        ruleRhs,
-        optional(diagName), semi)),
+        optional(capture("token", literal(":"))),
+        equal,
+        
+        //choice(exprClusterOld, choice),
+        choice(exprCluster, capture("expr", newthing)),
+
+        semi)),
 
     root = named$("grammar", oneMore(captureGrouped("rules", rule)));
 

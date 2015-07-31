@@ -4,11 +4,10 @@ import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-import com.norswap.autumn.parsing.config.ParserConfiguration;
 import com.norswap.autumn.parsing.graph.Nullability;
 
 /**
- * Invokes {@link ParserConfiguration#whitespace} at its start position.
+ * Invokes {@link Parser#whitespace} at its start position.
  *
  * Always succeeds.
  *

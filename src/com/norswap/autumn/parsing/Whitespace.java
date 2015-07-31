@@ -7,7 +7,7 @@ import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
 /**
  * This class exposes a few handy whitespace parsing expression; foremost amongst which is the
  * default whitespace expression ({@link #DEFAULT()}).
- *
+ * <p>
  * The parsing expression returned by the methods of this class are unique (i.e. they can be
  * freely modified) but they contain unresolved references!
  */

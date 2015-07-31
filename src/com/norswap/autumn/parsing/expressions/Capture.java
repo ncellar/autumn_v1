@@ -68,12 +68,22 @@ public final class Capture extends UnaryParsingExpression
         builder.append(")");
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public String ownPrintableData()
+    {
+        return "name: " + name;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public boolean shouldCaptureText()
     {
         return (flags & PEF_CAPTURE_TEXT) != 0;
     }
+
+    // ---------------------------------------------------------------------------------------------
 
     public boolean isCaptureGrouped()
     {

@@ -1,46 +1,53 @@
 --------------------------------------------------------------------------------
 TODO
 
-TODO GRAPH
+- tree building into the grammar!
+    - make grammar use cluster
+        - write expression printer tree walk
+        - debug
+        - cleanup
+    - introduce capture notation
+    - annotate java grammar with captures
+
+- retool the expression cluster to hold precedence parsing expression (or group?)
+
+- why inPlace & readOnly give different results on printer (grammar or not)
+
+- make output changes hookable
+
+- make reset hookable
+
+TODO FURTHER SMALL
 
 - pretty printing as tree walking
     - enable non-recursive full-tree printing
 
-TODO SHOULD
+- path-like getters for parsing expression graphs
 
-- make output changes hookable
-- make reset hookable
+- automatically tokenize litterals
+
+- improve diagnostics ("unexpected X" ?)
+    - round up tokens definitions
+
+- check that named alternates are only used on allow and forbid clauses
+
+- well formedness check (ford: WF -- can't loop without consuming)
+
+- re-allow memoization when dropping precedence in both schemes
 
 TODO GUI
 
 - make it so that the cursor over scrollbars isn't a text cursor
+
 - don't "blue-en" on click, but only on run
 
-TODO NICETIES
+TODO FURTHER BIG
 
-- automatically tokenize litterals
-- improve diagnostics ("unexpected X" ?)
-    - round up tokens definitions
-- check that named alternates are only used on allow and forbid clauses
-- well formedness check (ford: WF -- can't loop without consuming)
-- re-allow memoization when dropping precedence in both schemes
+- better error handling
 
-TODO FURTHER
+- better memo handling
 
-- tree building into the grammar!
 - trees: topological sort
-
-TODO UX
-
-- think about entry points
-- let user register own passes
-
-TODO OTHER
-
-- error handling
-- memo handling
-- allow deep-copying broken left-recursive expressions?
-- named getters for parsing expressions
 
 --------------------------------------------------------------------------------
 TODO MUCH LATER

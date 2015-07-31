@@ -39,6 +39,14 @@ public final class Cut extends ParsingExpression
         builder.append("\")");
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public String ownPrintableData()
+    {
+        return "name: " + name;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override

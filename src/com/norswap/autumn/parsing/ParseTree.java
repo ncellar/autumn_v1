@@ -1,6 +1,7 @@
 package com.norswap.autumn.parsing;
 
 import com.norswap.util.Array;
+import com.norswap.util.Strings;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -248,7 +249,7 @@ public final class ParseTree implements Iterable<ParseTree>
 
     public void toTreeString(StringBuilder builder, int depth)
     {
-        builder.append(new String(new char[depth]).replace("\0", "-|"));
+        builder.append(Strings.times(depth, "-|"));
         builder.append(name != null ? name : "container");
         builder.append("\n");
 

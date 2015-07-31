@@ -15,7 +15,7 @@ public final class Parser
 
     private Grammar grammar;
 
-    private Source source;
+    public final Source source;
 
     public CharSequence text;
 
@@ -76,7 +76,7 @@ public final class Parser
      * Use the parser to match its source text to the given parsing expression.
      *
      * After calling this method, the parse tree resulting from the parse can be retrieved via
-     * {@link #tree()}.
+     * {@blink #tree()}.
      *
      * If the parse failed ({@code failed() == true}) or a partial match ({@code
      * matchedWholeSource() == false}), errors can be reported with report().
@@ -109,50 +109,7 @@ public final class Parser
         }
 
         // TODO
-        return new ParseResult(succeeded(), endPosition >= 0, endPosition, tree, null, error());
-    }
-
-    //----------------------------------------------------------------------------------------------
-
-    public ParseError error()
-    {
-        // TODO
-        return new ParseError();
-    }
-
-    //----------------------------------------------------------------------------------------------
-
-    public Source source()
-    {
-        return source;
-    }
-
-    //----------------------------------------------------------------------------------------------
-
-    public ParseTree tree()
-    {
-        return tree;
-    }
-
-    //----------------------------------------------------------------------------------------------
-
-    public boolean succeeded()
-    {
-        return endPosition == source.length();
-    }
-
-    //----------------------------------------------------------------------------------------------
-
-    public boolean failed()
-    {
-        return endPosition != source.length();
-    }
-
-    //----------------------------------------------------------------------------------------------
-
-    public int endPosition()
-    {
-        return endPosition;
+        return new ParseResult(endPosition == source.length(), endPosition >= 0, endPosition, tree, null, errorHandler.error(source));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

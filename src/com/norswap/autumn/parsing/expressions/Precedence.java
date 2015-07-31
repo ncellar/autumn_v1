@@ -67,5 +67,13 @@ public final class Precedence extends UnaryParsingExpression
         builder.append(")");
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public String ownPrintableData()
+    {
+        return String.valueOf(precedence);
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

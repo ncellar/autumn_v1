@@ -38,8 +38,8 @@ EOT = !_ ;
 
 Spacing
     = ( [ \t\r\n\f]+      // WhiteSpace
-      / "/*" _*+ "*/"     // TraditionalComment
-      / "//" _*+ [\r\n]   // EndOfLineComment
+      / "/*" _ *+ "*/"     // TraditionalComment
+      / "//" _ *+ [\r\n]   // EndOfLineComment
       )* ;
 
 //-------------------------------------------------------------------------

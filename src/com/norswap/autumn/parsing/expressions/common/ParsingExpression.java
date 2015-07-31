@@ -111,6 +111,17 @@ public abstract class ParsingExpression implements DeepCopy
      */
     public abstract void appendContentTo(StringBuilder builder);
 
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Returns a string containing information about the expression that isn't contained in its
+     * type or its children.
+     */
+    public String ownPrintableData()
+    {
+        return "";
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // GRAPH WALKING
 

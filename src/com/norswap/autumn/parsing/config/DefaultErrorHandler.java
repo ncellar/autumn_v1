@@ -1,7 +1,8 @@
 package com.norswap.autumn.parsing.config;
 
+import com.norswap.autumn.parsing.ParseError;
 import com.norswap.autumn.parsing.ParseState;
-import com.norswap.autumn.parsing.Parser;
+import com.norswap.autumn.parsing.Source;
 import com.norswap.autumn.parsing.expressions.Token;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.util.Array;
@@ -55,33 +56,35 @@ public final class DefaultErrorHandler implements ErrorHandler
 
     // ---------------------------------------------------------------------------------------------
 
-    /**
-     * TODO
-     */
-    public void reportErrors(Parser parser)
+    @Override
+    public ParseError error(Source source)
     {
-        System.err.println(
-            "The parser failed to match any of the following expressions at position "
-            + parser.source().position(farthestErrorPosition) + ":");
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("The parser failed to match any of the following expressions at position "
+            + source.position(farthestErrorPosition) + ":\n");
 
         for (int i = 0; i < farthestExpressions.size(); ++i)
         {
-            System.err.println(farthestExpressions.get(i));
+            builder.append(farthestExpressions.get(i));
+            builder.append("\n");
 
             Array<ParsingExpression> stackTrace = stackTraces.get(i);
 
             if (stackTrace != null)
             {
-                System.err.println("stack trace: ");
+                builder.append("stack trace: \n");
 
                 for (ParsingExpression pe: stackTrace.reverseIterable())
                 {
-                    System.err.println(pe);
+                    builder.append(pe);
+                    builder.append("\n");
                 }
-
-                System.err.println("");
             }
         }
+
+        String message = builder.toString();
+        return () -> message;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -78,6 +78,14 @@ public final class Cuttable extends NaryParsingExpression
         builder.append(")");
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public String ownPrintableData()
+    {
+        return toString();
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override

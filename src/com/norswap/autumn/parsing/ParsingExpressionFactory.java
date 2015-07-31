@@ -130,16 +130,27 @@ public final class ParsingExpressionFactory
         return result;
     }
 
-    public static DropPrecedence exprDropPrecedence(ParsingExpression operand)
+    public static WithMinPrecedence exprDropPrecedence(ParsingExpression operand)
     {
-        DropPrecedence result = new DropPrecedence();
+        return exprWithMinPrecedence(0, operand);
+    }
+
+    public static WithMinPrecedence exprDropPrecedence(ParsingExpression... seq)
+    {
+        return exprWithMinPrecedence(0, sequence(seq));
+    }
+
+    public static WithMinPrecedence exprWithMinPrecedence(int minPrecedence, ParsingExpression operand)
+    {
+        WithMinPrecedence result = new WithMinPrecedence();
         result.operand = operand;
+        result.minPrecedence = minPrecedence;
         return result;
     }
 
-    public static DropPrecedence exprDropPrecedence(ParsingExpression... seq)
+    public static WithMinPrecedence exprWithMinPrecedence(int minPrecedence, ParsingExpression... seq)
     {
-        return exprDropPrecedence(sequence(seq));
+        return exprWithMinPrecedence(minPrecedence, sequence(seq));
     }
 
     public static ExpressionCluster.Operand exprAlt(int precedence, ParsingExpression operand)
@@ -175,8 +186,8 @@ public final class ParsingExpressionFactory
         ParsingExpression cluster)
     {
         Filter filter = new Filter();
-        filter.allowed = allowed;
-        filter.forbidden = forbidden;
+        filter.allowed = allowed != null ? allowed : new ParsingExpression[0];
+        filter.forbidden = forbidden != null ? forbidden : new ParsingExpression[0];
         filter.operand = cluster;
         return filter;
     }

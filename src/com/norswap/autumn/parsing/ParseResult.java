@@ -5,7 +5,7 @@ import com.norswap.util.HandleMap;
 /**
  * [Immutable] The user-facing result of a parse.
  */
-public class ParseResult
+public final class ParseResult
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

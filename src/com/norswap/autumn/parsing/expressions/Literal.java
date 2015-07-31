@@ -74,6 +74,14 @@ public final class Literal extends ParsingExpression
         builder.append("\"");
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public String ownPrintableData()
+    {
+        return string;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override

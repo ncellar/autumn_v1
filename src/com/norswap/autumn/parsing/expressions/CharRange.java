@@ -60,5 +60,13 @@ public final class CharRange extends ParsingExpression
         builder.append(")");
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public String ownPrintableData()
+    {
+        return toString();
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

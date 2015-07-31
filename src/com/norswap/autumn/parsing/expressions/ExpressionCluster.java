@@ -49,13 +49,20 @@ public final class ExpressionCluster extends ParsingExpression
         public boolean leftRecursive;
         public boolean leftAssociative;
 
-
         @Override
         public Operand deepCopy()
         {
             Operand copy = DeepCopy.clone(this);
             copy.operand = operand.deepCopy();
             return copy;
+        }
+
+        @Override
+        public String toString()
+        {
+            return "(" + precedence + ") "
+                + (leftAssociative ? "(la) " : leftRecursive ? "(lr) " : "")
+                + operand;
         }
     }
 

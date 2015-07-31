@@ -77,6 +77,15 @@ public final class Filter extends UnaryParsingExpression
     // ---------------------------------------------------------------------------------------------
 
     @Override
+    public String ownPrintableData()
+    {
+        return "allowed: " + allowed.length + ", forbidden: " + forbidden.length;
+    }
+
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
     public ParsingExpression[] children()
     {
         return Stream.concat(

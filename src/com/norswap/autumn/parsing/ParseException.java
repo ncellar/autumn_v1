@@ -11,4 +11,10 @@ public final class ParseException extends RuntimeException
     {
         this.error = error;
     }
+
+    @Override
+    public String getMessage()
+    {
+        return error.message();
+    }
 }
