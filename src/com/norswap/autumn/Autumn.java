@@ -192,10 +192,7 @@ public class Autumn
         }
         else
         {
-            Grammar grammar = GrammarCompiler.compile(result.tree);
-            new Printer(System.err::print).visit(grammar.root());
-            // return GrammarCompiler.compile(result.tree);
-            return grammar;
+            return GrammarCompiler.compile(result.tree);
         }
     }
 

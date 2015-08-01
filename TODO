@@ -1,15 +1,17 @@
 --------------------------------------------------------------------------------
 TODO
 
+- resolve git issues
+    - look at why "sub-repos" appear modified
+    - only a problem of stash?
+    - try if things work with github (not working with bitbucket)
+
+    - don't forget receive.denyCurrentBranch = warn ing .gitconfig (or .git/config ?)
+    - don't forget core.filemode = false in .git/config
+
 - tree building into the grammar!
-    - make grammar use cluster
-        - write expression printer tree walk
-        - debug
-        - cleanup
     - introduce capture notation
     - annotate java grammar with captures
-
-- retool the expression cluster to hold precedence parsing expression (or group?)
 
 - why inPlace & readOnly give different results on printer (grammar or not)
 
@@ -19,8 +21,9 @@ TODO
 
 TODO FURTHER SMALL
 
-- pretty printing as tree walking
-    - enable non-recursive full-tree printing
+- pretty printing
+    - add an option to cutoff at named expressions
+    - add an option to display the name
 
 - path-like getters for parsing expression graphs
 
@@ -34,6 +37,10 @@ TODO FURTHER SMALL
 - well formedness check (ford: WF -- can't loop without consuming)
 
 - re-allow memoization when dropping precedence in both schemes
+
+- copy via tree walk (use in feature tests)
+
+- think about group conundrum (should it be a parsing expression?)
 
 TODO GUI
 

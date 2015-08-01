@@ -47,7 +47,7 @@ public class Printer extends GraphVisitor<ParsingExpression>
         }
         else
         {
-            sink.accept("XXX");//String.format("%X", pe.hashCode())); // TODO
+            sink.accept(String.format("%X", pe.hashCode()));
         }
 
         sink.accept(")");
@@ -79,7 +79,7 @@ public class Printer extends GraphVisitor<ParsingExpression>
                 sink.accept("visited (");
                 sink.accept(name != null
                     ? name
-                    : "XXX");//String.format("%X", slot.get().hashCode())); // TODO
+                    : String.format("%X", slot.get().hashCode()));
                 sink.accept(")\n");
                 break;
 

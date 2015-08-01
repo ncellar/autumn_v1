@@ -10,65 +10,6 @@ public final class GrammarGrammar
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /*
-        The original Mouse grammar this is based on.
-
-        Grammar   = Space (Rule/Skip)*+ EOF ;
-        Rule      = Name EQUAL RuleRhs DiagName? SEMI ;
-        Skip      = SEMI / _++ (SEMI/EOF) ;
-        RuleRhs   = Sequence Actions (SLASH Sequence Actions)* ;
-        Choice    = Sequence (SLASH Sequence)* ;
-        Sequence  = Prefixed+ ;
-        Prefixed  = PREFIX? Suffixed ;
-        Suffixed  = Primary (UNTIL Primary / SUFFIX)? ;
-        Primary   = Name
-                  / LPAREN Choice RPAREN
-                  / ANY
-                  / StringLit
-                  / Range
-                  / CharClass ;
-        Actions   = OnSucc OnFail ;
-        OnSucc    = (LWING AND? Name? RWING)? ;
-        OnFail    = (TILDA LWING Name? RWING)? ;
-        Name      = Letter (Letter / Digit)* Space ;
-        DiagName  = "<" Char++ ">" Space ;
-        StringLit = ["] Char++ ["] Space ;
-        CharClass = ("[" / "^[") Char++ "]" Space ;
-        Range     = "[" Char "-" Char "]" Space ;
-        Char      = Escape / ^[\r\n\\] ;
-        Escape    = "\\u" HexDigit HexDigit HexDigit HexDigit
-                  / "\\t"
-                  / "\\n"
-                  / "\\r"
-                  / !"\\u""\\"_ ;
-        Letter    = [a-z] / [A-Z] ;
-        Digit     = [0-9] ;
-        HexDigit  = [0-9] / [a-f] / [A-F] ;
-        PREFIX    = [&!]  Space ;
-        SUFFIX    = [?*+] Space ;
-        UNTIL     = ("*+" / "++") Space ;
-        EQUAL     = "=" Space ;
-        SEMI      = ";" Space ;
-        SLASH     = "/" Space ;
-        AND       = "&" Space ;
-        LPAREN    = "(" Space ;
-        RPAREN    = ")" Space ;
-        LWING     = "{" Space ;
-        RWING     = "}" Space ;
-        TILDA     = "~" Space ;
-        ANY       = "_" Space ;
-        Space     = ([ \r\n\t] / Comment)* ;
-        Comment   = "//" _*+ EOL ;
-        EOL       = [\r]? [\n] / !_  ;
-        EOF       = !_  ;
-    */
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    // TODO(norswap):
-    //   This should eventually use expression clusters, the grammar just precedes
-    //   that, and I haven't gotten around changing it.
-
     private static int i = 0;
 
     public static ParsingExpression
@@ -137,9 +78,6 @@ public final class GrammarGrammar
         captureText("literal", zeroMore(not(literal("\"")), character)),
         literal("\""))),
 
-    // unused
-    diagName = named$("diagName", token(literal("<"), until(character, literal(">")))),
-
     name = named$("name", token(choice(
         sequence(not(reserved), letter, zeroMore(nameChar)),
         sequence(literal("'"), aloUntil(any(), literal("'")))))),
@@ -151,62 +89,40 @@ public final class GrammarGrammar
         optional(token(literal("forbid")),
             lBrace, aloSeparated(captureTextGrouped("forbidden", name), comma), rBrace)),
 
-    primary = recursive$("primary", choice(
-        sequence(lParen, reference("choice"), rParen),
-        capture("drop", sequence(dropLit, reference("primary"))),
-        capture("ref", reference),
-        capture("any", underscore),
-        capture("charRange", range),
-        captureText("stringLit", stringLit),
-        captureText("charSet", charSet),
-        captureText("notCharSet", notCharSet))),
+    expr = reference("expr"),
 
-    suffixed = named$("suffixed", choice(
-        capture("until", sequence(primary, until, primary)),
-        capture("aloUntil", sequence(primary, aloUntil, primary)),
-        capture("optional", sequence(primary, qMark)),
-        capture("zeroMore", sequence(primary, star)),
-        capture("oneMore", sequence(primary, plus)),
-        primary)),
+    parsingExpression = recursive$("expr", cluster(
 
-    prefixed = named$("prefixed", choice(
-        capture("and", sequence(and, suffixed)),
-        capture("not", sequence(bang, suffixed)),
-        suffixed)),
+        // NOTE(norswap)
+        // Using left associativity for choice and sequence ensures that sub-expressions
+        // have higher precedence. So we don't get pesky choice of choices or sequence of sequences.
 
-    // TODO oneMore
-    sequence = named$("sequence", capture("sequence", sequence(prefixed, zeroMore(prefixed)))),
+        groupLeftAssoc(++i,
+            named$("choice", capture("choice", aloSeparated(expr, slash)))),
 
-    choice = recursive$("choice", capture("choice", aloSeparated(sequence, slash))),
+        groupLeftAssoc(++i,
+            capture("sequence", sequence(expr, oneMore(expr)))),
 
-    rnew = reference("newthing"),
+        group(++i,
+            capture("and", sequence(and, expr)),
+            capture("not", sequence(bang, expr))),
 
-    newthing = recursive$("newthing", cluster(
+        group(++i,
+            capture("until", sequence(expr, until, expr)),
+            capture("aloUntil", sequence(expr, aloUntil, expr)),
+            capture("optional", sequence(expr, qMark)),
+            capture("zeroMore", sequence(expr, star)),
+            capture("oneMore", sequence(expr, plus))),
 
-        exprAlt(++i,
-            named$("choice2",
-                capture("choice", aloSeparated(exprWithMinPrecedence(i + 1, rnew), slash)))),
-
-        // TODO
-        exprLeftRecur(++i, capture("sequence", sequence(rnew, oneMore(exprWithMinPrecedence(i + 1, rnew))))),
-
-        exprAlt(++i, capture("and", sequence(and, rnew))),
-        exprAlt(i, capture("not", sequence(bang, rnew))),
-
-        exprLeftRecur(++i, capture("until", sequence(rnew, until, rnew))),
-        exprLeftRecur(i, capture("aloUntil", sequence(rnew, aloUntil, rnew))),
-        exprLeftRecur(i, capture("optional", sequence(rnew, qMark))),
-        exprLeftRecur(i, capture("zeroMore", sequence(rnew, star))),
-        exprLeftRecur(i, capture("oneMore", sequence(rnew, plus))),
-
-        exprAlt(++i, sequence(lParen, exprDropPrecedence(rnew), rParen)),
-        exprAlt(i, capture("drop", sequence(dropLit, rnew))),
-        exprAlt(i, capture("ref", reference)),
-        exprAlt(i, capture("any", underscore)),
-        exprAlt(i, capture("charRange", range)),
-        exprAlt(i, captureText("stringLit", stringLit)),
-        exprAlt(i, captureText("charSet", charSet)),
-        exprAlt(i, captureText("notCharSet", notCharSet)))),
+        group(++i,
+            sequence(lParen, exprDropPrecedence(expr), rParen),
+            capture("drop", sequence(dropLit, expr)),
+            capture("ref", reference),
+            capture("any", underscore),
+            capture("charRange", range),
+            captureText("stringLit", stringLit),
+            captureText("charSet", charSet),
+            captureText("notCharSet", notCharSet)))),
 
     exprAnnotation = sequence(
         literal("@"),
@@ -222,14 +138,7 @@ public final class GrammarGrammar
         exprLit,
         oneMore(captureGrouped("alts", sequence(
             arrow,
-            capture("expr", filter(null, $(reference("choice2")), newthing)),
-            oneMore(captureGrouped("annotations", exprAnnotation)))))))),
-
-    exprClusterOld = named$("old_cluster", capture("old_cluster", sequence(
-        exprLit,
-        oneMore(captureGrouped("alts", sequence(
-            arrow,
-            sequence,
+            capture("expr", filter(null, $(reference("choice")), parsingExpression)),
             oneMore(captureGrouped("annotations", exprAnnotation)))))))),
 
     rule = named$("rule", sequence(
@@ -237,10 +146,7 @@ public final class GrammarGrammar
         optional(capture("dumb", literal("!"))),
         optional(capture("token", literal(":"))),
         equal,
-        
-        //choice(exprClusterOld, choice),
-        choice(exprCluster, capture("expr", newthing)),
-
+        choice(exprCluster, capture("expr", parsingExpression)),
         semi)),
 
     root = named$("grammar", oneMore(captureGrouped("rules", rule)));

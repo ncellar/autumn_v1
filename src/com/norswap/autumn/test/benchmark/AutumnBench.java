@@ -23,6 +23,10 @@ public class AutumnBench
     {
         Instant startParse = Instant.now();
         Grammar grammar = Autumn.grammarFromFile(grammarFile);
+
+        // inspect grammar
+        //new Printer(System.err::print).visit(grammar.root());
+
         Instant endParse = Instant.now();
         System.out.println("Grammar compiled in: " + Duration.between(startParse, endParse));
 

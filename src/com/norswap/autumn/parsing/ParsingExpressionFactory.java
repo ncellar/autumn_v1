@@ -1,12 +1,11 @@
 package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.parsing.expressions.*;
+import com.norswap.autumn.parsing.expressions.ExpressionCluster.Group;
 import com.norswap.autumn.parsing.expressions.Whitespace;
-import com.norswap.autumn.parsing.expressions.ExpressionCluster.Operand;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 import static com.norswap.autumn.parsing.Registry.*; // PEF_*
 
@@ -102,31 +101,14 @@ public final class ParsingExpressionFactory
         return dumb(sequence(seq));
     }
 
-    public static ExpressionCluster cluster(Operand... operands)
+    public static ExpressionCluster cluster(Group... groups)
     {
-        // Partition the alternates by precedence and sort in descending order of precedence.
-        // Within each group, the order of alternates is preserved.
-
-        Operand[][] groups = Arrays.stream(operands)
-            .collect(Collectors.groupingBy(o -> o.precedence))
-            .entrySet()
-            .stream()
-            .sorted((x, y) -> y.getKey() - x.getKey())
-            .map(e -> e
-                .getValue()
-                .stream()
-                .toArray(Operand[]::new))
-            .toArray(Operand[][]::new);
-
-        Operand[][] recursiveGroups = Arrays.stream(groups)
-            .map(group -> Arrays.stream(group)
-                .filter(op -> op.leftRecursive)
-                .toArray(Operand[]::new))
-            .toArray(Operand[][]::new);
-
         ExpressionCluster result = new ExpressionCluster();
+
+        // Sort in decreasing order of precedence.
+        Arrays.sort(groups, (g1, g2) -> g2.precedence - g1.precedence);
+
         result.groups = groups;
-        result.recursiveGroups = recursiveGroups;
         return result;
     }
 
@@ -153,31 +135,29 @@ public final class ParsingExpressionFactory
         return exprWithMinPrecedence(minPrecedence, sequence(seq));
     }
 
-    public static ExpressionCluster.Operand exprAlt(int precedence, ParsingExpression operand)
+    public static Group group(int precedence, boolean leftRecursive, boolean leftAssociative, ParsingExpression... alternates)
     {
-        Operand op = new Operand();
-        op.operand = operand;
-        op.precedence = precedence;
-        return op;
+        Group group = new Group();
+        group.precedence = precedence;
+        group.leftRecursive = leftRecursive;
+        group.leftAssociative = leftAssociative;
+        group.operands = alternates;
+        return group;
     }
 
-    public static ExpressionCluster.Operand exprLeftRecur(int precedence, ParsingExpression operand)
+    public static Group group(int precedence, ParsingExpression... alternates)
     {
-        Operand op = new Operand();
-        op.operand = operand;
-        op.precedence = precedence;
-        op.leftRecursive = true;
-        return op;
+        return group(precedence, false, false, alternates);
     }
 
-    public static ExpressionCluster.Operand exprLeftAssoc(int precedence, ParsingExpression operand)
+    public static Group groupLeftRec(int precedence, ParsingExpression... alternates)
     {
-        Operand op = new Operand();
-        op.operand = operand;
-        op.precedence = precedence;
-        op.leftRecursive = true;
-        op.leftAssociative = true;
-        return op;
+        return group(precedence, true, false, alternates);
+    }
+
+    public static Group groupLeftAssoc(int precedence, ParsingExpression... alternates)
+    {
+        return group(precedence, true, true, alternates);
     }
 
     public static Filter filter(

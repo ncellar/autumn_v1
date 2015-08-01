@@ -4,19 +4,11 @@ import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.Registry;
-import com.norswap.autumn.parsing.graph.ChildSlot;
 import com.norswap.autumn.parsing.graph.Nullability;
-import com.norswap.util.Array;
 import com.norswap.util.Caster;
 import com.norswap.util.DeepCopy;
 import com.norswap.util.Exceptions;
 import com.norswap.util.HandleMap;
-import com.norswap.util.graph_visit.GraphVisitor;
-import com.norswap.util.i;
-import com.norswap.util.slot.Slot;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * A parsing expression is matched to the source text by recursively invoking the {@link #parse}

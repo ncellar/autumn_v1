@@ -243,11 +243,14 @@ public final class FeatureTests
     public void testExpression()
     {
         pe = recursive$("expr", cluster(
-            exprLeftAssoc(1, plus.deepCopy()),
-            exprLeftAssoc(1, minus.deepCopy()),
-            exprLeftAssoc(2, mult.deepCopy()),
-            exprLeftAssoc(2, div.deepCopy()),
-            exprAlt(3, num.deepCopy())));
+            groupLeftAssoc(1,
+                plus.deepCopy(),
+                minus.deepCopy()),
+            groupLeftAssoc(2,
+                mult.deepCopy(),
+                div.deepCopy()),
+            group(3,
+                num.deepCopy())));
 
         tree = tree(pe, "1+2-3+4*5/6*7+8");
 
@@ -275,11 +278,14 @@ public final class FeatureTests
         // NOTE(norswap): Same as testExpression() but + and - are now right-associative.
 
         pe = recursive$("expr", cluster(
-            exprLeftRecur(1, plus.deepCopy()),
-            exprLeftRecur(1, minus.deepCopy()),
-            exprLeftAssoc(2, mult.deepCopy()),
-            exprLeftAssoc(2, div.deepCopy()),
-            exprAlt(3, num.deepCopy())));
+            groupLeftRec(1,
+                plus.deepCopy(),
+                minus.deepCopy()),
+            groupLeftAssoc(2,
+                mult.deepCopy(),
+                div.deepCopy()),
+            group(3,
+                num.deepCopy())));
 
         tree = tree(pe, "1+2-3+4*5/6*7+8");
 
@@ -307,11 +313,14 @@ public final class FeatureTests
         // NOTE(norswap): Same as testExpression() but * and / are now right-associative.
 
         pe = recursive$("expr", cluster(
-            exprLeftAssoc(1, plus.deepCopy()),
-            exprLeftAssoc(1, minus.deepCopy()),
-            exprLeftRecur(2, mult.deepCopy()),
-            exprLeftRecur(2, div.deepCopy()),
-            exprAlt(3, num.deepCopy())));
+            groupLeftAssoc(1,
+                plus.deepCopy(),
+                minus.deepCopy()),
+            groupLeftRec(2,
+                mult.deepCopy(),
+                div.deepCopy()),
+            group(3,
+                num.deepCopy())));
 
         tree = tree(pe, "1+2-3+4*5/6*7+8");
 
