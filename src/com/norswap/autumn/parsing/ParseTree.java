@@ -251,6 +251,14 @@ public final class ParseTree implements Iterable<ParseTree>
     {
         builder.append(Strings.times(depth, "-|"));
         builder.append(name != null ? name : "container");
+
+        if (value != null)
+        {
+            builder.append(" - \"");
+            builder.append(value);
+            builder.append("\"");
+        }
+
         builder.append("\n");
 
         if (grouped)

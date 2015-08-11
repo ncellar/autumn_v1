@@ -37,6 +37,11 @@ public class AutumnBench
             for (Path path: Glob.glob("**/*.java", Paths.get("../guava")))
             {
                 ParseResult result = Autumn.parseFile(grammar, path.toString());
+
+                // TODO remove
+//                System.err.println("---");
+//                System.err.println(path);
+//                System.err.println(result.tree.toTreeString());
             }
         }
         Instant end = Instant.now();

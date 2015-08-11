@@ -300,6 +300,16 @@ public final class GrammarCompiler
                     compileParsingExpression(tree.child(0)),
                     compileParsingExpression(tree.child(1)));
 
+            case "separated":
+                return separated(
+                    compileParsingExpression(tree.child(0)),
+                    compileParsingExpression(tree.child(1)));
+
+            case "aloSeparated":
+                return aloSeparated(
+                    compileParsingExpression(tree.child(0)),
+                    compileParsingExpression(tree.child(1)));
+
             case "optional":
                 return optional(compileParsingExpression(tree.child()));
 
@@ -308,6 +318,22 @@ public final class GrammarCompiler
 
             case "oneMore":
                 return oneMore(compileParsingExpression(tree.child()));
+
+            case "capture":
+                ParsingExpression expr = compileParsingExpression(tree.child(0));
+                String name = tree.value("name");
+
+                return tree.has("captureText")
+                    ? tree.has("captureGrouped")
+                    ? captureTextGrouped(name, expr)
+                        : tree.has("captureJoin")
+                            ? captureTextJoin(name, expr)
+                            : captureText(name, expr)
+                    : tree.has("captureGrouped")
+                        ? captureGrouped(name, expr)
+                        : tree.has("captureJoin")
+                            ? captureJoin(name, expr)
+                            : capture(name, expr);
 
             case "drop":
                 return exprDropPrecedence(compileParsingExpression(tree.child()));

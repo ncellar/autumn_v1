@@ -33,6 +33,12 @@ public final class ParsingExpressionFactory
         return result;
     }
 
+    public static Capture captureJoin(String captureName, ParsingExpression operand)
+    {
+        // TODO proper implem
+        return captureGrouped(captureName, operand);
+    }
+
     public static Capture captureText(String captureName, ParsingExpression operand)
     {
         Capture result = capture(captureName, operand);
@@ -45,6 +51,12 @@ public final class ParsingExpressionFactory
         Capture result = capture(captureName, operand);
         result.flags |= PEF_CAPTURE_TEXT | PEF_CAPTURE_GROUPED;
         return result;
+    }
+
+    public static Capture captureTextJoin(String captureName, ParsingExpression operand)
+    {
+        // TODO proper implem
+        return captureTextGrouped(captureName, operand);
     }
 
     public static CharRange charRange(char start, char end)

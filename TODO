@@ -1,17 +1,19 @@
 --------------------------------------------------------------------------------
 TODO
 
-- resolve git issues
-    - look at why "sub-repos" appear modified
-    - only a problem of stash?
-    - try if things work with github (not working with bitbucket)
-
-    - don't forget receive.denyCurrentBranch = warn ing .gitconfig (or .git/config ?)
-    - don't forget core.filemode = false in .git/config
-
 - tree building into the grammar!
-    - introduce capture notation
+
     - annotate java grammar with captures
+
+    - implement join capture & rename grouped to multiple
+
+        - make multiple capture the default
+
+    - uniformize types and implement type discrimination as subsequent passes
+
+    - uniformize modifiers and implement discrimination as subsequent passes
+
+- other parse tree algorithmic changes? iterative add? incremental compaction? cpact implem?
 
 - why inPlace & readOnly give different results on printer (grammar or not)
 
@@ -20,6 +22,8 @@ TODO
 - make reset hookable
 
 TODO FURTHER SMALL
+
+- changes = oldChanges in !leftRecursive condition in expression cluster?
 
 - pretty printing
     - add an option to cutoff at named expressions
@@ -39,6 +43,8 @@ TODO FURTHER SMALL
 - re-allow memoization when dropping precedence in both schemes
 
 - copy via tree walk (use in feature tests)
+
+- result toTreeString via visitor?
 
 - think about group conundrum (should it be a parsing expression?)
 

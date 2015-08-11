@@ -19,6 +19,7 @@ public final class GrammarGrammar
     equal       = token(literal("=")),
     plus        = token(literal("+")),
     qMark       = token(literal("?")),
+    colon       = token(literal(":")),
     semi        = token(literal(";")),
     slash       = token(literal("/")),
     star        = token(literal("*")),
@@ -28,12 +29,13 @@ public final class GrammarGrammar
     lParen      = token(literal("(")),
     rParen      = token(literal(")")),
     underscore  = token(literal("_")),
-    until       = token(literal("*+")),
-    aloUntil    = token(literal("++")),
+    starPlus    = token(literal("*+")),
+    plusPlus    = token(literal("++")),
     arrow       = token(literal("->")),
     lAnBra      = token(literal("<")),
     rAnBra      = token(literal(">")),
     comma       = token(literal(",")),
+    commaPlus   = token(literal(",+")),
 
     digit         = charRange('0', '9'),
     hexDigit      = choice(digit, charRange('a', 'f'), charRange('A', 'F')),
@@ -108,11 +110,24 @@ public final class GrammarGrammar
             capture("not", sequence(bang, expr))),
 
         group(++i,
-            capture("until", sequence(expr, until, expr)),
-            capture("aloUntil", sequence(expr, aloUntil, expr)),
+            capture("until", sequence(expr, starPlus, expr)),
+            capture("aloUntil", sequence(expr, plusPlus, expr)),
+            capture("separated", sequence(expr, comma, expr)),
+            capture("aloSeparated", sequence(expr, commaPlus, expr)),
             capture("optional", sequence(expr, qMark)),
             capture("zeroMore", sequence(expr, star)),
             capture("oneMore", sequence(expr, plus))),
+
+        groupLeftRec(++i,
+            capture("capture", sequence(
+                expr,
+                token(
+                    literal(":"),
+                    optional(capture("captureText", literal("+"))),
+                    optional(choice(
+                        capture("captureGrouped", literal("*")),
+                        capture("captureJoin",    literal("#"))))),
+                captureText("name", name)))),
 
         group(++i,
             sequence(lParen, exprDropPrecedence(expr), rParen),
