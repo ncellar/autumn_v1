@@ -48,6 +48,8 @@ TODO FURTHER SMALL
 
 - think about group conundrum (should it be a parsing expression?)
 
+- "marker" capture (capture on its own, no depth increase)
+
 TODO GUI
 
 - make it so that the cursor over scrollbars isn't a text cursor

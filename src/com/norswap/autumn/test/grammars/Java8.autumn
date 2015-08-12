@@ -179,12 +179,12 @@ WHILE        !:= "while"        !LetterOrDigit  ;
 //-------------------------------------------------------------------------
 
 Literal
-    = FloatLiteral
-    / IntegerLiteral          // May be a prefix of FloatLiteral
-    / BooleanLiteral
-    / CharLiteral
-    / StringLiteral
-    / NullLiteral
+    = FloatLiteral      : floatLiteral
+    / IntegerLiteral    : integerLiteral    // May be a prefix of FloatLiteral
+    / BooleanLiteral    : booleanLiteral
+    / CharLiteral       : charLiteral
+    / StringLiteral     : stringLiteral
+    / NullLiteral       : nullLiteral
     ;
 
 //-------------------------------------------------------------------------
@@ -514,10 +514,7 @@ wildcard
 */
 
 TypeArguments
-    = LPOINT TypeArgumentList RPOINT ;
-
-TypeArgumentList
-    = TypeArgument:#typeArgs ,+ ',' ;
+    = LPOINT TypeArgument:#typeArgs ,+ ',' RPOINT ;
 
 TypeArgument
     = ReferenceType
@@ -711,6 +708,7 @@ ClassBodyDeclaration
     / Block
     / STATIC Block
     / ConstructorDeclaration
+    / ';'
     ;
 
 //-------------------------------------------------------------------------
@@ -770,7 +768,7 @@ EnumConstant
 
 fieldDeclaration
     <fieldModifiers>
-    <classType>
+    <type>
     <declarators>
 
 declarators (#)
@@ -787,7 +785,7 @@ declaratorId
 */
 
 FieldDeclaration
-    = FieldModifiers ClassType VariableDeclaratorList ';' ;
+    = FieldModifiers Type VariableDeclaratorList ';' ;
 
 VariableDeclaratorList
     = (VariableDeclarator :# declarators) ,+ ',' ;
@@ -1088,12 +1086,13 @@ SingleElementAnnotation
 
 /*
 
-TODO
+elementInitializers (#)
+    TODO
 
 */
 
 ArrayInitializer
-    = '{' VariableInitializer , ',' ','? '}' ;
+    = '{' (VariableInitializer :# elementInitializers) , ',' ','? '}' ;
 
 //=========================================================================
 //  JLS 14  Blocks and Statements
@@ -1235,40 +1234,76 @@ Resource
 //  JLS 15.9  Class Instance Creation Expressions
 //-------------------------------------------------------------------------
 
+/*
+
+<classCreator>
+    <typeArgs> (?)
+    <annotations>
+    <arguments>
+    components (*)
+        <annotations>
+        id (+)
+        OR ?
+            <typeArgs>
+            diamond
+    <classBody>
+
+TODO (classBody)
+
+*/
+
 ClassCreator
-    = TypeArguments? Annotation* ClassTypeWithDiamond
-          Arguments ClassBody? ;
+    = TypeArguments? Annotations ClassTypeWithDiamond Arguments ClassBody? ;
 
 ClassTypeWithDiamond
-    = Annotation* Identifier TypeArgumentsOrDiamond?
-          ('.' Annotation* Identifier TypeArgumentsOrDiamond?)* ;
+    = ((Annotations Identifier:+id TypeArgumentsOrDiamond?) :* components) ,+ '.' ;
 
 TypeArgumentsOrDiamond
     = TypeArguments
-    / LPOINT RPOINT !'.'  // Must be last
+    / (LPOINT RPOINT !'.'):diamond  // Must be last
     ;
 
 //-------------------------------------------------------------------------
 //  JLS 15.10  Array Creation and Access Expressions
 //-------------------------------------------------------------------------
 
+/*
+
+<arrayCreator>
+    <stemType>
+    dimExprs (*) (?)
+        <annotations>
+        1 [dimExpr]
+    <dims>
+    <arrayInitializer>
+
+TODO (arrayInitializer)
+
+*/
+
+// NOTE: arrays with an initializer cannot have dimension expressions
+
 ArrayCreator
-    = StemType DimExpr+ Dim*
-    / StemType Dim+ ArrayInitializer
+    = StemType DimExpr :* dimExprs + Dims
+    / StemType DimsAlo ArrayInitializer
     ;
 
 DimExpr
-    = Annotation* '[' Expression ']' ;
+    = Annotations '[' Expression ']' ;
 
 //-------------------------------------------------------------------------
 //  JLS 15.12  Method Invocation Expressions
 //-------------------------------------------------------------------------
 
-Arguments
-    = '(' ArgumentList? ')' ;
+/*
 
-ArgumentList
-    = Expression (',' Expression)* ;
+arguments (#)
+    <expression>
+
+*/
+
+Arguments
+    = '(' (Expression :# arguments) , ',' ')' ;
 
 //-------------------------------------------------------------------------
 //  JLS 15.27  Lambda Expressions
@@ -1286,7 +1321,7 @@ lambda
             <expression>
             <block>
 
-TODO expression block
+TODO (expression block) (parameters)
 
 */
 
@@ -1309,78 +1344,78 @@ Expression = expr
 
     // BINARY OPERATORS
 
-    -> Expression OROR       Expression @+ @left_assoc
-    -> Expression ANDAND     Expression @+ @left_assoc
-    -> Expression OR         Expression @+ @left_assoc
-    -> Expression HAT        Expression @+ @left_assoc
-    -> Expression AND        Expression @+ @left_assoc
+    -> OrOr                     @+ @left_assoc
+    -> AndAnd                   @+ @left_assoc
+    -> Or                       @+ @left_assoc
+    -> Hat                      @+ @left_assoc
+    -> And                      @+ @left_assoc
 
-    -> Expression EQUAL      Expression @+ @left_assoc
-    -> Expression NOTEQUAL   Expression @=
+    -> Equal                    @+ @left_assoc
+    -> NotEqual                 @=
 
-    -> Expression LE         Expression @+ @left_assoc
-    -> Expression GE         Expression @=
-    -> Expression LT         Expression @=
-    -> Expression GT         Expression @=
-    -> Expression INSTANCEOF Expression @=
+    -> Le                       @+ @left_assoc
+    -> Ge                       @=
+    -> Lt                       @=
+    -> Gt                       @=
+    -> InstanceOf               @=
 
-    -> Expression SL         Expression @+ @left_assoc
-    -> Expression SR         Expression @=
-    -> Expression BSR        Expression @=
+    -> Sl                       @+ @left_assoc
+    -> Sr                       @=
+    -> Bsr                      @=
 
-    -> Expression PLUS       Expression @+ @left_assoc
-    -> Expression MINUS      Expression @=
+    -> Plus                     @+ @left_assoc
+    -> Minus                    @=
 
-    -> Expression STAR       Expression @+ @left_assoc
-    -> Expression DIV        Expression @=
-    -> Expression MOD        Expression @=
+    -> Star                     @+ @left_assoc
+    -> Div                      @=
+    -> Mod                      @=
 
     // PREFIX OPERATORS
 
-    -> INC   Expression @+ @binc
-    -> DEC   Expression @= @bdec
-    -> PLUS  Expression @=
-    -> MINUS Expression @=
-    -> TILDE Expression @=
-    -> BANG  Expression @=
-    -> CastExpression   @= // does not conflict with (expr)(arguments) because lower precedence
+    -> BInc                     @+ @binc
+    -> BDec                     @= @bdec
+    -> UPlus                    @=
+    -> UMinus                   @=
+    -> Tilde                    @=
+    -> Bang                     @=
+    -> CastExpression           @= // does not conflict with (expr)(arguments) because lower precedence
 
     // POSTFIX EXPRESSIONS
 
-    -> Expression INC                                           @+ @left_assoc @ainc
-    -> Expression DEC                                           @= @adec
-    -> Expression '.' TypeArguments Identifier drop Arguments   @= @tmcall
-    -> Expression drop Arguments                                @= @mcall
-    -> Expression '.' Identifier                                @= @dot_iden
-    -> Expression '.' NEW drop ClassCreator                     @=
-    -> Expression '.' THIS                                      @=
-    -> Expression '.' SUPER                                     @=
-    -> Expression '.' CLASS                                     @=
-    -> Expression '[' drop Expression ']'                       @= @array_access
-    -> Expression '::' TypeArguments? Identifier                @=
-    -> Expression '::' TypeArguments? NEW                       @=
+    -> AInc                     @+ @left_assoc @ainc
+    -> ADec                     @= @adec
+    -> DotTypeArgs              @= @tmcall
+    -> Call                     @= @mcall
+    -> DotIden                  @= @dot_iden
+    -> DotNew                   @=
+    -> DotThis                  @=
+    -> DotSuper                 @=
+    -> DotClass                 @=
+    -> ArrayAccess              @= @array_access
+    -> MethodRef                @=
+    -> NewRef                   @=
 
     // POSTFIX TYPES
 
-    -> Expression TypeArguments  @=
-    -> Expression '[' ']'        @=
+    -> TypeWithArgs             @=
+    -> ArrayType                @=
 
     // PRIMARY EXPRESSIONS
 
-    -> '(' drop Expression ')'                  @+
-    -> THIS Arguments                           @=
-    -> THIS                                     @=
-    -> SUPER Arguments                          @=
-    -> SUPER                                    @=
-    -> NEW drop ClassCreator                    @= @ccall
-    -> NEW drop ArrayCreator                    @=
-    -> Identifier                               @= @iden
-    -> Literal                                  @=
+    -> '(' drop Expression ')'  @+
+    -> ThisCall                 @=
+    -> THIS:this                @=
+    -> SuperCall                @=
+    -> SUPER:super              @=
+    -> CtorCall                 @= @ccall
+    -> ArrayCtorCall            @=
+    -> Identifier : identifier  @= @iden
+    -> Literal                  @=
 
     // PRIMARY TYPES
 
     -> BasicType    @=
-    -> VOID         @=
+    -> VOID:void    @=
     ;
 
 // ===============================================================================
@@ -1461,15 +1496,15 @@ Star        = (Expression STAR          Expression) : star          ;
 Div         = (Expression DIV           Expression) : div           ;
 Mod         = (Expression MOD           Expression) : mod           ;
 
-PInc        = (INC      Expression) : pInc      ;
-PDec        = (DEC      Expression) : pDec      ;
+BInc        = (INC      Expression) : bInc      ;
+BDec        = (DEC      Expression) : bDec      ;
 UPlus       = (PLUS     Expression) : uPlus     ;
 UMinus      = (MINUS    Expression) : uMinus    ;
 Tilde       = (TILDE    Expression) : tilde     ;
 Bang        = (BANG     Expression) : bang      ;
 
-DInc        = (Expression INC                                           ) : dInc        ;
-DDec        = (Expression DEC                                           ) : dDec        ;
+AInc        = (Expression INC                                           ) : aInc        ;
+ADec        = (Expression DEC                                           ) : aDec        ;
 DotTypeArgs = (Expression '.' TypeArguments Identifier drop Arguments   ) : dotTypeArgs ;
 Call        = (Expression drop Arguments                                ) : call        ;
 DotIden     = (Expression '.' Identifier                                ) : dotIden     ;
@@ -1481,36 +1516,32 @@ ArrayAccess = (Expression '[' drop Expression ']'                       ) : arra
 MethodRef   = (Expression '::' TypeArguments? Identifier                ) : methodRef   ;
 NewRef      = (Expression '::' TypeArguments? NEW                       ) : newRef      ;
 
-/*
+TypeWithArgs = (Expression TypeArguments    ) : typeWithArgs    ;
+ArrayType    = (Expression '[' ']'          ) : arrayTYpe       ;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-*/
+ThisCall        = (THIS  Arguments          ) : thisCall        ;
+SuperCall       = (SUPER Arguments          ) : superCall       ;
+CtorCall        = (NEW drop ClassCreator    ) : ctorCall        ;
+ArrayCtorCall   = (NEW drop ArrayCreator    ) : arrayCtorCall   ;
 
 // ===============================================================================
 
 /*
 
+assignment
+    0 [lvalue]
+    op (+)
+    2 [right-hand side]
 
+cast
+    types (#)
+        <type>
+    1 [op]
 
 */
 
-CastExpression
-    = '(' (ReferenceType (AND ClassType)* / PrimitiveType) ')' Expression ;
-
 Assignment
-    = LValue AssignmentOperator Expression ;
+    = (LValue AssignmentOperator:+op Expression) : assignment ;
 
 LValue
     = Expression allow { iden, dot_iden, array_access } ;
@@ -1529,6 +1560,12 @@ AssignmentOperator
     / HATEQU
     / OREQU
     ;
+
+// NOTE: first must be reference type or primitive type
+//       further allowed only w/ reference type and must be class types
+
+CastExpression
+    = ( '(' (Type :# types) ,+ AND ')' Expression ) : cast ;
 
 StatementExpression
     = Expression allow { assign, binc, bdec, ainc, adec, mcall, tmcall, ccall } ;

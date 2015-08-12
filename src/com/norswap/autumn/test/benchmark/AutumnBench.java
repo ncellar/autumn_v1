@@ -38,6 +38,14 @@ public class AutumnBench
             {
                 ParseResult result = Autumn.parseFile(grammar, path.toString());
 
+                if (!result.matched)
+                {
+                    System.err.println(path);
+                    System.err.println(result.error.message());
+
+                    return;
+                }
+
                 // TODO remove
 //                System.err.println("---");
 //                System.err.println(path);
