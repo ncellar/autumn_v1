@@ -21,6 +21,8 @@ TODO
 
 - make reset hookable
 
+- introduce a mini-type system for captures
+
 TODO FURTHER SMALL
 
 - changes = oldChanges in !leftRecursive condition in expression cluster?
@@ -49,6 +51,8 @@ TODO FURTHER SMALL
 - think about group conundrum (should it be a parsing expression?)
 
 - "marker" capture (capture on its own, no depth increase)
+
+- syntactic support for naming a capture after the name of identifier used
 
 TODO GUI
 

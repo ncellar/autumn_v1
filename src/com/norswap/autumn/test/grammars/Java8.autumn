@@ -598,6 +598,17 @@ ImportDeclaration
 
 TODO
 
+classDeclaration
+    <typeModifiers>
+    class
+    id
+    <typeParameters>
+    superclass (?)
+        <classType>
+    superInterfaces (#)
+        <classType>
+    <declarations>
+
 */
 
 TypeDeclaration
@@ -631,21 +642,48 @@ note: interfaces can't be final
 typeParameters (#)
     <typeParameter>
 
-TODO
-
 classDeclaration
     <typeModifiers>
-    class
+    annotationDeclaration
+    OR
+        class
+        enum
+        interface
     id
-    <typeParameters>
+    <typeParameters> (?)
     superclass (?)
         <classType>
+    OR (?)
+        implements
+        extends
     superInterfaces (#)
         <classType>
-    body (#)
-        TODO
+    enumConstants (*) (?)
+        <annotations>
+        id (+)
+        <arguments>
+    <declarations>
+
+----
 
 */
+
+// NOTE: enums can't have superclasses or type params, and regular classe can't have enum constants
+// NOTE: annotation types can't have supertypes or type parameters
+// NOTE: interfaces must "extends" other interfaces
+
+ClassDeclaration
+    = TypeModifiers
+      (CLASS:class \ ENUM:enum \ '@':annotationDeclaration? INTERFACE:interface)
+      Identifier:+id
+      TypeParameters?
+      Superclass?
+      ((IMPLEMENTS:implements / EXTENDS:extends) InterfaceTypeList)?
+      '{'
+        ( (EnumConstant :* enumConstants) , ',' ','? (';' ClassBodyDeclaration*)?
+        / ClassBodyDeclaration*)
+       '}'
+    ;
 
 ClassDeclaration
     = NormalClassDeclaration
@@ -688,7 +726,7 @@ InterfaceTypeList
     = (ClassType ,+ ',') :# superInterfaces ;
 
 ClassBody
-    = '{' ClassBodyDeclaration* '}' ;
+    = '{' ClassBodyDeclaration :# declarations * '}' ;
 
 // NOTE: interface have severe restrictions on these!
 //       methods (ofc), visibility, everything implicitly static, sometimes final, etc
@@ -729,10 +767,7 @@ enumDeclaration
         <annotations>
         id
         <arguments>
-    body (#)
-        TODO
-
-TODO arguments
+    <declarations>
 
 */
 
@@ -782,6 +817,11 @@ declaratorId
     id
     <dims>
 
+variableInitializer
+    OR
+        <expression>
+        elementInitializers
+
 */
 
 FieldDeclaration
@@ -796,12 +836,8 @@ VariableDeclarator
 VariableDeclaratorId
     = (Identifier:+id Dims):declaratorId ;
 
-// TODO
-
 VariableInitializer
-    = Expression
-    / ArrayInitializer
-    ;
+    = (Expression / ArrayInitializer):variableInitializer ;
 
 FieldModifiers
     = (
@@ -974,8 +1010,7 @@ interfaceDeclaration
     <typeParameters>
     superInterfaces (#)
         <classType>
-    body (#)
-        TODO
+    <declarations>
 
 */
 
@@ -996,8 +1031,18 @@ NormalInterfaceDeclaration
 //  JLS 9.6  Annotation types
 //-------------------------------------------------------------------------
 
+/*
+
+annotationTypeDeclaration
+    <typeModifiers>
+    annotationDeclaration
+    interface
+    <declarations>
+
+*/
+
 AnnotationTypeDeclaration
-    = TypeModifiers '@' INTERFACE Identifier:+id ClassBody ;
+    = TypeModifiers '@':annotationDeclaration INTERFACE Identifier:+id ClassBody ;
 
 AnnotationTypeElementDeclaration
     = AnnotationTypeElementModifiers Type Identifier '(' ')' Dims
@@ -1025,11 +1070,9 @@ annotation
     ?OR
         pairs (*)
             id (+)
-            <value>
-        value
-            <value>
+            <annotationValue>
 
-<value>
+<annotationValue>
     OR
         annotation
         expression
@@ -1052,8 +1095,6 @@ NormalAnnotation
 
 ElementValuePairList
     = ElementValuePair :* pairs (',' ElementValuePair :* pairs)* ;
-
-// TODO do we capture expression as expression always?
 
 ElementValuePair
     = Identifier:+id EQU ElementValue ;
@@ -1087,7 +1128,7 @@ SingleElementAnnotation
 /*
 
 elementInitializers (#)
-    TODO
+    <variableInitalizer>
 
 */
 
@@ -1101,14 +1142,21 @@ ArrayInitializer
 //  JLS 14.2 Blocks
 //-------------------------------------------------------------------------
 
+/*
+
+statements (#)
+    <statement>
+
+*/
+
 Block
-    = '{' BlockStatements? '}' ;
+    = '{' BlockStatement :# statements * '}' ;
 
 BlockStatements
     = BlockStatement BlockStatement* ;
 
 BlockStatement
-    = LocalVariableDeclarationStatement
+    = LocalVariableDeclaration ';'
     / ClassDeclaration
     / Statement
     ;
@@ -1117,34 +1165,105 @@ BlockStatement
 //  JLS 14.4  Local Variable Declaration Statements
 //-------------------------------------------------------------------------
 
-LocalVariableDeclarationStatement
-    = LocalVariableDeclaration ';' ;
+/*
+
+localVarDecl
+    <variableModifiers>
+    <type>
+    <declarators>
+
+*/
 
 LocalVariableDeclaration
-    = VariableModifiers UnannType VariableDeclaratorList ;
+    = (VariableModifiers Type VariableDeclaratorList):localVarDecl ;
 
 //-------------------------------------------------------------------------
 //  JLS 14.5  Statements
 //-------------------------------------------------------------------------
 
+/*
+
+<statement>
+    OR
+        <statements>
+
+        ifElse
+            <expression> [condition]
+            <statement>  [if]
+            <statement>  [else]
+
+        <basicFor>
+
+        <enhancedFor>
+
+        while
+            <expression> [condition]
+            <statement>  [body]
+
+        doWhile
+            <expression> [condition]
+            <statement>  [body]
+
+        <try>
+
+        switch
+            <expression>
+            switchBlocks (*)
+                labels (#)
+                    label (+)
+                    default
+                <statements>
+
+        synchronized
+            <expression>
+            <statements>
+
+        return
+            <expression> (?)
+
+        throw
+            <expression>
+
+        break
+            id (+) (?)
+
+        continue
+            id (+) (?)
+
+        assert
+            <expression>
+            message (?)
+                <expression>
+
+        semi
+
+        stmtExpr
+            <expression>
+
+        labelled
+            label (+)
+            <statement>
+
+*/
+
 Statement
     = Block
-    / IF ParExpression Statement (ELSE Statement)?
+    / (IF ParExpression Statement (ELSE Statement)?):ifElse
     / BasicForStatement
     / EnhancedForStatement
-    / WHILE ParExpression Statement
-    / DO Statement WHILE ParExpression ';'
+    / (WHILE ParExpression Statement):while
+    / (DO Statement WHILE ParExpression ';'):doWhile
     / TryStatement
-    / SWITCH ParExpression SwitchBlock
-    / SYNCHRONIZED ParExpression Block
-    / RETURN Expression? ';'
-    / THROW Expression ';'
-    / BREAK Identifier? ';'
-    / CONTINUE Identifier? ';'
-    / ASSERT Expression (COLON Expression)? ';'
-    / ';'
-    / StatementExpression ';'
-    / Identifier COLON Statement
+    / (SWITCH ParExpression SwitchBlock):switch
+    / (SYNCHRONIZED ParExpression Block):synchronized
+    / (RETURN Expression?):return ';'
+    / (THROW Expression):throw ';'
+    / (BREAK Identifier:+id?):break ';'
+    / (CONTINUE Identifier:+id?):continue ';'
+    / (ASSERT Expression (COLON Expression:message)?):assert ';'
+    / ';':semi
+    / StatementExpression:stmtExpr ';'
+    / (Identifier:+label COLON Statement):labelled
     ;
 
 ParExpression
@@ -1155,75 +1274,102 @@ ParExpression
 //-------------------------------------------------------------------------
 
 SwitchBlock
-    = '{' SwitchBlockStatementGroup* SwitchLabel* '}' ;
-
-SwitchBlockStatementGroup
-    = SwitchLabels BlockStatements ;
-
-SwitchLabels
-    = SwitchLabel SwitchLabel* ;
+    = '{' (SwitchLabel :# labels + BlockStatements?) :* switchBlocks * '}' ;
 
 SwitchLabel
-    = CASE (Expression / EnumConstantName) COLON
-    / DEFAULT COLON
-    ;
-
-EnumConstantName
-    = Identifier ;
+    = CASE Expression:+label COLON / DEFAULT:default COLON ;
 
 //-------------------------------------------------------------------------
 //  JLS 14.14  The FOR Statement
 //-------------------------------------------------------------------------
 
+/*
+
+basicFor
+    init (?)
+        OR
+            <localVarDecl>
+            <stmtExprs>
+    cond (?)
+        <expression>
+
+    iter (?)
+        <stmtExprs>
+    body
+        <statement>
+
+stmtExprs (#)
+    <expression>
+
+enhancedFor
+    <variableModifiers>
+    <type>
+    <declaratorId>
+    iterable
+        <expression>
+    body
+        <statement>
+
+*/
+
 BasicForStatement
-    = FOR '(' ForInit? ';' Expression? ';' ForUpdate? ')' Statement ;
+    = (FOR '(' ForInit:init? ';' Expression:cond? ';' StatementExpressionList:iter? ')'
+            Statement:body):basicFor ;
 
 ForInit
     = LocalVariableDeclaration
     / StatementExpressionList
     ;
 
-ForUpdate
-    = StatementExpressionList ;
-
 StatementExpressionList
-    = StatementExpression (','  StatementExpression)* ;
+    = StatementExpression :# stmtExprs ,+ ',' ;
 
 EnhancedForStatement
-    = FOR '(' VariableModifiers UnannType VariableDeclaratorId COLON
-          Expression ')' Statement ;
+    = (FOR '(' VariableModifiers Type VariableDeclaratorId COLON
+          Expression:iterable ')' Statement:body):enhancedFor ;
 
 //-------------------------------------------------------------------------
 //  JLS 14.20  The TRY Statement
 //-------------------------------------------------------------------------
 
+/*
+
+try
+    resources (*)
+        <variableModifiers>
+        <type>
+        <declaratorId>
+        value
+            <expression>
+    <statements>
+    catchClauses (*)
+        <variableModifiers>
+        types (#)
+            <classType>
+        <declaratorId>
+        <statements>
+    finally
+        <statements>
+*/
+
 TryStatement
-    = TRY
+    = (TRY
       ( Block (CatchClause* Finally / CatchClause+)
-      / ResourceSpecification Block CatchClause* Finally?
-      )
+      / '(' (Resource :* resources) ,+ ';' ';'? ')' Block CatchClause* Finally?
+      )):try
     ;
 
 CatchClause
-    = CATCH '(' CatchFormalParameter ')' Block ;
+    = (CATCH '(' CatchFormalParameter ')' Block) :* catchClauses ;
 
 CatchFormalParameter
-    = VariableModifiers CatchType VariableDeclaratorId ;
-
-CatchType
-    = UnannClassType (OR ClassType)* ;
+    = VariableModifiers (ClassType :# types) ,+ OR VariableDeclaratorId ;
 
 Finally
-    = FINALLY Block ;
-
-ResourceSpecification
-    = '(' ResourceList ';'? ')' ;
-
-ResourceList
-    = Resource (';' Resource)* ;
+    = FINALLY Block:finally ;
 
 Resource
-    = VariableModifiers UnannType VariableDeclaratorId EQU Expression ;
+    = VariableModifiers Type VariableDeclaratorId EQU Expression:value ;
 
 
 //=========================================================================
@@ -1246,9 +1392,7 @@ Resource
         OR ?
             <typeArgs>
             diamond
-    <classBody>
-
-TODO (classBody)
+    <declarations>
 
 */
 
@@ -1275,9 +1419,7 @@ TypeArgumentsOrDiamond
         <annotations>
         1 [dimExpr]
     <dims>
-    <arrayInitializer>
-
-TODO (arrayInitializer)
+    <arrayInitializer> (?)
 
 */
 
@@ -1319,9 +1461,7 @@ lambda
     lambdaBody
         OR
             <expression>
-            <block>
-
-TODO (expression block) (parameters)
+            <statements>
 
 */
 
