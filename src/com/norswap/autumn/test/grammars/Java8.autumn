@@ -590,43 +590,16 @@ ImportDeclaration
     / ';'
     ;
 
-//-------------------------------------------------------------------------
-//  JLS 7.6  Top Level Type Declarations
-//-------------------------------------------------------------------------
-
-/*
-
-TODO
-
-classDeclaration
-    <typeModifiers>
-    class
-    id
-    <typeParameters>
-    superclass (?)
-        <classType>
-    superInterfaces (#)
-        <classType>
-    <declarations>
-
-*/
-
-TypeDeclaration
-    = ClassDeclaration
-    / InterfaceDeclaration
-    / ';'
-    ;
-
 //=========================================================================
 //  JLS 8  Classes
 //=========================================================================
 //-------------------------------------------------------------------------
-//  JLS 8.1  Class Declarations
+//  JLS 8.1  Class Declarations & 8.9 Enum Declaration & 9.6 Annotation Type
 //-------------------------------------------------------------------------
 
 /*
 
-note: interfaces can't be final
+NOTE: interfaces can't be final (& more constraints)
 
 <typeModifiers>
     modifiers (#)
@@ -642,21 +615,18 @@ note: interfaces can't be final
 typeParameters (#)
     <typeParameter>
 
-classDeclaration
+typeDeclaration
     <typeModifiers>
-    annotationDeclaration
+    annotationDeclaration (?)
     OR
         class
         enum
         interface
     id
     <typeParameters> (?)
-    superclass (?)
+    extends (#) (?)
         <classType>
-    OR (?)
-        implements
-        extends
-    superInterfaces (#)
+    implements (#) (?)
         <classType>
     enumConstants (*) (?)
         <annotations>
@@ -664,7 +634,26 @@ classDeclaration
         <arguments>
     <declarations>
 
-----
+declarations (#)
+    <fieldDeclaration>
+    <methodDeclaration>
+    <typeDeclaration>
+    <annotationElemDecl>
+    <statements>
+    static
+        <statements>
+    <constructorDeclaration>
+    semi
+
+annotationElemDecl
+    modifiers (#)
+        <annotation>
+        public
+        abstract
+    <type>
+    id (+)
+    <dims>
+    <annotationValue> (?)
 
 */
 
@@ -672,33 +661,29 @@ classDeclaration
 // NOTE: annotation types can't have supertypes or type parameters
 // NOTE: interfaces must "extends" other interfaces
 
-ClassDeclaration
-    = TypeModifiers
-      (CLASS:class \ ENUM:enum \ '@':annotationDeclaration? INTERFACE:interface)
+TypeDeclaration
+    = TypeModifiers (EnumDeclaration / OtherTypeDeclaration) ;
+
+EnumDeclaration
+    = ENUM:enum
+      Identifier:+id
+      Extends?
+      Implements?
+      '{' (EnumConstant :* enumConstants) , ',' ','? (';' ClassBodyDeclarations)? '}' ;
+
+OtherTypeDeclaration
+    = (CLASS:class / ENUM:enum / '@':annotationDeclaration? INTERFACE:interface)
       Identifier:+id
       TypeParameters?
-      Superclass?
-      ((IMPLEMENTS:implements / EXTENDS:extends) InterfaceTypeList)?
-      '{'
-        ( (EnumConstant :* enumConstants) , ',' ','? (';' ClassBodyDeclaration*)?
-        / ClassBodyDeclaration*)
-       '}'
-    ;
+      Extends?
+      Implements?
+      ClassBody ;
 
-ClassDeclaration
-    = NormalClassDeclaration
-    / EnumDeclaration
-    ;
+Extends
+    = EXTENDS (ClassType ,+ ',') :# extended ;
 
-NormalClassDeclaration
-    = TypeModifiers
-      CLASS:class
-      Identifier:+id
-      TypeParameters?
-      Superclass?
-      (IMPLEMENTS InterfaceTypeList)?
-      ClassBody
-    ;
+Implements
+    = IMPLEMENTS (ClassType ,+ ',') :# implemented ;
 
 TypeModifiers
     = (
@@ -714,75 +699,48 @@ TypeModifiers
     ;
 
 TypeParameters
-    = LPOINT TypeParameterList RPOINT ;
-
-TypeParameterList
-    = TypeParameter :# typeParameters ,+ ',' ;
-
-Superclass
-    = EXTENDS ClassType:superclass ;
-
-InterfaceTypeList
-    = (ClassType ,+ ',') :# superInterfaces ;
+    = LPOINT TypeParameter :# typeParameters ,+ ',' RPOINT ;
 
 ClassBody
-    = '{' ClassBodyDeclaration :# declarations * '}' ;
+    = '{' ClassBodyDeclarations '}' ;
+
+ClassBodyDeclarations
+    = ClassBodyDeclaration :# declarations * ;
 
 // NOTE: interface have severe restrictions on these!
 //       methods (ofc), visibility, everything implicitly static, sometimes final, etc
 
 // NOTE: idem for annotation types (only constant fields + element)
-//       of course elements are only valid for
+//       of course elements are only valid for annotations types
 
 ClassBodyDeclaration
     = FieldDeclaration
     / MethodDeclaration
-    / ClassDeclaration
-    / InterfaceDeclaration
+    / TypeDeclaration
     / AnnotationTypeElementDeclaration
 
     /** end members, start other declarations **/
 
     / Block
-    / STATIC Block
+    / (STATIC Block):static
     / ConstructorDeclaration
-    / ';'
+    / ';':semi
     ;
-
-//-------------------------------------------------------------------------
-//  JLS 8.9  Enum Types
-//-------------------------------------------------------------------------
-
-/*
-
-TODO
-
-enumDeclaration
-    <typeModifiers>
-    enum
-    id
-    superInterfaces (#)
-        <classType>
-    enumConstants (*)
-        <annotations>
-        id
-        <arguments>
-    <declarations>
-
-*/
-
-EnumDeclaration
-    = TypeModifiers
-      ENUM:enum
-      Identifier:+id
-      (IMPLEMENTS InterfaceTypeList)?
-      '{'
-      (EnumConstant :* enumConstants) , ',' ','?
-      (';' ClassBodyDeclaration*)?
-      '}' ;
 
 EnumConstant
     = Annotations Identifier:+id Arguments? ClassBody? ;
+
+AnnotationTypeElementDeclaration
+    = AnnotationTypeElementModifiers Type Identifier:+id '(' ')' Dims
+         (DEFAULT ElementValue)? ';' ;
+
+ AnnotationTypeElementModifiers
+     = (
+       Annotation
+     / PUBLIC:public
+     / ABSTRACT:abstract
+     ) :# modifiers *
+     ;
 
 //-------------------------------------------------------------------------
 //  JLS 8.3  Field Declarations
@@ -811,7 +769,7 @@ declarators (#)
 
 declarator
     <declaratorId>
-    TODO
+    <variableInitializer> (?)
 
 declaratorId
     id
@@ -825,7 +783,7 @@ variableInitializer
 */
 
 FieldDeclaration
-    = FieldModifiers Type VariableDeclaratorList ';' ;
+    = (FieldModifiers Type VariableDeclaratorList ';'):fieldDeclaration ;
 
 VariableDeclaratorList
     = (VariableDeclarator :# declarators) ,+ ',' ;
@@ -904,24 +862,23 @@ parameters (*)
     ellipsis (?)
     <declaratorId>
     <exceptions> (?)
-    <methodBody>
+    <statements>
 
 exceptions (#)
     <exceptionType>
 
-// TODO methodBody
-
 */
 
 MethodDeclaration
-    = MethodModifiers
-      TypeParameters?
-      (Type / VOID:void)
-      Identifier:+id
-      FormalParameters
-      Dims
-      Throws?
-      MethodBody ;
+    = ( MethodModifiers
+        TypeParameters?
+        (Type / VOID:void)
+        Identifier:+id
+        FormalParameters
+        Dims
+        Throws?
+        (Block / ';')
+      ) : methodDeclaration ;
 
 // NOTE this does not separate the receiver parameter (where the first param is this; or Type.this
 //      where Type is the type of this class / nested class (e.g. pkg.Outer.Inner.this)
@@ -960,101 +917,66 @@ MethodModifiers
 Throws
     = THROWS ExceptionType :# exceptions ,+ ',' ;
 
-MethodBody
-    = Block / ';' ;
-
 //-------------------------------------------------------------------------
 //  JLS 8.8  Constructor Declarations
 //-------------------------------------------------------------------------
 
-ConstructorDeclaration
-    = ConstructorModifier* ConstructorDeclarator Throws? ConstructorBody ;
+/*
 
-ConstructorDeclarator
-    = TypeParameters? Identifier FormalParameters ;
+constructorModifiers (#)
+    <annotation>
+    public
+    protected
+    private
+
+constructorDeclaration
+    <constructorModifiers>
+    <typeParameters> (?)
+    id (+)
+    <parameters>
+    <exceptions> (?)
+    <constructorInvocation>
+    <statements>
+
+constructorInvocation
+    <typeArguments> (?)
+    enclosingInstance (?)
+        <expression>
+    OR
+        this
+        super
+    <arguments>
+
+*/
+
+ConstructorDeclaration
+    = ConstructorModifier :# constructorModifiers *
+      TypeParameters?
+      Identifier:+id
+      FormalParameters
+      Throws?
+      '{' ExplicitConstructorInvocation? BlockStatements '}' ;
 
 ConstructorModifier
     = Annotation
-    / PUBLIC
-    / PROTECTED
-    / PRIVATE
+    / PUBLIC:public
+    / PROTECTED:protected
+    / PRIVATE:private
     ;
 
-ConstructorBody
-    = '{' ExplicitConstructorInvocation? BlockStatements? '}' ;
-
 ExplicitConstructorInvocation
-    = TypeArguments? THIS Arguments ';'
-    / TypeArguments? SUPER Arguments ';'
+    = TypeArguments? THIS:this Arguments ';'
+    / TypeArguments? SUPER:super Arguments ';'
 
     // http://stackoverflow.com/questions/2831484
+    // NOTE: only primary expression allowed here?
 
-    / Expression '.' TypeArguments? SUPER Arguments ';'
+    / Expression:enclosingInstance '.' TypeArguments? SUPER:super Arguments ';'
     ;
 
 //=========================================================================
 //  JLS 9  Interfaces
 //=========================================================================
-//-------------------------------------------------------------------------
-//  JLS 9.1  Interface Declarations
-//-------------------------------------------------------------------------
-
-/*
-
-TODO
-
-interfaceDeclaration
-    <typeModifiers>
-    interface
-    id
-    <typeParameters>
-    superInterfaces (#)
-        <classType>
-    <declarations>
-
-*/
-
-InterfaceDeclaration
-    = NormalInterfaceDeclaration
-    / AnnotationTypeDeclaration
-    ;
-
-NormalInterfaceDeclaration
-    = TypeModifiers
-      INTERFACE:interface
-      Identifier:+id
-      TypeParameters?
-      (EXTENDS InterfaceTypeList)?
-      ClassBody ;
-
-//-------------------------------------------------------------------------
-//  JLS 9.6  Annotation types
-//-------------------------------------------------------------------------
-
-/*
-
-annotationTypeDeclaration
-    <typeModifiers>
-    annotationDeclaration
-    interface
-    <declarations>
-
-*/
-
-AnnotationTypeDeclaration
-    = TypeModifiers '@':annotationDeclaration INTERFACE Identifier:+id ClassBody ;
-
-AnnotationTypeElementDeclaration
-    = AnnotationTypeElementModifiers Type Identifier '(' ')' Dims
-         (DEFAULT ElementValue)? ';' ;
-
- AnnotationTypeElementModifiers
-     = (
-       Annotation
-     / PUBLIC:public
-     / ABSTRACT:abstract
-     ) :# modifiers *
-     ;
 
 //-------------------------------------------------------------------------
 //  JLS 9.7  Annotations
@@ -1067,56 +989,41 @@ annotations (#)
 
 annotation
     id (+)
-    ?OR
+    OR (?)
+        <annotationValue>
         pairs (*)
             id (+)
             <annotationValue>
 
 <annotationValue>
-    OR
-        annotation
-        expression
-        values (*)
+    value
+        OR
+            annotation
+            expression
+            values (#)
+                <annotationValue>
 */
 
 Annotations
     = Annotation :# annotations * ;
 
 Annotation
-    = '@'
-      ( NormalAnnotation
-      / SingleElementAnnotation
-      / MarkerAnnotation
-      ):annotation
-    ;
-
-NormalAnnotation
-    = QualIdent:+id '(' ElementValuePairList ')' ;
-
-ElementValuePairList
-    = ElementValuePair :* pairs (',' ElementValuePair :* pairs)* ;
+    = ('@' QualIdent:+id ('('( (ElementValuePair :* pairs) ,+ ',' / ElementValue )? ')')?)
+      : annotation ;
 
 ElementValuePair
     = Identifier:+id EQU ElementValue ;
 
 ElementValue
-    = (Expression forbid { assign }):expression
+    = (
+      (Expression forbid { assign }):expression
     / ElementValueArrayInitializer
     / Annotation
+    ) : value
     ;
 
 ElementValueArrayInitializer
-    = '{' ElementValueList? ','? '}' ;
-
-ElementValueList
-    = ElementValue :* values  (',' ElementValue :* values)* ;
-
-MarkerAnnotation
-    = QualIdent:+id ;
-
-SingleElementAnnotation
-    = QualIdent:+id '(' ElementValue:value ')' ;
-
+    = '{' (ElementValue :# values) , ',' ','? '}' ;
 
 //=========================================================================
 //  JLS 10  Arrays
@@ -1150,14 +1057,16 @@ statements (#)
 */
 
 Block
-    = '{' BlockStatement :# statements * '}' ;
+    = '{' BlockStatements '}' ;
 
 BlockStatements
-    = BlockStatement BlockStatement* ;
+    = BlockStatement :# statements * ;
+
+// NOTE: interface / type annotation & enums can't be local
 
 BlockStatement
     = LocalVariableDeclaration ';'
-    / ClassDeclaration
+    / TypeDeclaration
     / Statement
     ;
 
@@ -1274,7 +1183,7 @@ ParExpression
 //-------------------------------------------------------------------------
 
 SwitchBlock
-    = '{' (SwitchLabel :# labels + BlockStatements?) :* switchBlocks * '}' ;
+    = '{' (SwitchLabel :# labels + BlockStatements) :* switchBlocks * '}' ;
 
 SwitchLabel
     = CASE Expression:+label COLON / DEFAULT:default COLON ;
@@ -1549,7 +1458,7 @@ Expression = expr
     -> SUPER:super              @=
     -> CtorCall                 @= @ccall
     -> ArrayCtorCall            @=
-    -> Identifier : identifier  @= @iden
+    -> Identifier:+identifier   @= @iden
     -> Literal                  @=
 
     // PRIMARY TYPES
@@ -1563,14 +1472,24 @@ Expression = expr
 /*
 
 assignment
-    <expression>
+    l <expression>
     op (+)
-    <expression>
+    r <expression>
+
+conditionalExpr
+    cond <expression>
+    if   <expression>
+    else <expression>
+
+cast
+    types (#)
+        <type>
+    op <expression>
 
 */
 
 Assignment
-    = (LValue AssignmentOperator:+op Expression):assignment ;
+    = (LValue:l AssignmentOperator:+op Expression:r):assignment ;
 
 LValue
     = Expression allow { iden, dot_iden, array_access } ;
@@ -1590,74 +1509,121 @@ AssignmentOperator
     / OREQU
     ;
 
-
-/*
-
-conditionalExpr
-    <expression>
-    <expression>
-    <expression>
-
-*/
-
 ConditionalExpression
-    = (Expression QUERY drop Expression COLON Expression):conditionalExpr ;
+    = (Expression:cond QUERY drop Expression:if COLON Expression:else):conditionalExpr ;
+
+// NOTE: first must be reference type or primitive type
+//       further allowed only w/ reference type and must be class types
+
+CastExpression
+    = ( '(' (Type :# types) ,+ AND ')' Expression:op ) : cast ;
 
 
 /*
 
-TODO
+INFIX:
+    l <expression>
+    r <expression>
+
+PREFIX
+    op <expression>
+
+dotTypeArgs
+    op <expression>
+    <typeArgs>
+    id (+)
+    <arguments>
+
+call
+    op <expression>
+    <arguments>
+
+dotIden
+    op <expression>
+    id (+)
+
+arrayAccess
+    op <expression>
+    subscript <expression>
+
+methodRef
+    op <expression>
+    <typeArguments>
+    id (+)
+
+newRef
+    op <expression>
+    <typeArguments>
+
+typeWithArgs
+    op <expression>
+    <typeArguments>
+
+OTHER SUFFIX
+    op <expression>
+
+thisCall
+    <arguments>
+
+superCall
+    <arguments>
+
+ctorCall
+    <classCreator>
+
+arrayCtorCall
+    <arrayCreator>
 
 */
 
-OrOr        = (Expression OROR          Expression) : oror          ;
-AndAnd      = (Expression ANDAND        Expression) : andand        ;
-Or          = (Expression OR            Expression) : or            ;
-Hat         = (Expression HAT           Expression) : hat           ;
-And         = (Expression AND           Expression) : and           ;
+OrOr        = (Expression:l OROR          Expression:r) : oror          ;
+AndAnd      = (Expression:l ANDAND        Expression:r) : andand        ;
+Or          = (Expression:l OR            Expression:r) : or            ;
+Hat         = (Expression:l HAT           Expression:r) : hat           ;
+And         = (Expression:l AND           Expression:r) : and           ;
 
-Equal       = (Expression EQUAL         Expression) : equal         ;
-NotEqual    = (Expression NOTEQUAL      Expression) : notEqual      ;
+Equal       = (Expression:l EQUAL         Expression:r) : equal         ;
+NotEqual    = (Expression:l NOTEQUAL      Expression:r) : notEqual      ;
 
-Le          = (Expression LE            Expression) : le            ;
-Ge          = (Expression GE            Expression) : ge            ;
-Lt          = (Expression LT            Expression) : lt            ;
-Gt          = (Expression GT            Expression) : gt            ;
-InstanceOf  = (Expression INSTANCEOF    Expression) : instanceof    ;
+Le          = (Expression:l LE            Expression:r) : le            ;
+Ge          = (Expression:l GE            Expression:r) : ge            ;
+Lt          = (Expression:l LT            Expression:r) : lt            ;
+Gt          = (Expression:l GT            Expression:r) : gt            ;
+InstanceOf  = (Expression:l INSTANCEOF    Expression:r) : instanceof    ;
 
-Sl          = (Expression SL            Expression) : sl            ;
-Sr          = (Expression SR            Expression) : sr            ;
-Bsr         = (Expression BSR           Expression) : bsr           ;
+Sl          = (Expression:l SL            Expression:r) : sl            ;
+Sr          = (Expression:l SR            Expression:r) : sr            ;
+Bsr         = (Expression:l BSR           Expression:r) : bsr           ;
 
-Plus        = (Expression PLUS          Expression) : plus          ;
-Minus       = (Expression MINUS         Expression) : minus         ;
+Plus        = (Expression:l PLUS          Expression:r) : plus          ;
+Minus       = (Expression:l MINUS         Expression:r) : minus         ;
 
-Star        = (Expression STAR          Expression) : star          ;
-Div         = (Expression DIV           Expression) : div           ;
-Mod         = (Expression MOD           Expression) : mod           ;
+Star        = (Expression:l STAR          Expression:r) : star          ;
+Div         = (Expression:l DIV           Expression:r) : div           ;
+Mod         = (Expression:l MOD           Expression:r) : mod           ;
 
-BInc        = (INC      Expression) : bInc      ;
-BDec        = (DEC      Expression) : bDec      ;
-UPlus       = (PLUS     Expression) : uPlus     ;
-UMinus      = (MINUS    Expression) : uMinus    ;
-Tilde       = (TILDE    Expression) : tilde     ;
-Bang        = (BANG     Expression) : bang      ;
+BInc        = (INC      Expression:op) : bInc      ;
+BDec        = (DEC      Expression:op) : bDec      ;
+UPlus       = (PLUS     Expression:op) : uPlus     ;
+UMinus      = (MINUS    Expression:op) : uMinus    ;
+Tilde       = (TILDE    Expression:op) : tilde     ;
+Bang        = (BANG     Expression:op) : bang      ;
 
-AInc        = (Expression INC                                           ) : aInc        ;
-ADec        = (Expression DEC                                           ) : aDec        ;
-DotTypeArgs = (Expression '.' TypeArguments Identifier drop Arguments   ) : dotTypeArgs ;
-Call        = (Expression drop Arguments                                ) : call        ;
-DotIden     = (Expression '.' Identifier                                ) : dotIden     ;
-DotNew      = (Expression '.' NEW drop ClassCreator                     ) : dotNew      ;
-DotThis     = (Expression '.' THIS                                      ) : dotThis     ;
-DotSuper    = (Expression '.' SUPER                                     ) : dotSuper    ;
-DotClass    = (Expression '.' CLASS                                     ) : dotClass    ;
-ArrayAccess = (Expression '[' drop Expression ']'                       ) : arrayAccess ;
-MethodRef   = (Expression '::' TypeArguments? Identifier                ) : methodRef   ;
-NewRef      = (Expression '::' TypeArguments? NEW                       ) : newRef      ;
+AInc        = (Expression:op INC                                                ) : aInc        ;
+ADec        = (Expression:op DEC                                                ) : aDec        ;
+DotTypeArgs = (Expression:op '.' TypeArguments Identifier:+id drop Arguments    ) : dotTypeArgs ;
+Call        = (Expression:op drop Arguments                                     ) : call        ;
+DotIden     = (Expression:op '.' Identifier:+id                                 ) : dotIden     ;
+DotNew      = (Expression:op '.' NEW drop ClassCreator                          ) : dotNew      ;
+DotThis     = (Expression:op '.' THIS                                           ) : dotThis     ;
+DotSuper    = (Expression:op '.' SUPER                                          ) : dotSuper    ;
+DotClass    = (Expression:op '.' CLASS                                          ) : dotClass    ;
+ArrayAccess = (Expression:op '[' drop Expression:subscript ']'                  ) : arrayAccess ;
+MethodRef   = (Expression:op '::' TypeArguments? Identifier:+id                 ) : methodRef   ;
+NewRef      = (Expression:op '::' TypeArguments? NEW                            ) : newRef      ;
 
-TypeWithArgs = (Expression TypeArguments    ) : typeWithArgs    ;
-ArrayType    = (Expression '[' ']'          ) : arrayTYpe       ;
+TypeWithArgs = (Expression:op TypeArguments    ) : typeWithArgs    ;
+ArrayType    = (Expression:op '[' ']'          ) : arrayTYpe       ;
 
 ThisCall        = (THIS  Arguments          ) : thisCall        ;
 SuperCall       = (SUPER Arguments          ) : superCall       ;
@@ -1665,47 +1631,6 @@ CtorCall        = (NEW drop ClassCreator    ) : ctorCall        ;
 ArrayCtorCall   = (NEW drop ArrayCreator    ) : arrayCtorCall   ;
 
 // ===============================================================================
-
-/*
-
-assignment
-    0 [lvalue]
-    op (+)
-    2 [right-hand side]
-
-cast
-    types (#)
-        <type>
-    1 [op]
-
-*/
-
-Assignment
-    = (LValue AssignmentOperator:+op Expression) : assignment ;
-
-LValue
-    = Expression allow { iden, dot_iden, array_access } ;
-
-AssignmentOperator
-    = EQU
-    / STAREQU
-    / DIVEQU
-    / MODEQU
-    / PLUSEQU
-    / MINUSEQU
-    / SLEQU
-    / SREQU
-    / BSREQU
-    / ANDEQU
-    / HATEQU
-    / OREQU
-    ;
-
-// NOTE: first must be reference type or primitive type
-//       further allowed only w/ reference type and must be class types
-
-CastExpression
-    = ( '(' (Type :# types) ,+ AND ')' Expression ) : cast ;
 
 StatementExpression
     = Expression allow { assign, binc, bdec, ainc, adec, mcall, tmcall, ccall } ;

@@ -54,6 +54,8 @@ TODO FURTHER SMALL
 
 - syntactic support for naming a capture after the name of identifier used
 
+- source: start from 0 or 1; tab as x chars
+
 TODO GUI
 
 - make it so that the cursor over scrollbars isn't a text cursor

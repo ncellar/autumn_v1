@@ -38,6 +38,8 @@ public final class ParseTree implements Iterable<ParseTree>
             : children.size();
     }
 
+    // ---------------------------------------------------------------------------------------------
+
     void truncateChildren(int childrenCount)
     {
         children.truncate(childrenCount);
