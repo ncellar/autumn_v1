@@ -1,12 +1,8 @@
 package com.norswap.util.lambda;
 
+import java.util.function.Supplier;
+
 @FunctionalInterface
-public interface F0<R>
+public interface F0<R> extends Supplier<R>
 {
-    R apply();
-
-    class CurryF0<R>
-    {
-
-    }
 }

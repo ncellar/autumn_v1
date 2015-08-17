@@ -22,6 +22,13 @@ public final class CaptureGroup extends UnaryParsingExpression
         {
             setState.set();
         }
+
+        // TODO
+
+        if (setState != null)
+        {
+            setState.unset();
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

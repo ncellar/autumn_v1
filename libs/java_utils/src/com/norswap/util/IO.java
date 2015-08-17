@@ -4,8 +4,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class IO
+public final class IO
 {
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Reads a complete file and returns its contents as a string.
+     */
     public static String readFile(String file)
     {
         try {
@@ -16,4 +21,6 @@ public class IO
             throw new RuntimeException(e);
         }
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 }

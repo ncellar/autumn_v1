@@ -5,7 +5,7 @@ package com.norswap.util;
  * <p>
  * e.g.:
  * <pre>
- *      i c = i.i();
+ *      Counter c = new Counter();
  *      Arrays.stream(array).forEach(x -> c.i++);
  * </pre>
  */
@@ -21,23 +21,9 @@ public class Counter
 
     // ---------------------------------------------------------------------------------------------
 
-    public Counter(int j)
+    public Counter(int i)
     {
-        i = j;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public static Counter counter()
-    {
-        return new Counter();
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public static Counter counter(int j)
-    {
-        return new Counter(j);
+        this.i = i;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

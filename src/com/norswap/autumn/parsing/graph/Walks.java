@@ -22,7 +22,7 @@ public class Walks
      */
     public static GraphWalker<ParsingExpression> inPlace = (pe, visitor) ->
     {
-        Counter c = Counter.counter();
+        Counter c = new Counter();
         Object[] slots = Arrays.stream(pe.children()).map(x -> new ChildSlot(pe, c.i++)).toArray();
 
         return Array.<Slot<ParsingExpression>>fromUnsafe(slots);
@@ -37,7 +37,7 @@ public class Walks
      */
     public static GraphWalker<ParsingExpression> copy = (pe, visitor) ->
     {
-        Counter c = Counter.counter();
+        Counter c = new Counter();
         ParsingExpression pec = pe.clone();
         Object[] slots = Arrays.stream(pe.children()).map(x -> new ChildSlot(pec, c.i++)).toArray();
 
@@ -51,7 +51,7 @@ public class Walks
      */
     public static GraphWalker<ParsingExpression> readOnly = (pe, visitor) ->
     {
-        Counter c = Counter.counter();
+        Counter c = new Counter();
         Object[] slots = Arrays.stream(pe.children()).map(x -> new ChildSlot.ReadOnly(pe, c.i++)).toArray();
 
         return Array.<Slot<ParsingExpression>>fromUnsafe(slots);
@@ -69,7 +69,7 @@ public class Walks
     {
         return (pe, visitor) ->
         {
-            Counter c = Counter.counter();
+            Counter c = new Counter();
             Object[] slots = Arrays.stream(pe.firsts(grammar)).map(x -> new ChildSlot(pe, c.i++)).toArray();
 
             return Array.<Slot<ParsingExpression>>fromUnsafe(slots);

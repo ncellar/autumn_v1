@@ -1,1 +1,1 @@
-include java_template/template.mk
+include library.mk

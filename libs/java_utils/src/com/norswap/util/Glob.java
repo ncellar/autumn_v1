@@ -12,12 +12,14 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Glob
+public final class Glob
 {
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     /**
-     * Returns a list of all the paths that match the given glob pattern within the given directory
-     * (see syntax here in the doc of {@link FileSystem#getPathMatcher} -- the "glob:" part
-     * should be omitted).
+     * Returns a list of all the paths that match the given glob pattern within the given directory.
+     * The patter syntax is described in the doc of {@link FileSystem#getPathMatcher} --
+     * the "glob:" part should be omitted.
      */
     public static List<Path> glob(String pattern, Path directory) throws IOException
     {
@@ -48,4 +50,6 @@ public class Glob
 
         return result;
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 }
