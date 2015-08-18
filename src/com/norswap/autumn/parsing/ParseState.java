@@ -17,6 +17,10 @@ public final class ParseState
     public int flags;
     public Array<Seed> seeds;
 
+    public String accessor;
+    public Array<String> tags;
+    public int tagsCount;
+
     // output
     public int end;
     public int blackEnd;
@@ -35,6 +39,7 @@ public final class ParseState
         ParseState root = new ParseState();
         root.end = 0;
         root.blackEnd = 0;
+        root.tags = new Array<>();
         root.cuts = new Array<>();
         root.ext = new HandleMap();
         return root;
@@ -55,6 +60,9 @@ public final class ParseState
         this.precedence = parent.precedence;
         this.seeds = parent.seeds;
         this.flags = parent.flags;
+        this.accessor = parent.accessor;
+        this.tagsCount = parent.tagsCount;
+        this.tags = parent.tags;
         this.end = parent.end;
         this.blackEnd = parent.blackEnd;
         this.tree = parent.tree;
@@ -230,6 +238,20 @@ public final class ParseState
     public boolean isErrorRecordingForbidden()
     {
         return hasFlagsSet(PSF_DONT_RECORD_ERRORS);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void setGroupingCapture()
+    {
+        setFlags(PSF_GROUPING_CAPTURE);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public boolean isCaptureGrouping()
+    {
+        return hasFlagsSet(PSF_GROUPING_CAPTURE);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

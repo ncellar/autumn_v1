@@ -16,19 +16,19 @@ public class ParseTreeBuilder
 
     // ---------------------------------------------------------------------------------------------
 
-    public static ParseTree $(String name, ParseTree... children)
+    public static ParseTree $(String accessor, ParseTree... children)
     {
         ParseTree tree = new ParseTree();
-        tree.name = name;
+        tree.accessor = accessor;
         tree.children = new Array<>(children);
         return tree;
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public static ParseTree $(String name, String value, ParseTree... children)
+    public static ParseTree $(String accessor, String value, ParseTree... children)
     {
-        ParseTree tree = $(name, children);
+        ParseTree tree = $(accessor, children);
         tree.value = value;
         return tree;
     }

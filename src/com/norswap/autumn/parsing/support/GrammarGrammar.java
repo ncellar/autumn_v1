@@ -84,6 +84,8 @@ public final class GrammarGrammar
         sequence(not(reserved), letter, zeroMore(nameChar)),
         sequence(literal("'"), aloUntil(any(), literal("'")))))),
 
+    nameOrDollar = choice(captureText("name", name), capture("dollar", literal("$"))),
+
     reference = sequence(
         captureText("name", name),
         optional(token(literal("allow")),
@@ -119,15 +121,10 @@ public final class GrammarGrammar
             capture("oneMore", sequence(expr, plus))),
 
         groupLeftRec(++i,
-            capture("capture", sequence(
-                expr,
-                token(
-                    literal(":"),
-                    optional(capture("captureText", literal("+"))),
-                    optional(choice(
-                        capture("captureGrouped", literal("*")),
-                        capture("captureJoin",    literal("#"))))),
-                captureText("name", name)))),
+            capture("capture", sequence(expr, literal(":"), optional(capture("captureText", literal("+"))))),
+            capture("accessor", sequence(expr, literal("-"), nameOrDollar)),
+            capture("group", sequence(expr, literal("#"), nameOrDollar)),
+            capture("tag", sequence(expr, literal("~"), nameOrDollar))),
 
         group(++i,
             sequence(lParen, exprDropPrecedence(expr), rParen),

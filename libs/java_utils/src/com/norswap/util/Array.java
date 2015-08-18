@@ -145,11 +145,19 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * If {@code collection} is null, it will be treated as empty.
+     */
     @Override
     public boolean addAll(Collection<? extends T> collection)
     {
         int size = next;
-        collection.forEach(this::add);
+        if (collection != null)
+        {
+            collection.forEach(this::add);
+        }
         return size != next;
     }
 

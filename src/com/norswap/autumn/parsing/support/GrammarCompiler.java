@@ -4,7 +4,6 @@ import com.norswap.autumn.Autumn;
 import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParseTree;
 import com.norswap.autumn.parsing.Whitespace;
-import com.norswap.autumn.parsing.expressions.ExpressionCluster;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster.Group;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.ParsingExpressionFactory;
@@ -14,7 +13,6 @@ import com.norswap.util.Counter;
 import com.norswap.util.Streams;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -63,10 +61,8 @@ public final class GrammarCompiler
      */
     public ParsingExpression[] run(ParseTree tree)
     {
-        ParseTree rules = tree.group("rules");
-
         return Stream.concat(
-                Streams.from(rules).map(this::compileRule),
+                Streams.from(tree.group("rules")).map(this::compileRule),
                 Streams.from(namedClusterAlternates))
             .toArray(ParsingExpression[]::new);
     }
@@ -79,7 +75,7 @@ public final class GrammarCompiler
 
         ParsingExpression topChoice = rule.has("cluster")
             ? compileExpression(rule.get("cluster"))
-            : compileParsingExpression(rule.get("expr").child());
+            : compilePE(rule.get("expr").child());
 
         if (rule.has("dumb"))
         {
@@ -124,7 +120,7 @@ public final class GrammarCompiler
 
         for (ParseTree alt: expression.group("alts"))
         {
-            ParsingExpression pe = compileParsingExpression(alt.get("expr").child());
+            ParsingExpression pe = compilePE(alt.get("expr").child());
 
             int precedence = UNSET;
             int psets = 0;
@@ -135,7 +131,7 @@ public final class GrammarCompiler
             {
                 annotation = annotation.child();
 
-                switch (annotation.name)
+                switch (annotation.accessor)
                 {
                     case "precedence":
                         precedence = Integer.parseInt(annotation.value);
@@ -268,15 +264,15 @@ public final class GrammarCompiler
     private ParsingExpression[] compileChildren(ParseTree tree)
     {
         return tree.children.stream()
-            .map(this::compileParsingExpression)
+            .map(this::compilePE)
             .toArray(ParsingExpression[]::new);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    private ParsingExpression compileParsingExpression(ParseTree tree)
+    private ParsingExpression compilePE(ParseTree tree)
     {
-        switch (tree.name)
+        switch (tree.accessor)
         {
             case "choice":
                 return choice(compileChildren(tree));
@@ -285,58 +281,54 @@ public final class GrammarCompiler
                 return sequence(compileChildren(tree));
 
             case "and":
-                return lookahead(compileParsingExpression(tree.child()));
+                return lookahead(compilePE(tree.child()));
 
             case "not":
-                return not(compileParsingExpression(tree.child()));
+                return not(compilePE(tree.child()));
 
             case "until":
                 return until(
-                    compileParsingExpression(tree.child(0)),
-                    compileParsingExpression(tree.child(1)));
+                    compilePE(tree.child(0)),
+                    compilePE(tree.child(1)));
 
             case "aloUntil":
                 return aloUntil(
-                    compileParsingExpression(tree.child(0)),
-                    compileParsingExpression(tree.child(1)));
+                    compilePE(tree.child(0)),
+                    compilePE(tree.child(1)));
 
             case "separated":
                 return separated(
-                    compileParsingExpression(tree.child(0)),
-                    compileParsingExpression(tree.child(1)));
+                    compilePE(tree.child(0)),
+                    compilePE(tree.child(1)));
 
             case "aloSeparated":
                 return aloSeparated(
-                    compileParsingExpression(tree.child(0)),
-                    compileParsingExpression(tree.child(1)));
+                    compilePE(tree.child(0)),
+                    compilePE(tree.child(1)));
 
             case "optional":
-                return optional(compileParsingExpression(tree.child()));
+                return optional(compilePE(tree.child()));
 
             case "zeroMore":
-                return zeroMore(compileParsingExpression(tree.child()));
+                return zeroMore(compilePE(tree.child()));
 
             case "oneMore":
-                return oneMore(compileParsingExpression(tree.child()));
+                return oneMore(compilePE(tree.child()));
 
             case "capture":
-                ParsingExpression expr = compileParsingExpression(tree.child(0));
-                String name = tree.value("name");
+                return capture(tree.has("captureText"), compilePE(tree.child(0)));
 
-                return tree.has("captureText")
-                    ? tree.has("captureGrouped")
-                    ? captureTextGrouped(name, expr)
-                        : tree.has("captureJoin")
-                            ? captureTextJoin(name, expr)
-                            : captureText(name, expr)
-                    : tree.has("captureGrouped")
-                        ? captureGrouped(name, expr)
-                        : tree.has("captureJoin")
-                            ? captureJoin(name, expr)
-                            : capture(name, expr);
+            case "accessor":
+                return accessor$(tree.value("name"), compilePE(tree.child(0)));
+
+            case "group":
+                return group$(tree.value("name"), compilePE(tree.child(0)));
+
+            case "tag":
+                return tag$(tree.value("name"), compilePE(tree.child(0)));
 
             case "drop":
-                return exprDropPrecedence(compileParsingExpression(tree.child()));
+                return exprDropPrecedence(compilePE(tree.child()));
 
             case "ref":
                 return compileRef(tree);
@@ -359,7 +351,7 @@ public final class GrammarCompiler
                 return literal(unescape(tree.value("literal")));
 
             default:
-                throw new RuntimeException("Parsing expression with unknown name: " + tree.name);
+                throw new RuntimeException("Parsing expression with unknown name: " + tree.accessor);
         }
     }
 
