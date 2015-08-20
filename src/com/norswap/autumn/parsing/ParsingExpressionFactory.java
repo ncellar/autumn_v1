@@ -118,6 +118,8 @@ public final class ParsingExpressionFactory
         {
             Capture c2 = (Capture) operand;
             c2.accessor = accessor;
+            // TODO what should be done in those cases?
+            //c2.clearFlags(PEF_CAPTURE_GROUPED);
             return c2;
         }
 
@@ -135,7 +137,6 @@ public final class ParsingExpressionFactory
         {
             Capture c2 = (Capture) operand;
             c2.addTag(tag);
-            c2.clearFlags(PEF_CAPTURE_GROUPED);
             return c2;
         }
 

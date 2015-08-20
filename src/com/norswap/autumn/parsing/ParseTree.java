@@ -296,6 +296,20 @@ public final class ParseTree implements Iterable<ParseTree>
         {
             builder.append(accessor);
 
+            if (tags == null && value != null)
+            {
+                builder.append(" - ");
+            }
+            else if (tags != null)
+            {
+                builder.append(" ");
+            }
+        }
+
+        if (tags != null)
+        {
+            builder.append(tags);
+
             if (value != null)
             {
                 builder.append(" - ");

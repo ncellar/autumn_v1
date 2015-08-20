@@ -3,6 +3,7 @@ package com.norswap.autumn.test.benchmark;
 import com.norswap.autumn.Autumn;
 import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParseResult;
+import com.norswap.util.Array;
 import com.norswap.util.Glob;
 
 import java.io.IOException;
@@ -11,7 +12,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 
-public class AutumnBench
+public final class AutumnBench
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -30,13 +31,16 @@ public class AutumnBench
         Instant endParse = Instant.now();
         System.out.println("Grammar compiled in: " + Duration.between(startParse, endParse));
 
+        Array<Duration> durations = new Array<>();
         Instant start = Instant.now();
+        Instant mid = start;
         int iters = 1;
+
         for (int i = 0; i < iters; ++i)
         {
             for (Path path: Glob.glob("**/*.java", Paths.get(
-                "/Users/nilaurent/Documents/spring-framework")))
-                //"../guava")))
+                //"/Users/nilaurent/Documents/spring-framework")))
+                "../guava")))
             {
                 ParseResult result = Autumn.parseFile(grammar, path.toString());
 
@@ -48,16 +52,15 @@ public class AutumnBench
                     return;
                 }
 
-                // TODO remove
-//                System.err.println("---");
-//                System.err.println(path);
-//                System.err.println(result.tree.toTreeString());
-//
-//                return;
             }
+
+            Instant tmp = Instant.now();
+            durations.add(Duration.between(mid, tmp));
+            mid = tmp;
         }
         Instant end = Instant.now();
-        System.out.println("Guava parsed in: " + Duration.between(start, end).dividedBy(iters));
+        System.out.println("Code parsed in: " + Duration.between(start, end).dividedBy(iters));
+        System.out.println(durations);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

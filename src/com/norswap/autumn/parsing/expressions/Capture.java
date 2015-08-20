@@ -14,8 +14,8 @@ import static com.norswap.autumn.parsing.Registry.*; // PEF_* PSF_*
  * This either specify the capture of its operand or alters the effect of captures occuring during
  * the invocation of its operand by modifying the parse state.
  * <p>
- * For these captures, the accessor will be {@link ParseState#accessor} or {@link #accessor} (which
- * overrides the former). The tags will be the union of {@link ParseState#tags} and {@link #tags}.
+ * For these captures, the accessor will be {@link #accessor} or {@link ParseState#accessor} (which
+ * overrides the former). The tags will be the union of {@link #tags} and {@link ParseState#tags}.
  * If {@link #shouldGroup}, the capture will belong to a group of captures with the same accessor.
  * <p>
  * Capture specifications do not accumulate: after a capture is performed, the {@link
@@ -46,12 +46,12 @@ public final class Capture extends UnaryParsingExpression
             state.setGroupingCapture();
         }
 
-        if (accessor != null)
+        if (state.accessor == null)
         {
             state.accessor = accessor;
         }
 
-        int oldTagsCount = state.tagsCount;
+        int oldTagsCount = state.tags.size();
         state.tags.addAll(tags);
 
         if (!shouldCapture())
@@ -61,7 +61,14 @@ public final class Capture extends UnaryParsingExpression
         else
         {
             ParseTree oldTree = state.tree;
-            ParseTree newTree = new ParseTree(state.accessor, tags, state.isCaptureGrouping());
+
+            ParseTree newTree = new ParseTree(
+                state.accessor,
+                state.tags != null && !state.tags.isEmpty()
+                    ? state.tags.clone()
+                    : null,
+                state.isCaptureGrouping());
+
             int oldCount = state.treeChildrenCount;
             Array<String> oldTags = state.tags;
 

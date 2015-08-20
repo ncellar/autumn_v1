@@ -4,6 +4,7 @@ import com.norswap.autumn.test.antlr.Java7Lexer;
 import com.norswap.autumn.test.antlr.Java7Parser;
 import com.norswap.autumn.test.antlr.Java8Lexer;
 import com.norswap.autumn.test.antlr.Java8Parser;
+import com.norswap.util.Array;
 import com.norswap.util.Glob;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -22,14 +23,24 @@ public final class AntlrBench
 
     public static void main(String[] args) throws IOException
     {
+        Array<Duration> durations = new Array<>();
         Instant start = Instant.now();
-        int iters = 1;
+        Instant mid = start;
+        int iters = 20;
+
         for (int i = 0; i < iters; ++i)
         {
-            parseDirectory("../guava");
+            parseDirectory(
+                //"../guava");
+                "/Users/nilaurent/Documents/spring-framework");
+
+            Instant tmp = Instant.now();
+            durations.add(Duration.between(mid, tmp));
+            mid = tmp;
         }
         Instant end = Instant.now();
-        System.out.println("Guava parsed in: " + Duration.between(start, end).dividedBy(iters));
+        System.out.println("Code parsed in: " + Duration.between(start, end).dividedBy(iters));
+        System.out.println(durations);
     }
 
     // ---------------------------------------------------------------------------------------------

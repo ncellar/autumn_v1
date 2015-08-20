@@ -3,6 +3,10 @@ TODO
 
 - tree building into the grammar!
 
+- fix accumulating tags in cluster bug
+
+- capture & ownPrintableData ?
+
 - why inPlace & readOnly give different results on printer (grammar or not)
 
 - make output changes hookable
@@ -33,8 +37,6 @@ TODO FURTHER SMALL
 
 - path-like getters for parsing expression graphs
 
-- automatically tokenize litterals
-
 - check that named alternates are only used on allow and forbid clauses
 
 - well formedness check (ford: WF -- can't loop without consuming)
@@ -44,6 +46,18 @@ TODO FURTHER SMALL
 - think about group conundrum (should it be a parsing expression?)
 
 - source: start from 0 or 1; tab as x chars
+
+- dumb (%) and token (symbol? ^?) operators
+
+- syntax for custom operators ($name?)
+
+- tags as key-value pairs
+    - rename value() to text()
+    - use value() to fetch the value of a tag
+
+- modify precedence of capture so that (X* # name) becomes valid
+
+- better way to exclude reserved identifiers or warn about them
 
 TODO FURTHER BIG
 

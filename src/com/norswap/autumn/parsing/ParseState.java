@@ -19,7 +19,6 @@ public final class ParseState
 
     public String accessor;
     public Array<String> tags;
-    public int tagsCount;
 
     // output
     public int end;
@@ -61,7 +60,6 @@ public final class ParseState
         this.seeds = parent.seeds;
         this.flags = parent.flags;
         this.accessor = parent.accessor;
-        this.tagsCount = parent.tagsCount;
         this.tags = parent.tags;
         this.end = parent.end;
         this.blackEnd = parent.blackEnd;

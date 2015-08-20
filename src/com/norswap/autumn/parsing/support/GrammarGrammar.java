@@ -23,7 +23,7 @@ public final class GrammarGrammar
     semi        = token(literal(";")),
     slash       = token(literal("/")),
     star        = token(literal("*")),
-    tilda       = token(literal("_")),
+    tilda       = token(literal("~")),
     lBrace      = token(literal("{")),
     rBrace      = token(literal("}")),
     lParen      = token(literal("(")),
@@ -36,6 +36,8 @@ public final class GrammarGrammar
     rAnBra      = token(literal(">")),
     comma       = token(literal(",")),
     commaPlus   = token(literal(",+")),
+    minus       = token(literal("-")),
+    hash        = token(literal("#")),
 
     digit         = charRange('0', '9'),
     hexDigit      = choice(digit, charRange('a', 'f'), charRange('A', 'F')),
@@ -93,6 +95,16 @@ public final class GrammarGrammar
         optional(token(literal("forbid")),
             lBrace, aloSeparated(captureTextGrouped("forbidden", name), comma), rBrace)),
 
+    captureSuffix = group$("captureSuffixes", capture(choice(
+        capture("capture",
+            sequence(token(literal(":"), optional(capture("captureText", literal("+")))))),
+        capture("accessor",
+            sequence(minus, nameOrDollar)),
+        capture("group",
+            sequence(hash, nameOrDollar)),
+        capture("tag",
+            sequence(tilda, nameOrDollar))))),
+
     expr = reference("expr"),
 
     parsingExpression = recursive$("expr", cluster(
@@ -121,10 +133,7 @@ public final class GrammarGrammar
             capture("oneMore", sequence(expr, plus))),
 
         groupLeftRec(++i,
-            capture("capture", sequence(expr, literal(":"), optional(capture("captureText", literal("+"))))),
-            capture("accessor", sequence(expr, literal("-"), nameOrDollar)),
-            capture("group", sequence(expr, literal("#"), nameOrDollar)),
-            capture("tag", sequence(expr, literal("~"), nameOrDollar))),
+            capture("capture", sequence(expr, oneMore(captureSuffix)))),
 
         group(++i,
             sequence(lParen, exprDropPrecedence(expr), rParen),
@@ -155,8 +164,9 @@ public final class GrammarGrammar
 
     rule = named$("rule", sequence(
         captureText("ruleName", name),
+        zeroMore(captureSuffix),
         optional(capture("dumb", literal("!"))),
-        optional(capture("token", literal(":"))),
+        optional(capture("token", literal("%"))),
         equal,
         choice(exprCluster, capture("expr", parsingExpression)),
         semi)),
