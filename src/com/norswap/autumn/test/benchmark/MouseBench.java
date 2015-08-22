@@ -58,13 +58,20 @@ public class MouseBench
     {
         Source source = new SourceFile(file);
 
-        if (parser.parse(source))
-        {
+        try {
+            if (parser.parse(source))
+            {
+            }
+            else
+            {
+                System.err.println(file);
+            }
         }
-        else
+        catch (Exception e)
         {
             System.err.println(file);
         }
+
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

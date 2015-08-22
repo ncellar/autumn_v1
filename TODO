@@ -1,8 +1,6 @@
 --------------------------------------------------------------------------------
 TODO
 
-- tree building into the grammar!
-
 - fix accumulating tags in cluster bug
 
 - capture & ownPrintableData ?
@@ -21,19 +19,19 @@ TODO
 
 TODO FURTHER SMALL
 
-- check how grammar grammar might be improved via new capture system
-
-- clean up the compat layer for the capture system
-    - better construction through capture methods?
-
-- changes = oldChanges in !leftRecursive condition in expression cluster?
-
 - pretty printing
     - add an option to cutoff at named expressions
     - add an option to display the name
     - as a tree via visitors
 
 - copy via tree walk (use in feature tests)
+
+- check how grammar grammar might be improved via new capture system
+
+- clean up the compat layer for the capture system
+    - better construction through capture methods?
+
+- changes = oldChanges in !leftRecursive condition in expression cluster?
 
 - path-like getters for parsing expression graphs
 
@@ -78,29 +76,5 @@ TODO MUCH LATER
 
 - think about how a parser could be retooled to parser html
   (which is lax in syntax) -> need to define bounding boxes
-
---------------------------------------------------------------------------------
-APPLICATIONS
-
-- graph constraining language
-- pcap filtering language
-
-IDEAS (NETWORK)
-
-- FRP to enact real-time changes
-
-- data plane processing
-    - composition
-    - check safety properties (forwarding, latency bounds)
-
-- active networks (bytecode in packets)
-
-- versioning: transition/hand-over between states
-    - ensure some properties during the transition (atomic updates?)
-
-IDEAS (OTHER)
-
-- meta-checking: check that linguistic extensions satisfy properties
-- lookup island grammars
 
 --------------------------------------------------------------------------------
