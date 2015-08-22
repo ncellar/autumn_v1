@@ -38,13 +38,5 @@ public final class Any extends ParsingExpression
             : -1;
     }
 
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void appendContentTo(StringBuilder builder)
-    {
-        builder.append("any()");
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

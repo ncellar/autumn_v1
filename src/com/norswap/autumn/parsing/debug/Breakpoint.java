@@ -2,11 +2,11 @@ package com.norswap.autumn.parsing.debug;
 
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
+import com.norswap.autumn.parsing.expressions.common.InstrumentedExpression;
 
 import static com.norswap.autumn.parsing.debug.Debugger.DEBUGGER;
 
-public class Breakpoint extends UnaryParsingExpression
+public class Breakpoint extends InstrumentedExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -26,14 +26,6 @@ public class Breakpoint extends UnaryParsingExpression
     public int parseDumb(Parser parser, int position)
     {
         return operand.parseDumb(parser, position);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    @Override
-    public void appendContentTo(StringBuilder builder)
-    {
-        operand.appendTo(builder);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

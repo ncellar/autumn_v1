@@ -28,14 +28,6 @@ public final class Whitespace extends ParsingExpression
         }
     }
 
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void appendContentTo(StringBuilder builder)
-    {
-        builder.append("whitespace");
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override

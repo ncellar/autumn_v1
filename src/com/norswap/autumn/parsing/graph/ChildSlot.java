@@ -10,34 +10,10 @@ public class ChildSlot implements Slot<ParsingExpression>
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * A read-only child slot ({@link #set} is a no-op).
-     */
-    public static final class ReadOnly extends ChildSlot
-    {
-        public ReadOnly(ParsingExpression pe, int index)
-        {
-            super(pe, index);
-        }
-
-        @Override
-        public Slot<ParsingExpression> set(ParsingExpression child)
-        {
-            return this;
-        }
-    }
-
     public ChildSlot(ParsingExpression pe, int index)
     {
         this.pe = pe;
         this.index = index;
-    }
-
-    @Override
-    public Slot<ParsingExpression> set(ParsingExpression child)
-    {
-        pe.setChild(index, child);
-        return this;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -51,6 +27,15 @@ public class ChildSlot implements Slot<ParsingExpression>
     public ParsingExpression get()
     {
         return pe.children()[index];
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public Slot<ParsingExpression> set(ParsingExpression child)
+    {
+        pe.setChild(index, child);
+        return this;
     }
 
     // ---------------------------------------------------------------------------------------------

@@ -25,7 +25,7 @@ public final class TestGrammar
             System.err.println(result.error.message());
         }
 
-        System.err.println(result.tree.toTreeString());
+        //System.err.println(result.tree.toTreeString());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

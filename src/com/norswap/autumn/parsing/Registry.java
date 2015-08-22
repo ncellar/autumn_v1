@@ -79,6 +79,13 @@ public final class Registry
     public static final int PEF_RESOLVED
         = ParsingExpressionFlagsFactory.next();
 
+    /**
+     * Indicates that the parsing expression shouldn't be printed. The parsing expression
+     * sporting this flag should only have a single child expression.
+     */
+    public static final int PEF_UNARY_INVISIBLE
+        = ParsingExpressionFlagsFactory.next();
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // PARSE STATE FLAGS (PSF)
 

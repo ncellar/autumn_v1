@@ -8,11 +8,8 @@ Root = CompilationUnit "\u001a"? !_;
 // the escape is "Ctrl + Z" (JLS 3.5)
 
 //=========================================================================
-//  JLS 3  Lexical Structure
+//  Lexical Structure (JLS 3)
 //=========================================================================
-//-------------------------------------------------------------------------
-//  JLS 3.1-3  Unicode
-//-------------------------------------------------------------------------
 //  The Unicode escapes in Java source are converted
 //  to Java characters by a preprocessor prior to parsing.
 //  This is not emulated here; the Unicode escapes are only allowed
@@ -22,19 +19,11 @@ Root = CompilationUnit "\u001a"? !_;
 //  literals does not apply here.
 //-------------------------------------------------------------------------
 
-//-------------------------------------------------------------------------
-//  JLS 3.6-7  Spacing
-//-------------------------------------------------------------------------
-
 Spacing
     = ( [ \t\r\n\f]+       // WhiteSpace
       / "/*" _ *+ "*/"     // TraditionalComment
       / "//" _ *+ [\r\n]   // EndOfLineComment
       )* ;
-
-//-------------------------------------------------------------------------
-//  JLS 3.8  Identifiers
-//-------------------------------------------------------------------------
 
 Identifier !%= !Keyword Letter LetterOrDigit* ;
 
@@ -49,70 +38,20 @@ LetterOrDigit = [a-z] / [A-Z] / [0-9] / [_$] ;
 // as such by special Java procedures, which is difficult
 // to express in terms of Parsing Expressions.
 
-//-------------------------------------------------------------------------
-//  JLS 3.9  Keywords
-//  More precisely: reserved words. According to JLS, "true", "false",
-//  and "null" are technically not keywords - but still must not appear
-//  as identifiers. Keywords "const" and "goto" are not used; JLS explains
-//  the reason.
-//-------------------------------------------------------------------------
-
 Keyword
-    = ( "abstract"
-      / "assert"
-      / "boolean"
-      / "break"
-      / "byte"
-      / "case"
-      / "catch"
-      / "char"
-      / "class"
-      / "const"
-      / "continue"
-      / "default"
-      / "double"
-      / "do"
-      / "else"
-      / "enum"
-      / "extends"
-      / "false"
-      / "finally"
-      / "final"
-      / "float"
-      / "for"
-      / "goto"
-      / "if"
-      / "implements"
-      / "import"
-      / "interface"
-      / "int"
-      / "instanceof"
-      / "long"
-      / "native"
-      / "new"
-      / "null"
-      / "package"
-      / "private"
-      / "protected"
-      / "public"
-      / "return"
-      / "short"
-      / "static"
-      / "strictfp"
-      / "super"
-      / "switch"
-      / "synchronized"
-      / "this"
-      / "throws"
-      / "throw"
-      / "transient"
-      / "true"
-      / "try"
-      / "void"
-      / "volatile"
-      / "while"
-      ) !LetterOrDigit
-    ;
+    = ( "abstract"      / "assert"      / "boolean"     / "break"           / "byte"
+      / "case"          / "catch"       / "char"        / "class"           / "const"
+      / "continue"      / "default"     / "double"      / "do"              / "else"
+      / "enum"          / "extends"     / "false"       / "finally"         / "final"
+      / "float"         / "for"         / "goto"        / "if"              / "implements"
+      / "import"        / "interface"   / "int"         / "instanceof"      / "long"
+      / "native"        / "new"         / "null"        / "package"         / "private"
+      / "protected"     / "public"      / "return"      / "short"           / "static"
+      / "strictfp"      / "super"       / "switch"      / "synchronized"    / "this"
+      / "throws"        / "throw"       / "transient"   / "true"            / "try"
+      / "void"          / "volatile"    / "while"
+
+      ) !LetterOrDigit ;
 
 ABSTRACT     !%= "abstract"     !LetterOrDigit  ;
 ASSERT       !%= "assert"       !LetterOrDigit  ;

@@ -24,7 +24,7 @@ public final class WithMinPrecedence extends UnaryParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public String ownPrintableData()
+    public String ownDataString()
     {
         return "minPrecedence: " + minPrecedence;
     }

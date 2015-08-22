@@ -67,17 +67,7 @@ public final class Literal extends ParsingExpression
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void appendContentTo(StringBuilder builder)
-    {
-        builder.append("\"");
-        builder.append(string);
-        builder.append("\"");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public String ownPrintableData()
+    public String ownDataString()
     {
         return string;
     }

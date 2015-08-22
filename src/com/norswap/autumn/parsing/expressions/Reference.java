@@ -36,15 +36,7 @@ public final class Reference extends ParsingExpression
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void appendContentTo(StringBuilder builder)
-    {
-        builder.append(target);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public String ownPrintableData()
+    public String ownDataString()
     {
         return target;
     }

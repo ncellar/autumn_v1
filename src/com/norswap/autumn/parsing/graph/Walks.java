@@ -7,7 +7,10 @@ import com.norswap.util.graph_visit.GraphWalker;
 import com.norswap.util.Counter;
 import com.norswap.util.slot.Slot;
 
-import java.util.Arrays;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+import static java.util.Arrays.stream;
 
 /**
  * This class is a repository of walks over graphs along with modification modes (in-place, copy,
@@ -20,42 +23,18 @@ public class Walks
     /**
      * Walks the whole graph, modification are done in-place.
      */
-    public static GraphWalker<ParsingExpression> inPlace = (pe, visitor) ->
-    {
-        Counter c = new Counter();
-        Object[] slots = Arrays.stream(pe.children()).map(x -> new ChildSlot(pe, c.i++)).toArray();
-
-        return Array.<Slot<ParsingExpression>>fromUnsafe(slots);
-    };
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Walks the whole graph, modifications are applied to a clone of the original parsing
-     * expression. Beware this means that the original graph and the new graph will share
-     * sub-expressions that are not modified!
-     */
-    public static GraphWalker<ParsingExpression> copy = (pe, visitor) ->
-    {
-        Counter c = new Counter();
-        ParsingExpression pec = pe.clone();
-        Object[] slots = Arrays.stream(pe.children()).map(x -> new ChildSlot(pec, c.i++)).toArray();
-
-        return Array.<Slot<ParsingExpression>>fromUnsafe(slots);
-    };
+    public static GraphWalker<ParsingExpression> inPlace = (pe, visitor) -> helper(
+        stream(pe.children()),
+        c -> new ChildSlot(pe, c.i++));
 
     // ---------------------------------------------------------------------------------------------
 
     /**
      * Walks the whole graph. Attempts to set the value of a slot result in an exception.
      */
-    public static GraphWalker<ParsingExpression> readOnly = (pe, visitor) ->
-    {
-        Counter c = new Counter();
-        Object[] slots = Arrays.stream(pe.children()).map(x -> new ChildSlot.ReadOnly(pe, c.i++)).toArray();
-
-        return Array.<Slot<ParsingExpression>>fromUnsafe(slots);
-    };
+    public static GraphWalker<ParsingExpression> readOnly = (pe, visitor) -> helper(
+        stream(pe.children()),
+        c -> new ReadOnlyChildSlot(pe, c.i++));
 
     // ---------------------------------------------------------------------------------------------
 
@@ -67,13 +46,29 @@ public class Walks
      */
     public static GraphWalker<ParsingExpression> inPlaceFirsts(Grammar grammar)
     {
-        return (pe, visitor) ->
-        {
-            Counter c = new Counter();
-            Object[] slots = Arrays.stream(pe.firsts(grammar)).map(x -> new ChildSlot(pe, c.i++)).toArray();
+        return (pe, visitor) -> helper(
+            stream(pe.firsts(grammar)),
+            c -> new ChildSlot(pe, c.i++));
+    }
 
-            return Array.<Slot<ParsingExpression>>fromUnsafe(slots);
-        };
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * See {@link CopyOnWriteWalker}.
+     */
+    public static GraphWalker<ParsingExpression> copyOnWriteWalk()
+    {
+        return new CopyOnWriteWalker();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    static Array<Slot<ParsingExpression>> helper(
+        Stream<ParsingExpression> stream,
+        Function<Counter, Slot<ParsingExpression>> f)
+    {
+        Counter c = new Counter();
+        return Array.<Slot<ParsingExpression>>fromUnsafe(stream.map(x -> f.apply(c)).toArray());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

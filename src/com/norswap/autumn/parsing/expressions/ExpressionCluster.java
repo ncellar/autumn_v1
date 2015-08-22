@@ -38,7 +38,7 @@ public final class ExpressionCluster extends ParsingExpression
         }
 
         @Override
-        public String ownPrintableData()
+        public String ownDataString()
         {
             return "precedence: " + precedence + ", " +
                 (leftAssociative
@@ -62,7 +62,7 @@ public final class ExpressionCluster extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseState state)
     {
-        // NOTE(norswap): Clusters can't contain left-recursive sub-expressions that go through
+        // NOTE(norswap): Clusters can't contain LeftRecursive sub-expressions that go through
         // the expression to achieve left-recursion. Neither can the cluster recurse through
         // other clusters. Formally, any recursion cycle that a cluster is a part of
         // can't contain any LeftRecursive or other cluster nodes.
@@ -107,8 +107,7 @@ public final class ExpressionCluster extends ParsingExpression
                 {
                     // Bypass error handling: it's unfair to say that the whole cluster
                     // failed at this position, because maybe a lower precedence operator would
-                    // have matched (e.g. prefix operator with higher precedence than a postfix
-                    // operator).
+                    // have matched if the minPrecedence was lower.
 
                     report = false;
                 }
@@ -120,8 +119,7 @@ public final class ExpressionCluster extends ParsingExpression
 
             parser.setMinPrecedence(group.precedence + (group.leftAssociative ? 1 : 0));
 
-            while (true)
-            {
+            do {
                 OutputChanges oldChanges = changes;
 
                 for (ParsingExpression operand: group.operands)
@@ -158,11 +156,8 @@ public final class ExpressionCluster extends ParsingExpression
                     break;
                 }
 
-                // Non-left recursive rules will not yield longer matches, so no use trying them.
-                if (!group.leftRecursive) {
-                    break;
-                }
-            }
+            // Non-left recursive rules will not yield longer matches, so no use trying them.
+            } while (group.leftRecursive);
         }
 
         state.flags = oldFlags;
@@ -174,27 +169,6 @@ public final class ExpressionCluster extends ParsingExpression
         {
             parser.fail(this, state);
         }
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void appendContentTo(StringBuilder builder)
-    {
-        builder.append("expr(");
-
-        for (ParsingExpression operand: children())
-        {
-            operand.appendTo(builder);
-            builder.append(", ");
-        }
-
-        if (groups.length > 0)
-        {
-            builder.setLength(builder.length() - 2);
-        }
-
-        builder.append(")");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -232,21 +206,14 @@ public final class ExpressionCluster extends ParsingExpression
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public ExpressionCluster clone()
+    public void copyOwnData()
     {
-        ExpressionCluster clone = (ExpressionCluster) super.clone();
-        clone.groups = DeepCopy.deepClone(groups);
-        return clone;
-    }
+        groups = DeepCopy.deepClone(groups);
 
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ExpressionCluster deepCopy()
-    {
-        ExpressionCluster copy = (ExpressionCluster) super.deepCopy();
-        copy.groups = DeepCopy.of(groups);
-        return copy;
+        for (Group group: groups)
+        {
+            group.operands = group.operands.clone();
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

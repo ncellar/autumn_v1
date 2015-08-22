@@ -4,7 +4,9 @@ import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.Registry;
+import com.norswap.autumn.parsing.graph.Copier;
 import com.norswap.autumn.parsing.graph.Nullability;
+import com.norswap.autumn.parsing.graph.Printer;
 import com.norswap.util.Caster;
 import com.norswap.util.DeepCopy;
 import com.norswap.util.Exceptions;
@@ -49,69 +51,70 @@ public abstract class ParsingExpression implements DeepCopy
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Returns a string representation for the expression. If the expression has a name, writes
-     * that instead of a string representation of its content. This can hence be used to print
-     * recursive expressions (a recursive expression must have a name).
-     */
-    @Override
-    public final String toString()
-    {
-        StringBuilder builder = new StringBuilder();
-        appendTo(builder);
-        return builder.toString();
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * {@code builder.append(this.toString())}
-     */
-    public final void appendTo(StringBuilder builder)
-    {
-        String name = name();
-
-        if (name != null)
-        {
-            builder.append(name);
-        }
-        else
-        {
-            appendContentTo(builder);
-        }
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Like {@link #toString()}, but never writes the name of an expression instead of its content.
-     * As a result, this *can not* be used to print recursive expressions.
-     */
-    public final String toContentString()
-    {
-        StringBuilder builder = new StringBuilder();
-        appendContentTo(builder);
-        return builder.toString();
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Appends a string representation of this expression (but never its name) to the builder.
-     * <p>
-     * Called by {@link #toString()} and {@link #appendTo(StringBuilder)} if the expression isn't
-     * named; and by {@link #toContentString()}.
-     */
-    public abstract void appendContentTo(StringBuilder builder);
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
      * Returns a string containing information about the expression that isn't contained in its
      * type or its children.
      */
-    public String ownPrintableData()
+    public String ownDataString()
     {
         return "";
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * @see {@link #toStringShort()}
+     */
+    @Override
+    public String toString()
+    {
+        return toString(true, true);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Prints the shortest possible representation of this expression.
+     *
+     * If it has the name, use this name; otherwise print its structure cutting off the recursion
+     * as soon as named nodes are encountered.
+     */
+    public final String toStringShort()
+    {
+        return toString(true, true);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Prints the structure of the expression, cutting off the recursion as soon as named nodes are
+     * encountered, except for this expression itself.
+     */
+    public final String toStringUnroll()
+    {
+        return toString(true, false);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Prints the expression in full, with all its descendants. Recursion is indicated as such.
+     * No expression is printed more than once, references like "visited(EXPRESSION_NAME)" are
+     * used after the first time.
+     */
+    public final String toStringFull()
+    {
+        return toString(false, false);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private final String toString(boolean cutoffAtNames, boolean cutoffAtOwnName)
+    {
+        StringBuilder builder = new StringBuilder();
+        new Printer(builder::append, cutoffAtNames, cutoffAtOwnName).visit(this);
+        // delete trailing newline
+        builder.deleteCharAt(builder.length() - 1);
+        return builder.toString();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -167,24 +170,46 @@ public abstract class ParsingExpression implements DeepCopy
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    // COPYING
 
-    @Override
-    public ParsingExpression clone()
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Parsing expression must use this method to perform a deep copy of their own data in place.
+     * They must not copy their extension objects, nor their children. They must, however, copy any
+     * wrapper around their children (e.g. an array), or the copy will overwrite the original
+     * parsing expression as well!
+     * <p>
+     * This is used by {@link #deepCopy()} and called right after a parsing expression was cloned.
+     */
+    public void copyOwnData()
     {
-        ParsingExpression clone = Caster.cast(Exceptions.swallow(() -> super.clone()));
-        clone.ext = ext.deepCopy();
-        return clone;
+
     }
 
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Note: only run on parsing expression without loop, i.e. before resolving references.
+     * Do not use; use {@link #deepCopy()} or {@link com.norswap.autumn.parsing.graph.CopyOnWriteWalker}
+     * instead.
      */
     @Override
-    public ParsingExpression deepCopy()
+    public final ParsingExpression clone()
     {
-        return clone();
+        return Caster.cast(Exceptions.swallow(() -> super.clone()));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Performs a deep copy of the parsing expression. This is aware of recursion, and parsing
+     * expression identity: it will never make two copies of the same descendant of this parsing
+     * expression.
+     */
+    @Override
+    public final ParsingExpression deepCopy()
+    {
+        return new Copier().visit(this);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

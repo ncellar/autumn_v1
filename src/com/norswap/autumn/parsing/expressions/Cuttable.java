@@ -60,30 +60,9 @@ public final class Cuttable extends NaryParsingExpression
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void appendContentTo(StringBuilder builder)
+    public String ownDataString()
     {
-        builder.append("cuttable(");
-        builder.append("\"");
-        builder.append(name);
-        builder.append("\", ");
-
-        for (ParsingExpression operand: operands)
-        {
-            operand.appendTo(builder);
-            builder.append(", ");
-        }
-
-        builder.setLength(builder.length() - 2);
-
-        builder.append(")");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public String ownPrintableData()
-    {
-        return toString();
+        return "cut_name: " + name;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

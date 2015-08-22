@@ -6,7 +6,6 @@ import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.graph.Nullability;
 
-
 /**
  * Triggers a cut operation: signify that the remaining alternatives of the choice indicated by
  * the name (a node of type {@link Cuttable}) must not be tried.
@@ -32,19 +31,9 @@ public final class Cut extends ParsingExpression
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void appendContentTo(StringBuilder builder)
+    public String ownDataString()
     {
-        builder.append("cut(\"");
-        builder.append(name);
-        builder.append("\")");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public String ownPrintableData()
-    {
-        return "name: " + name;
+        return "cut_name: " + name;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

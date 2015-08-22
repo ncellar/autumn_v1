@@ -116,7 +116,7 @@ public final class Capture extends UnaryParsingExpression
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public String ownPrintableData()
+    public String ownDataString()
     {
         return String.format("accessor: %s, tags: %s, capture: %s",
             accessor, tags,

@@ -10,7 +10,6 @@ import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
  * Succeeds if the next input character is the range.
  *
  * On success, the end position is start position + 1.
- *
  */
 public final class CharRange extends ParsingExpression
 {
@@ -51,21 +50,9 @@ public final class CharRange extends ParsingExpression
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void appendContentTo(StringBuilder builder)
+    public String ownDataString()
     {
-        builder.append("charRange(");
-        builder.append(start);
-        builder.append(", ");
-        builder.append(end);
-        builder.append(")");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public String ownPrintableData()
-    {
-        return toString();
+        return start + ", " + end;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -30,46 +30,6 @@ public abstract class UnaryParsingExpression extends ParsingExpression
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * {@inheritDoc}
-     *
-     * Here, implemented by outputting the class name with an initial lower-case, then the
-     * operand between parens.
-     */
-    @Override
-    public void appendContentTo(StringBuilder builder)
-    {
-        String name = this.getClass().getSimpleName();
-        name = name.substring(0,1).toLowerCase() + name.substring(1);
-
-        builder.append(name);
-        builder.append("(");
-        operand.appendTo(builder);
-        builder.append(")");
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    @Override
-    public UnaryParsingExpression clone()
-    {
-        UnaryParsingExpression clone = (UnaryParsingExpression) super.clone();
-        clone.operand = operand.clone();
-        return clone;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public UnaryParsingExpression deepCopy()
-    {
-        UnaryParsingExpression copy = (UnaryParsingExpression) super.deepCopy();
-        copy.operand = operand.deepCopy();
-        return copy;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
     @Override
     public Nullability nullability(Grammar grammar)
     {

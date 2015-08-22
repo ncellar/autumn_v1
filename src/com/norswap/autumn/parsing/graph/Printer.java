@@ -1,5 +1,6 @@
 package com.norswap.autumn.parsing.graph;
 
+import com.norswap.autumn.parsing.Registry;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.util.Strings;
 import com.norswap.util.graph_visit.GraphVisitor;
@@ -10,22 +11,34 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Prints a parsing expression as a tree. Useful for debugging.
+ * Prints a parsing expression as a tree.
+ * <p>
+ * A printer has two options:
+ * <p>
+ * - cutoffAtNames: indicates that we should stop the recursive descent as soon as named nodes are
+ *   encountered.
+ * <p>
+ * - cutoffAtOwnName: if this is false when cutoffAtNames is true, guarantees that the recursion
+ *   won't stop at the root expression itself, but that its direct children (at least) will be
+ *   printed as well. Has no effect if cutoffAtNames is false.
  */
 public class Printer extends GraphVisitor<ParsingExpression>
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     private Consumer<String> sink;
-
     private int depth = 0;
+    private boolean cutoffAtNames;
+    private boolean cutoffAtOwnName;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public Printer(Consumer<String> sink)
+    public Printer(Consumer<String> sink, boolean cutoffAtNames, boolean cutoffAtOwnName)
     {
-        super(Walks.inPlace);
+        super(Walks.readOnly);
         this.sink = sink;
+        this.cutoffAtNames = cutoffAtNames;
+        this.cutoffAtOwnName = cutoffAtOwnName;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -33,8 +46,13 @@ public class Printer extends GraphVisitor<ParsingExpression>
     @Override
     public void before(ParsingExpression pe)
     {
+        if (pe.hasFlagsSet(Registry.PEF_UNARY_INVISIBLE))
+        {
+            return;
+        }
+
         String name = pe.name();
-        String data = pe.ownPrintableData();
+        String data = pe.ownDataString();
 
         sink.accept(Strings.times(depth, "-|"));
         sink.accept(pe.getClass().getSimpleName());
@@ -43,7 +61,6 @@ public class Printer extends GraphVisitor<ParsingExpression>
         if (name != null)
         {
             sink.accept(name);
-            sink.accept(" - defined");
         }
         else
         {
@@ -52,8 +69,18 @@ public class Printer extends GraphVisitor<ParsingExpression>
 
         sink.accept(")");
 
+        if (name != null && cutoffAtNames && !(depth == 0 && !cutoffAtOwnName))
+        {
+            sink.accept("\n");
+            cutoff();
+            ++ depth;
+            return;
+        }
+
         if (!data.isEmpty())
+        {
             sink.accept(" [" + data + "]");
+        }
 
         sink.accept("\n");
 

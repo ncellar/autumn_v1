@@ -61,7 +61,7 @@ public interface DeepCopy extends Cloneable
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Sometimes, it is useful to clone array one level-deep (i.e. clone the array itself than
+     * Sometimes, it is useful to clone array one level-deep (i.e. clone the array itself then
      * replace each of its elements by their clones).
      *
      * This is different from a deep copy: a deep copy will continue to recurse over the members of

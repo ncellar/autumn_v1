@@ -92,21 +92,10 @@ public final class LeftRecursive extends UnaryParsingExpression
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void appendContentTo(StringBuilder builder)
-    {
-        builder.append(leftAssociative ? "leftAssociative" : "leftRecursive(");
-        operand.appendTo(builder);
-        builder.append(")");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public String ownPrintableData()
+    public String ownDataString()
     {
         return leftAssociative ? "left-associative" : "";
     }
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

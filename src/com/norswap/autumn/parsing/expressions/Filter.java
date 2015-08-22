@@ -63,25 +63,18 @@ public final class Filter extends UnaryParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void appendContentTo(StringBuilder builder)
+    public String ownDataString()
     {
-        builder.append("filter(");
-        builder.append(Array.fromArray(allowed));
-        builder.append(",");
-        builder.append(Array.fromArray(forbidden));
-        builder.append(",");
-        operand.appendTo(builder);
-        builder.append(")");
+        Array<Object> allowedIDs = new Array<>(Arrays.stream(allowed)
+            .map(x -> x.name() != null ? x.name() : x.hashCode())
+            .toArray());
+
+        Array<Object> forbiddenIDs = new Array<>(Arrays.stream(forbidden)
+            .map(x -> x.name() != null ? x.name() : x.hashCode())
+            .toArray());
+
+        return "allowed: " + allowedIDs + ", forbidden: " + forbidden.length;
     }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public String ownPrintableData()
-    {
-        return "allowed: " + allowed.length + ", forbidden: " + forbidden.length;
-    }
-
 
     // ---------------------------------------------------------------------------------------------
 

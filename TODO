@@ -1,57 +1,39 @@
 --------------------------------------------------------------------------------
 TODO
 
-- fix accumulating tags in cluster bug
+CLUSTER
+    - use groups as separate independant parsing expressions?
+        - also print precedence!
+    - check that named alternates are only used on allow and forbid clauses
 
-- capture & ownPrintableData ?
+CAPTURE SYSTEM
+    - rethink system?
+    - tags as key-value pairs?
+        - rename value() to text()
+        - use value() to fetch the value of a tag
+    - fix accumulating tags in cluster bug
+    - introduce a mini-type system for captures
+    - syntactic support for naming a capture after the name of identifier used (dollar)
+    - "marker" capture (capture on its own, no depth increase) (noop expression)
+    - improve GrammarGrammar using capture system
+    - clean up the compat layer for the capture system
 
-- why inPlace & readOnly give different results on printer (grammar or not)
-
-- make output changes hookable
-
-- make reset hookable
-
-- introduce a mini-type system for captures
-
-- syntactic support for naming a capture after the name of identifier used (dollar)
-
-- "marker" capture (capture on its own, no depth increase) (noop expression)
+HOOKING
+    - make output changes hookable
+    - make reset hookable
+    - syntax for custom operators ($name?)
 
 TODO FURTHER SMALL
 
-- pretty printing
-    - add an option to cutoff at named expressions
-    - add an option to display the name
-    - as a tree via visitors
-
-- copy via tree walk (use in feature tests)
-
-- check how grammar grammar might be improved via new capture system
-
-- clean up the compat layer for the capture system
-    - better construction through capture methods?
-
-- changes = oldChanges in !leftRecursive condition in expression cluster?
-
 - path-like getters for parsing expression graphs
-
-- check that named alternates are only used on allow and forbid clauses
 
 - well formedness check (ford: WF -- can't loop without consuming)
 
 - re-allow memoization when dropping precedence in both schemes
 
-- think about group conundrum (should it be a parsing expression?)
-
 - source: start from 0 or 1; tab as x chars
 
 - dumb (%) and token (symbol? ^?) operators
-
-- syntax for custom operators ($name?)
-
-- tags as key-value pairs
-    - rename value() to text()
-    - use value() to fetch the value of a tag
 
 - modify precedence of capture so that (X* # name) becomes valid
 

@@ -6,6 +6,7 @@ import com.norswap.util.slot.SelfSlot;
 import com.norswap.util.slot.Slot;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,7 @@ import static com.norswap.util.graph_visit.NodeState.*;
  * enables modifying the the graph in-place, or building a copy of the graph on the fly.
  * <p>
  * The visit is started by calling {@link #visit(Node)} (single root) or {@link
- * #visit(Collection<Node>)} (multiple roots). It is also possible to perform incremental visits by
+ * #visit(Collection)} (multiple roots). It is also possible to perform incremental visits by
  * repeatedly calling the {@link #partialVisit} methods. In the case of an incremental visit, {@link
  * #conclude} must be called manually.
  * <p>
@@ -40,6 +41,8 @@ public abstract class GraphVisitor<Node>
     public final GraphWalker<Node> walker;
 
     private Map<Node, NodeState> states = new HashMap<>();
+
+    private boolean cutoff;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -167,7 +170,7 @@ public abstract class GraphVisitor<Node>
 
         before(node);
 
-        List<Slot<Node>> children = walker.children(node, this);
+        List<Slot<Node>> children = children(node);
 
         boolean cyclic = false;
 
@@ -189,6 +192,31 @@ public abstract class GraphVisitor<Node>
         states.put(node, VISITED);
 
         return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * This can be called from {@link #before} in order to specify that the children of the node
+     * shouldn't be visited.
+     */
+    public void cutoff()
+    {
+        cutoff = true;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @SuppressWarnings("unchecked")
+    private List<Slot<Node>> children(Node node)
+    {
+        if (cutoff)
+        {
+            cutoff = false;
+            return Collections.EMPTY_LIST;
+        }
+
+        return walker.children(node, this);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
