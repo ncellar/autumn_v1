@@ -63,9 +63,11 @@ public abstract class GraphVisitor<Node>
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Called after attempting to visit each child of {@code parent}.
-     * The child is held in {@code slot}.
-     * The slot can be used to replace this child within its parent.
+     * Called after attempting to visit each child of {@code parent} (after calling {@link #after}
+     * with the child itself).
+     * <p>
+     * The child is held in {@code slot}. The slot can be used to replace this child within its
+     * parent.
      */
     public void afterChild(Node parent, Slot<Node> slot, NodeState state) {}
 

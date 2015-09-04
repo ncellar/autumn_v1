@@ -30,7 +30,7 @@ public final class Unsigned
     /**
      * Positive representation of the maximum unsigned quantity that can be encoded in an int.
      */
-    public static long MAX_INT = Integer.MIN_VALUE * -2;
+    public static long MAX_INT = (long) Integer.MIN_VALUE * -2;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

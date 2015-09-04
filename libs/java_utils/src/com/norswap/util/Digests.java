@@ -4,7 +4,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 /**
- * Easily access common digest algorithms instances.
+ * Easy access common digest algorithms.
  */
 public final class Digests
 {
@@ -18,7 +18,8 @@ public final class Digests
             SHA_1 = MessageDigest.getInstance("SHA-1");
             SHA_256 = MessageDigest.getInstance("SHA-256");
             MD5 = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException e)
+        }
+        catch (NoSuchAlgorithmException e)
         {
             // Shouldn't happen, Java implementations are required to include those algorithms.
             throw new RuntimeException(e);

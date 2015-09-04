@@ -3,7 +3,7 @@ package com.norswap.util;
 /**
  * A generator of unique handles (int or long).
  *
- * A handle factory is parameterized by a (start, end, stride) triplet. The handles are allocated
+ * A handle factory is parametrized by a (start, end, stride) triplet. The handles are allocated
  * in the [start, end[ range; unless end is 0, in which case the range extends up to limit of the
  * integer type being used. In any case, the range never wraps around.
  *
@@ -12,6 +12,8 @@ package com.norswap.util;
  * hash map (as is done in {@link com.norswap.util.HandleMap}). Sequential handles are often used
  * together; using a stride produces holes in the table that avoid probing too far ahead for an
  * empty slot. It is recommended to use an odd stride (3 is a typical value).
+ *
+ * Note that this is not thread-safe.
  */
 public final class HandleFactory
 {

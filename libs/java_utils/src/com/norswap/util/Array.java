@@ -39,16 +39,23 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         this.next = next;
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    @SafeVarargs
     public Array(T... items)
     {
         this.array = items;
         this.next = items.length;
     }
 
-    public Array(int size)
+    // ---------------------------------------------------------------------------------------------
+
+    public Array(int capacity)
     {
-        array = new Object[size];
+        array = new Object[capacity];
     }
+
+    // ---------------------------------------------------------------------------------------------
 
     public Array()
     {
@@ -57,21 +64,97 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    @SuppressWarnings("unchecked")
     public static <T> Array<T> fromItem(T item)
     {
         return new Array<>((T) item);
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    @SuppressWarnings("unchecked")
     public static <T> Array<T> fromArray(T[] array)
     {
         return new Array<>((T[]) array);
     }
+
+    // ---------------------------------------------------------------------------------------------
 
     public static <T> Array<T> fromUnsafe(Object[] array)
     {
         Array<T> out = new Array<>();
         out.array = array;
         out.next = array.length;
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static <T> Array<T> fromItem(int n, T item)
+    {
+        Array<T> out = new Array<>(n);
+        out.ensureSize(n);
+        out.fill(item);
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static <T> Array<T> ofSize(int size)
+    {
+        Array<T> out = new Array<>(size);
+        out.ensureSize(size);
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static <T> Array<T> copyOf(T[] array, int size)
+    {
+        Array<T> out = Array.ofSize(size);
+        out.copy(array, 0, 0, size);
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static <T> Array<T> copyOf(Array<? extends T> array, int size)
+    {
+        Array<T> out = Array.ofSize(size);
+        out.copy(array, 0, 0, size);
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static <T> Array<T> copyOf(T[] array, int from, int to)
+    {
+        Array<T> out = Array.ofSize(to - from);
+        out.copy(array, from, to, to - from);
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static <T> Array<T> copyOf(Array<? extends T> array, int from, int to)
+    {
+        Array<T> out = Array.ofSize(to - from);
+        out.copy(array, from, 0, to - from);
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @SafeVarargs
+    public static <T> Array<T> concat(Array<? extends T> ...arrays)
+    {
+        Array<T> out = new Array<>();
+
+        for (Array<? extends T> array: arrays)
+        {
+            out.addAll(array);
+        }
+
         return out;
     }
 
@@ -91,6 +174,13 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         return next;
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    public int capacity()
+    {
+        return array.length;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // INSERTIONS
 
@@ -101,7 +191,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
     {
         if (next == array.length)
         {
-            growCapacity(array.length + 1);
+            ensureCapacity(array.length + 1);
         }
 
         array[next++] = t;
@@ -116,7 +206,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
     {
         if (next == array.length)
         {
-            growCapacity(array.length + 1);
+            ensureCapacity(array.length + 1);
         }
 
         System.arraycopy(array, index, array, index + 1, next - index - 1);
@@ -140,7 +230,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         @SuppressWarnings("unchecked")
         T element = (T) array[index];
         array[index] = t;
-        return t;
+        return element;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -154,23 +244,52 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
     public boolean addAll(Collection<? extends T> collection)
     {
         int size = next;
+
         if (collection != null)
         {
             collection.forEach(this::add);
         }
+
         return size != next;
     }
 
     // ---------------------------------------------------------------------------------------------
 
+    public boolean addAll(Array<? extends T> array)
+    {
+        int dstPos = next;
+        int size = array == null ? 0 : array.size();
+
+        if (size == 0)
+        {
+            return false;
+        }
+
+        ensureSize(next + size);
+        copy(array, 0, dstPos, size);
+        return true;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * If {@code collection} is null, it will be treated as empty.
+     */
     @Override
     public boolean addAll(int index, Collection<? extends T> c)
     {
+        if (c == null || c.isEmpty())
+        {
+            return false;
+        }
+
         int csize = c.size();
 
         if (array.length < next + csize)
         {
-            growCapacity(next + csize);
+            ensureCapacity(next + csize);
         }
 
         System.arraycopy(array, index, array, index + csize, next - index - 1);
@@ -189,10 +308,10 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
-    public void growSize(int size)
+    public void ensureSize(int size)
     {
         if (array.length < size) {
-            growCapacity(size);
+            ensureCapacity(size);
         }
 
         next = size;
@@ -200,7 +319,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
-    public void growCapacity(int capacity)
+    public void ensureCapacity(int capacity)
     {
         int size = array.length;
 
@@ -424,7 +543,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public List<T> subList(int fromIndex, int toIndex)
+    public List<T> subList(int from, int to)
     {
         throw new UnsupportedOperationException("Array doesn't support sublist for now");
     }
@@ -643,7 +762,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
     {
         if (next <= key)
         {
-            growSize(key + 1);
+            ensureSize(key + 1);
         }
 
         return set(key, value);
@@ -720,6 +839,52 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         }
 
         return out;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public void copy(T[] src, int srcPos, int dstPos, int length)
+    {
+        assert src.length <= srcPos + length;
+        assert next <= dstPos + length;
+
+        System.arraycopy(src, srcPos, array, dstPos, length);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void copy(Array<? extends T> src, int srcPos, int dstPos, int length)
+    {
+        assert src.next <= srcPos + length;
+        assert next <= dstPos + length;
+
+        System.arraycopy(src.array, srcPos, array, dstPos, length);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void copyTo(T[] dst, int srcPos, int dstPos, int length)
+    {
+        assert dst.length <= dstPos + length;
+        assert next <= srcPos + length;
+
+        System.arraycopy(array, srcPos, dst, dstPos, length);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void fill(T value)
+    {
+        Arrays.fill(array, 0, next, value);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void fill(T value, int from, int to)
+    {
+        assert next <= to;
+
+        Arrays.fill(array, from, to, value);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
