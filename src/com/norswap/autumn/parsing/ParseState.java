@@ -240,9 +240,16 @@ public final class ParseState
 
     // ---------------------------------------------------------------------------------------------
 
-    public void setGroupingCapture()
+    public void enableGroupingCapture()
     {
         setFlags(PSF_GROUPING_CAPTURE);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void disableGroupingCapture()
+    {
+        clearFlags(PSF_GROUPING_CAPTURE);
     }
 
     // ---------------------------------------------------------------------------------------------

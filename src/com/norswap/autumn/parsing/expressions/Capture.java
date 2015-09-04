@@ -41,14 +41,21 @@ public final class Capture extends UnaryParsingExpression
         int oldFlags = state.flags;
         String oldAccessor = state.accessor;
 
-        if (shouldGroup())
-        {
-            state.setGroupingCapture();
-        }
-
         if (state.accessor == null)
         {
             state.accessor = accessor;
+        }
+        else if (accessor != null)
+        {
+            throw new RuntimeException(String.format(
+                "Trying to override accessor \"%s\" with accessor \"%s\".",
+                state.accessor,
+                accessor));
+        }
+
+        if (shouldGroup())
+        {
+            state.enableGroupingCapture();
         }
 
         int oldTagsCount = state.tags.size();
@@ -61,13 +68,7 @@ public final class Capture extends UnaryParsingExpression
         else
         {
             ParseTree oldTree = state.tree;
-
-            ParseTree newTree = new ParseTree(
-                state.accessor,
-                state.tags != null && !state.tags.isEmpty()
-                    ? state.tags.clone()
-                    : null,
-                state.isCaptureGrouping());
+            ParseTree newTree = new ParseTree(state);
 
             int oldCount = state.treeChildrenCount;
             Array<String> oldTags = state.tags;
@@ -76,12 +77,14 @@ public final class Capture extends UnaryParsingExpression
             state.tags = new Array<>();
             state.tree = newTree;
             state.treeChildrenCount = 0;
+            state.disableGroupingCapture();
 
             operand.parse(parser, state);
 
             state.tags = oldTags;
             state.tree = oldTree;
             state.treeChildrenCount = oldCount;
+            // the grouping status will be restored with the flags!
 
             if (state.succeeded())
             {

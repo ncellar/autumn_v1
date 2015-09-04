@@ -40,7 +40,7 @@ public final class OutputChanges
 
         for (int i = state.treeChildrenCount; i < state.tree.childrenCount(); ++i)
         {
-            this.children.add(state.tree.children.get(i));
+            this.children.add(state.tree.children.get(i).unqualify(state));
         }
 
         for (int i = state.cutsCount; i < state.cuts.size(); ++i)
@@ -58,7 +58,10 @@ public final class OutputChanges
 
         if (children != null)
         {
-            state.tree.addAll(children);
+            for (ParseTree child: children)
+            {
+                state.tree.add(new ParseTree(state, child));
+            }
         }
 
         if (cuts != null)

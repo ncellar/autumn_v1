@@ -1,18 +1,7 @@
 --------------------------------------------------------------------------------
 TODO
 
-CLUSTER
-    - use groups as separate independant parsing expressions?
-        - also print precedence!
-    - check that named alternates are only used on allow and forbid clauses
-
 CAPTURE SYSTEM
-    - rethink system?
-    - tags as key-value pairs?
-        - rename value() to text()
-        - use value() to fetch the value of a tag
-    - fix accumulating tags in cluster bug
-    - introduce a mini-type system for captures
     - syntactic support for naming a capture after the name of identifier used (dollar)
     - "marker" capture (capture on its own, no depth increase) (noop expression)
     - improve GrammarGrammar using capture system
@@ -24,6 +13,8 @@ HOOKING
     - syntax for custom operators ($name?)
 
 TODO FURTHER SMALL
+
+- remove group flag?
 
 - path-like getters for parsing expression graphs
 
@@ -39,6 +30,10 @@ TODO FURTHER SMALL
 
 - better way to exclude reserved identifiers or warn about them
 
+- allow not writing @=
+
+- check against multiple uses of - accessor
+
 TODO FURTHER BIG
 
 - better error handling
@@ -51,6 +46,10 @@ TODO FURTHER BIG
 - trees: topological sort
 
 - rewrite GUI in Swing
+
+- mini type system for captures? automatic AST classes generation?
+
+- no state modifiers (no PSF!)
 
 TODO MUCH LATER
 

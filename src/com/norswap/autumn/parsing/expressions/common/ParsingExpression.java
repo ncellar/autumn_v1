@@ -62,6 +62,17 @@ public abstract class ParsingExpression implements DeepCopy
     // ---------------------------------------------------------------------------------------------
 
     /**
+     * Returns a string containing information about a child expression that isn't contained the
+     * child expression itself.
+     */
+    public String childDataString(int position)
+    {
+        return "";
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
      * @see {@link #toStringShort()}
      */
     @Override

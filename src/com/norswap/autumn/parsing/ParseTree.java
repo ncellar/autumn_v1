@@ -13,20 +13,62 @@ public final class ParseTree implements Iterable<ParseTree>
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public String accessor;
-    public String value;
     public boolean group;
     public Array<String> tags;
+    public String value;
     public Array<ParseTree> children;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public ParseTree() {}
 
     public ParseTree(String accessor, Array<String> tags, boolean group)
     {
         this.accessor = accessor;
         this.tags = tags;
         this.group = group;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public ParseTree(ParseState state)
+    {
+        this(
+            state.accessor,
+            state.tags.clone(),
+            state.isCaptureGrouping());
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public ParseTree(ParseState state, ParseTree unqualified)
+    {
+        this.accessor = state.accessor != null ? state.accessor : unqualified.accessor;
+        this.group = state.isCaptureGrouping() ? false : unqualified.group;
+        this.tags = Array.concat(state.tags, unqualified.tags);
+        this.value = unqualified.value;
+        this.children = unqualified.children;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public ParseTree unqualify(ParseState state)
+    {
+        /* NOTE(norswap)
+         *
+         * If state.accessor != null, then this.accessor == state.accessor or == null.
+         * In the first case, the accessor qualifier must be stripped.
+         */
+        String newAccessor = state.accessor == null ? accessor : null;
+
+        Array<String> newTags = Array.copyOf(tags, state.tags.size(), tags.size());
+
+        // Same idea.
+        boolean newGroup = !state.isCaptureGrouping() ? group : false;
+
+        ParseTree out = new ParseTree(newAccessor, newTags, newGroup);
+        out.value = value;
+        out.children = children;
+
+        return out;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -75,6 +117,12 @@ public final class ParseTree implements Iterable<ParseTree>
         {
             if (accessor.equals(child.accessor))
             {
+                if (child.group)
+                {
+                    throw new RuntimeException(
+                        "Node " + child.info() + " under node " + info() + " belongs to a group.");
+                }
+
                 return child;
             }
         }

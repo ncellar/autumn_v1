@@ -122,7 +122,7 @@ WHILE        !%= "while"        !LetterOrDigit  ;
 
 */
 
-Literal ~literal
+Literal ~ literal
     = FloatLiteral      :+~floatLiteral
     / IntegerLiteral    :+~integerLiteral    // May be a prefix of FloatLiteral
     / BooleanLiteral    :+~booleanLiteral
@@ -317,7 +317,6 @@ constraints:
         :-+id
         #boundTypes
             <classType>
-
 
 <typeArgs>
     # typeArgs

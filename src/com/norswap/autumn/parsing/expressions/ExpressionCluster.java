@@ -219,6 +219,28 @@ public final class ExpressionCluster extends ParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
+    public String childDataString(int position)
+    {
+        int pos = 0;
+
+        for (Group group: groups)
+        {
+            if (position < pos + group.operands.length)
+            {
+                return "precedence: " + group.precedence;
+            }
+
+            pos += group.operands.length;
+        }
+
+        throw new RuntimeException(
+            "Requesting child " + position + " of an expression with only " + pos + "children.");
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
     public Nullability nullability(Grammar grammar)
     {
         return Nullability.any(this, firsts(grammar));

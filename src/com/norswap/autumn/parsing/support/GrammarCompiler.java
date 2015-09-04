@@ -172,20 +172,17 @@ public final class GrammarCompiler
                 throw new RuntimeException(
                     "Expression specifies precedence more than once.");
             }
-
-            if (precedence == 0)
+            else if (precedence == 0)
             {
                 throw new RuntimeException(
                     "Precedence can't be 0. Don't use @0; or use @= in first position.");
             }
-
-            if (precedence == UNSET)
+            else if (precedence == UNSET)
             {
                 throw new RuntimeException(
                     "Expression alternate does not specify precedence.");
             }
-
-            if (precedence < currentPrecedence.i)
+            else if (precedence < currentPrecedence.i)
             {
                 throw new RuntimeException(
                     "Alternates must be grouped by precedence in expression cluster.");
@@ -236,23 +233,19 @@ public final class GrammarCompiler
     {
         Reference ref = reference(tree.value("name"));
 
-        ParseTree allowed = tree.getOrNull("allowed");
-        ParseTree forbidden = tree.getOrNull("forbidden");
+        List<ParseTree> allowed = tree.group("allowed");
+        List<ParseTree> forbidden = tree.group("forbidden");
 
-        if (allowed != null || forbidden != null)
+        if (!allowed.isEmpty() || !forbidden.isEmpty())
         {
             return filter(
-                allowed == null
-                    ? new ParsingExpression[0]
-                    : Streams.from(allowed)
-                        .map(pe -> reference(pe.value))
-                        .toArray(ParsingExpression[]::new),
+                Streams.from(allowed)
+                    .map(pe -> reference(pe.value))
+                    .toArray(ParsingExpression[]::new),
 
-                forbidden == null
-                    ? new ParsingExpression[0]
-                    : Streams.from(forbidden)
-                        .map(pe -> reference(pe.value))
-                        .toArray(ParsingExpression[]::new),
+                Streams.from(forbidden)
+                    .map(pe -> reference(pe.value))
+                    .toArray(ParsingExpression[]::new),
 
                 ref
             );

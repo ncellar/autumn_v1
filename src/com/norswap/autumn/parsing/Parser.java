@@ -89,7 +89,7 @@ public final class Parser
         this.minPrecedence = new Array<>();
 
         ParseState rootState = ParseState.root();
-        rootState.tree = tree = new ParseTree(null, null, false);
+        rootState.tree = tree = new ParseTree(null, new Array<>(), false);
 
         if (processLeadingWhitespace)
         {
