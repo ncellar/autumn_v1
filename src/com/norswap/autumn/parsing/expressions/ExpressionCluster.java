@@ -119,8 +119,9 @@ public final class ExpressionCluster extends ParsingExpression
 
             parser.setMinPrecedence(group.precedence + (group.leftAssociative ? 1 : 0));
 
+            OutputChanges oldChanges = changes;
             do {
-                OutputChanges oldChanges = changes;
+                oldChanges = changes;
 
                 for (ParsingExpression operand: group.operands)
                 {

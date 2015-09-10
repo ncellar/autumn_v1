@@ -119,7 +119,7 @@ public abstract class ParsingExpression implements DeepCopy
 
     // ---------------------------------------------------------------------------------------------
 
-    private final String toString(boolean cutoffAtNames, boolean cutoffAtOwnName)
+    private String toString(boolean cutoffAtNames, boolean cutoffAtOwnName)
     {
         StringBuilder builder = new StringBuilder();
         new Printer(builder::append, cutoffAtNames, cutoffAtOwnName).visit(this);

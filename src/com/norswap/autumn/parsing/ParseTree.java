@@ -13,12 +13,21 @@ public final class ParseTree implements Iterable<ParseTree>
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public String accessor;
-    public boolean group;
     public Array<String> tags;
+    public boolean group;
     public String value;
-    public Array<ParseTree> children;
+
+    private Array<ParseTree> children;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public ParseTree(String accessor, Array<String> tags, boolean group, Array<ParseTree> children)
+    {
+        this(accessor, tags, group);
+        this.children = children;
+    }
+
+    // ---------------------------------------------------------------------------------------------
 
     public ParseTree(String accessor, Array<String> tags, boolean group)
     {
@@ -31,42 +40,52 @@ public final class ParseTree implements Iterable<ParseTree>
 
     public ParseTree(ParseState state)
     {
-        this(
-            state.accessor,
-            state.tags.clone(),
-            state.isCaptureGrouping());
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public ParseTree(ParseState state, ParseTree unqualified)
-    {
-        this.accessor = state.accessor != null ? state.accessor : unqualified.accessor;
-        this.group = state.isCaptureGrouping() ? false : unqualified.group;
-        this.tags = Array.concat(state.tags, unqualified.tags);
-        this.value = unqualified.value;
-        this.children = unqualified.children;
+        this(state.accessor, state.tags.clone(), state.isCaptureGrouping());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParseTree unqualify(ParseState state)
+    public ParseTree qualify(ParseState state)
     {
-        /* NOTE(norswap)
-         *
-         * If state.accessor != null, then this.accessor == state.accessor or == null.
-         * In the first case, the accessor qualifier must be stripped.
-         */
-        String newAccessor = state.accessor == null ? accessor : null;
+        ParseTree out = new ParseTree(
+            state.accessor != null ? state.accessor : accessor,
+            Array.concat(state.tags, tags),
+            state.isCaptureGrouping() ? false : group);
 
-        Array<String> newTags = Array.copyOf(tags, state.tags.size(), tags.size());
-
-        // Same idea.
-        boolean newGroup = !state.isCaptureGrouping() ? group : false;
-
-        ParseTree out = new ParseTree(newAccessor, newTags, newGroup);
         out.value = value;
         out.children = children;
+
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public ParseTree unqualify(ParseState state)
+    {
+        ParseTree out = new ParseTree(
+            state.accessor == null ? accessor : null,
+            Array.copyOf(tags, state.tags.size(), tags.size()),
+            !state.isCaptureGrouping() ? group : false);
+
+        out.value = value;
+        out.children = children;
+
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public Array<ParseTree> unqualifiedAddedChildren(ParseState state)
+    {
+        int start = state.treeChildrenCount;
+        int size = children.size();
+        Array<ParseTree> out = new Array<>(size - start);
+
+        for (int i = start; i < size; ++i)
+        {
+            ParseTree child = children.get(i).unqualify(state);
+            out.add(child);
+        }
 
         return out;
     }
@@ -80,9 +99,19 @@ public final class ParseTree implements Iterable<ParseTree>
 
     // ---------------------------------------------------------------------------------------------
 
-    void truncateChildren(int childrenCount)
+    public Array<ParseTree> children()
     {
-        children.truncate(childrenCount);
+        return children;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void truncate(int start)
+    {
+        if (children != null)
+        {
+            children.truncate(start);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

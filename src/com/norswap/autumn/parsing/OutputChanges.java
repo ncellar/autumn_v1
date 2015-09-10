@@ -37,12 +37,7 @@ public final class OutputChanges
     {
         this.end = state.end;
         this.blackEnd = state.blackEnd;
-        this.children = new Array<>();
-
-        for (int i = state.treeChildrenCount; i < state.tree.childrenCount(); ++i)
-        {
-            this.children.add(state.tree.children.get(i).unqualify(state));
-        }
+        this.children = state.tree.unqualifiedAddedChildren(state);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -56,7 +51,8 @@ public final class OutputChanges
         {
             for (ParseTree child: children)
             {
-                state.tree.add(new ParseTree(state, child));
+                ParseTree qualified = child.qualify(state);
+                state.tree.add(qualified);
             }
         }
     }

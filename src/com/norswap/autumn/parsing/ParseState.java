@@ -9,7 +9,7 @@ import static com.norswap.autumn.parsing.Registry.*; // PSF_*
 /**
  * TODO
  */
-public final class ParseState
+public final class ParseState implements Cloneable
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -39,6 +39,7 @@ public final class ParseState
         ParseState root = new ParseState();
         root.end = 0;
         root.blackEnd = 0;
+        root.tree = new ParseTree(null, new Array<>(), false);
         root.tags = new Array<>();
         root.ext = new HandleMap();
         return root;
@@ -46,26 +47,15 @@ public final class ParseState
 
     // ---------------------------------------------------------------------------------------------
 
-    private ParseState()
+    public static ParseState from(ParseState parent)
     {
+        return parent.clone();
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public ParseState(ParseState parent)
+    private ParseState()
     {
-        this.start = parent.start;
-        this.blackStart = parent.blackStart;
-        this.precedence = parent.precedence;
-        this.seeds = parent.seeds;
-        this.flags = parent.flags;
-        this.accessor = parent.accessor;
-        this.tags = parent.tags;
-        this.end = parent.end;
-        this.blackEnd = parent.blackEnd;
-        this.tree = parent.tree;
-        this.treeChildrenCount = parent.treeChildrenCount;
-        this.ext = parent.ext;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -158,11 +148,7 @@ public final class ParseState
     {
         end = start;
         blackEnd = blackStart;
-
-        if (tree.children != null)
-        {
-            tree.children.truncate(treeChildrenCount);
-        }
+        tree.truncate(treeChildrenCount);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -196,6 +182,30 @@ public final class ParseState
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public String toString()
+    {
+        return String.format("(%X) [%d/%d - %d/%d[ tree(%d/%d) acc(%s)%s tags(%d) flags(%s)",
+            hashCode(), start, blackStart, end, blackEnd, treeChildrenCount, tree.childrenCount(),
+            accessor, isCaptureGrouping() ? "(g)" : "", tags.size(), Integer.toString(flags, 2));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    protected ParseState clone()
+    {
+        try {
+            return (ParseState) super.clone();
+        }
+        catch (CloneNotSupportedException e)
+        {
+            return null; // unreachable
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     // Standard Flags
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -212,6 +222,8 @@ public final class ParseState
     }
 
     // ---------------------------------------------------------------------------------------------
+
+    boolean forbidErrorRecording = false;
 
     public void forbidErrorRecording()
     {

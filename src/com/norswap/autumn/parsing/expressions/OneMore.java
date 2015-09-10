@@ -19,7 +19,8 @@ public final class OneMore extends UnaryParsingExpression
     @Override
     public void parse(Parser parser, ParseState state)
     {
-        final ParseState down = new ParseState(state);
+        final ParseState down = ParseState.from(state);
+
         operand.parse(parser, down);
 
         if (down.failed())

@@ -12,10 +12,6 @@ HOOKING
     - make reset hookable
     - syntax for custom operators ($name?)
 
-GUI
-    - queries
-        CSS where first
-
 TODO PLANNING
 
 4 weeks + 1 (try to interleave):
@@ -28,7 +24,7 @@ w5: manual
 
 TODO FURTHER SMALL
 
-- remove group flag?
+- keep an array instead of a tree in parsestate
 
 - path-like getters for parsing expression graphs
 
@@ -47,6 +43,8 @@ TODO FURTHER SMALL
 - allow not writing @=
 
 - check against multiple uses of - accessor
+
+- scoped memoization
 
 TODO FURTHER BIG
 

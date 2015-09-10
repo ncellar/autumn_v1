@@ -296,7 +296,7 @@ public final class GrammarCompiler
 
     private ParsingExpression[] compileChildren(ParseTree tree)
     {
-        return tree.children.stream()
+        return tree.children().stream()
             .map(this::compilePE)
             .toArray(ParsingExpression[]::new);
     }

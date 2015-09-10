@@ -22,7 +22,7 @@ public final class ZeroMore extends UnaryParsingExpression
     @Override
     public void parse(Parser parser, ParseState state)
     {
-        final ParseState down = new ParseState(state);
+        final ParseState down = ParseState.from(state);
 
         while (true)
         {
