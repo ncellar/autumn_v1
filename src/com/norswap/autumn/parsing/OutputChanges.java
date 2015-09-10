@@ -3,30 +3,32 @@ package com.norswap.autumn.parsing;
 import com.norswap.util.Array;
 import com.norswap.util.HandleMap;
 
+/**
+ * TODO
+ */
 public final class OutputChanges
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public int end;
-    public int blackEnd;
-    public Array<ParseTree> children;
-    public Array<String> cuts;
-    public HandleMap ext;
+    public final int end;
+    public final int blackEnd;
+
+    private Array<ParseTree> children;
+    private HandleMap ext;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static OutputChanges failure()
     {
-        OutputChanges changes = new OutputChanges();
-        changes.end = -1;
-        changes.blackEnd = -1;
-        return changes;
+        return new OutputChanges();
     }
 
     // ---------------------------------------------------------------------------------------------
 
     private OutputChanges()
     {
+        this.end = -1;
+        this.blackEnd = -1;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -36,16 +38,10 @@ public final class OutputChanges
         this.end = state.end;
         this.blackEnd = state.blackEnd;
         this.children = new Array<>();
-        this.cuts = new Array<>();
 
         for (int i = state.treeChildrenCount; i < state.tree.childrenCount(); ++i)
         {
             this.children.add(state.tree.children.get(i).unqualify(state));
-        }
-
-        for (int i = state.cutsCount; i < state.cuts.size(); ++i)
-        {
-            this.cuts.add(state.cuts.get(i));
         }
     }
 
@@ -62,11 +58,6 @@ public final class OutputChanges
             {
                 state.tree.add(new ParseTree(state, child));
             }
-        }
-
-        if (cuts != null)
-        {
-            state.cuts.addAll(cuts);
         }
     }
 

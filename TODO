@@ -12,6 +12,20 @@ HOOKING
     - make reset hookable
     - syntax for custom operators ($name?)
 
+GUI
+    - queries
+        CSS where first
+
+TODO PLANNING
+
+4 weeks + 1 (try to interleave):
+
+w1: parse tree etc
+w2: GUI model
+w3: GUI
+w4: presentation
+w5: manual
+
 TODO FURTHER SMALL
 
 - remove group flag?
@@ -43,6 +57,13 @@ TODO FURTHER BIG
     - memoize tokens?
     - discard children memo when parent finishes
 
+- generalize state handling to be able to define custom state
+    - + how memoize can handle custom state, including automatically
+      (chained hashs)
+
+- better support for layering with smart tree-building that automatically rewrites trees
+  (see D5)
+
 - trees: topological sort
 
 - rewrite GUI in Swing
@@ -50,6 +71,8 @@ TODO FURTHER BIG
 - mini type system for captures? automatic AST classes generation?
 
 - no state modifiers (no PSF!)
+
+- error handler is sort of like error merge strategy, do it like that instead?
 
 TODO MUCH LATER
 

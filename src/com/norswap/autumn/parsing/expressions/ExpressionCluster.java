@@ -136,16 +136,13 @@ public final class ExpressionCluster extends ParsingExpression
                         changes = new OutputChanges(state);
                         changesPrecedence = group.precedence;
                         state.setSeed(changes);
-                        state.resetAllOutput();
+                        state.resetOutput();
                         break;
                     }
                     else
                     {
                         // This rule couldn't grow the seed, try the next one.
-
-                        // Reset cuts as well, as a precaution, while further thinking is done on
-                        // the implications (and on the usefulness of the cut operator in general).
-                        state.resetAllOutput();
+                        state.resetOutput();
                     }
                 }
 

@@ -66,13 +66,11 @@ public final class LeftRecursive extends UnaryParsingExpression
 
                 changes = new OutputChanges(state);
                 state.setSeed(changes);
-                state.resetAllOutput();
+                state.resetOutput();
             }
         }
 
-        // Reset cuts as well, as a precaution, while further thinking is done on
-        // the implications (and on the usefulness of the cut operator in general).
-        state.resetAllOutput();
+        state.resetOutput();
 
         state.flags = oldFlags;
         changes.mergeInto(state);

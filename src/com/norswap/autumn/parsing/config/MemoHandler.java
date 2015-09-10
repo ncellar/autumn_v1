@@ -33,13 +33,5 @@ public interface MemoHandler
      */
     OutputChanges get(ParsingExpression pe, ParseState state);
 
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Called to indicate that all memoized changesets between the start of the input and the
-     * indicated position will no longer be needed; they can thus be released.
-     */
-    void cut(int position);
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

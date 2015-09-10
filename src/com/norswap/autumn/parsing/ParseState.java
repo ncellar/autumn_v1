@@ -6,6 +6,9 @@ import com.norswap.util.HandleMap;
 
 import static com.norswap.autumn.parsing.Registry.*; // PSF_*
 
+/**
+ * TODO
+ */
 public final class ParseState
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -24,10 +27,8 @@ public final class ParseState
     public int end;
     public int blackEnd;
     public ParseTree tree;
-    public Array<String> cuts;
 
     public int treeChildrenCount;
-    public int cutsCount;
 
     public HandleMap ext;
 
@@ -39,7 +40,6 @@ public final class ParseState
         root.end = 0;
         root.blackEnd = 0;
         root.tags = new Array<>();
-        root.cuts = new Array<>();
         root.ext = new HandleMap();
         return root;
     }
@@ -65,8 +65,6 @@ public final class ParseState
         this.blackEnd = parent.blackEnd;
         this.tree = parent.tree;
         this.treeChildrenCount = parent.treeChildrenCount;
-        this.cuts = parent.cuts;
-        this.cutsCount = parent.cutsCount;
         this.ext = parent.ext;
     }
 
@@ -141,7 +139,6 @@ public final class ParseState
         start = end;
         blackStart = blackEnd;
         treeChildrenCount = tree.childrenCount();
-        cutsCount = cuts.size();
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -166,16 +163,6 @@ public final class ParseState
         {
             tree.children.truncate(treeChildrenCount);
         }
-
-        // Of course, we don't reset cuts; they are only meaningful in case of failure!
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public void resetAllOutput()
-    {
-        resetOutput();
-        cuts.truncate(cutsCount);
     }
 
     // ---------------------------------------------------------------------------------------------

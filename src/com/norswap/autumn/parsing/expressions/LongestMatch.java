@@ -34,7 +34,7 @@ public final class LongestMatch extends NaryParsingExpression
                 farthestChanges = new OutputChanges(state);
             }
 
-            state.resetAllOutput();
+            state.resetOutput();
         }
 
         farthestChanges.mergeInto(state);

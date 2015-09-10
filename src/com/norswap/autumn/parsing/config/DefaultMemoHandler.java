@@ -128,54 +128,5 @@ public final class DefaultMemoHandler implements MemoHandler
         }
     }
 
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void cut(int position)
-    {
-        // Delete all memoized changes for positions in [earliestPosition, position[.
-
-        // 1. Delete all changes in the usual slots. This step suffices if there was never any
-        //    collisions in the store.
-
-        for (int i = earliestPosition; i < position; ++i)
-        {
-            int pos = store[i % store.length].position;
-
-            if (earliestPosition <= pos && pos < position)
-            {
-                store[i % store.length] = null;
-                --load;
-            }
-        }
-
-        // 2. Delete the chnages that have "ran over" due to open addressing.
-        //    For this we need to scan entries from the insertion point of the position
-        //    (assuming no collision) up to the first empty slot.
-
-        int index = position % store.length;
-        MemoNode node;
-
-        while ((node = store[index]) != null)
-        {
-            int pos = node.position;
-
-            if (earliestPosition <= pos && pos < position)
-            {
-                store[index] = null;
-                --load;
-            }
-
-            if (++index == store.length)
-            {
-                index = 0;
-            }
-        }
-
-        // 3. Update earliest position.
-
-        earliestPosition = position;
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

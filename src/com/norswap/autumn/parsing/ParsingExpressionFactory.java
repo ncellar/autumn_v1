@@ -202,25 +202,6 @@ public final class ParsingExpressionFactory
 
     // ---------------------------------------------------------------------------------------------
 
-    public static Cut cut(String cutName)
-    {
-        Cut result = new Cut();
-        result.name = cutName;
-        return result;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public static Cuttable cuttable(String name, ParsingExpression... operands)
-    {
-        Cuttable result = new Cuttable();
-        result.name = name;
-        result.operands = operands;
-        return result;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
     public static Dumb dumb(ParsingExpression operand)
     {
         Dumb result = new Dumb();

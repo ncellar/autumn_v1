@@ -105,7 +105,7 @@ public final class Parser
 
         if ((this.endPosition = rootState.end) < 0)
         {
-            rootState.resetAllOutput();
+            rootState.resetOutput();
         }
 
         // TODO
@@ -117,14 +117,12 @@ public final class Parser
     /**
      * This method should be called whenever a parsing expression fails. It calls {@link
      * ParseState#fail} and passes the error to the error handler.
-     *
-     * {@code state} should be in the same state as when the expression was invoked, modulo any
-     * changes that persists across failures (e.g. cuts). This means {@link ParseState#resetOutput}
-     * should have been called on the state if necessary.
-     *
-     * In some cases, an expression may elect not to report a failure, in which case it must
-     * call {@link ParseState#fail} directly instead (e.g. left-recursion for blocked recursive
-     * calls).
+     * <p>
+     * {@code state} should be in the same state as when the expression was invoked. This means
+     * {@link ParseState#resetOutput} should have been called on the state if necessary.
+     * <p>
+     * In some cases, an expression may elect not to report a failure, in which case it must call
+     * {@link ParseState#fail} directly instead (e.g. left-recursion for blocked recursive calls).
      */
     public void fail(ParsingExpression pe, ParseState state)
     {

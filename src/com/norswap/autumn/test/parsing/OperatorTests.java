@@ -26,8 +26,7 @@ public final class OperatorTests
         this::testOneMore,
         this::testLookahead,
         this::testNot,
-        this::testLongestMatch,
-        this::testCut
+        this::testLongestMatch
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -161,19 +160,6 @@ public final class OperatorTests
     {
         pe = pe(longestMatch(literal("a"), literal("ab"), literal("z"), literal("abc")));
         ensureMatch(pe, "abc");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public void testCut()
-    {
-        boolean oldTestDumb = testDumb;
-        testDumb = false;
-        pe = pe(cuttable("test", sequence(cut("test"), literal("a")), literal("b")));
-        testDumb = oldTestDumb;
-
-        ensureMatch(pe, "a");
-        ensureFail(pe, "b");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

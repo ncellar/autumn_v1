@@ -9,7 +9,7 @@ import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
  * mode, most features cannot be used, including:
  *
  * - error reporting
- * - memoization & cutting
+ * - memoization
  * - left-recursion
  * - associativity
  * - precedence
