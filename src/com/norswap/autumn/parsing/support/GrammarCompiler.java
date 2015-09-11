@@ -5,6 +5,7 @@ import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParseTree;
 import com.norswap.autumn.parsing.Whitespace;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster.Group;
+import com.norswap.autumn.parsing.expressions.Filter;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.ParsingExpressionFactory;
 import com.norswap.autumn.parsing.expressions.Reference;
@@ -88,7 +89,7 @@ public final class GrammarCompiler
             topChoice = token(topChoice);
         }
 
-        topChoice = compileCapture(topChoice, rule.group("captureSuffixes"));
+        topChoice = compileCapture(ruleName, topChoice, rule.group("captureSuffixes"));
 
         return named$(ruleName, topChoice);
     }
@@ -257,9 +258,44 @@ public final class GrammarCompiler
 
     // ---------------------------------------------------------------------------------------------
 
-    private ParsingExpression compileCapture(ParsingExpression child, List<ParseTree> suffixes)
+    private String name(String name, ParsingExpression expr, ParseTree suffix)
+    {
+        if (suffix.has("name"))
+        {
+            return suffix.value("name");
+        }
+
+        // Else there is a dollar instead of a name.
+        // Either this qualifies a rule ...
+
+        if (name != null)
+        {
+            return name;
+        }
+
+        // ... or a reference (possibly wrapped in a filter).
+
+        if (expr instanceof Filter)
+        {
+            expr = ((Filter) expr).operand;
+        }
+
+        if (!(expr instanceof Reference))
+        {
+            throw new RuntimeException(
+                "Dollar ($) capture name is a suffix of something which is not an identifier");
+        }
+
+        return ((Reference)expr).target;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private ParsingExpression compileCapture
+        (String name, ParsingExpression child, List<ParseTree> suffixes)
     {
         ParsingExpression out = child;
+        boolean first = true;
 
         for (ParseTree suffix: suffixes)
         {
@@ -268,24 +304,30 @@ public final class GrammarCompiler
             switch (suffix.accessor)
             {
                 case "capture":
+                    if (!first)
+                    {
+                        throw new RuntimeException("Capture suffix (:) not appearing as first suffix.");
+                    }
                     out = capture(suffix.has("captureText"), out);
                     break;
 
                 case "accessor":
-                    out = accessor$(suffix.value("name"), out);
+                    out = accessor$(name(name, child, suffix), out);
                     break;
 
                 case "group":
-                    out = group$(suffix.value("name"), out);
+                    out = group$(name(name, child, suffix), out);
                     break;
 
                 case "tag":
-                    out = tag$(suffix.value("name"), out);
+                    out = tag$(name(name, child, suffix), out);
                     break;
 
                 default:
                     throw new RuntimeException("Unknown capture type: " + suffix.accessor);
             }
+
+            first = false;
         }
 
         return out;
@@ -349,7 +391,7 @@ public final class GrammarCompiler
                 return oneMore(compilePE(tree.child()));
 
             case "capture":
-                return compileCapture(compilePE(tree.child(0)), tree.group("captureSuffixes"));
+                return compileCapture(null, compilePE(tree.child(0)), tree.group("captureSuffixes"));
 
             case "drop":
                 return exprDropPrecedence(compilePE(tree.child()));

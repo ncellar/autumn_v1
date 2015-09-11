@@ -2,15 +2,15 @@
 TODO
 
 CAPTURE SYSTEM
-    - syntactic support for naming a capture after the name of identifier used (dollar)
     - "marker" capture (capture on its own, no depth increase) (noop expression)
-    - improve GrammarGrammar using capture system
-    - clean up the compat layer for the capture system
 
 HOOKING
     - make output changes hookable
     - make reset hookable
     - syntax for custom operators ($name?)
+
+GUMPTION
+    - insert $ in Java8 (rule-level only) (-> 544)
 
 TODO PLANNING
 
@@ -23,6 +23,11 @@ w4: presentation
 w5: manual
 
 TODO FURTHER SMALL
+
+- performance
+    - store accessor, tag, groups as tabular
+    - force captures for changes?
+    - tags as linked list
 
 - keep an array instead of a tree in parsestate
 
@@ -71,6 +76,8 @@ TODO FURTHER BIG
 - no state modifiers (no PSF!)
 
 - error handler is sort of like error merge strategy, do it like that instead?
+
+- think about building in validation rules
 
 TODO MUCH LATER
 

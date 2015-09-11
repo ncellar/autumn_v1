@@ -43,8 +43,6 @@ public final class ParsingExpressionFactory
         return result;
     }
 
-    // TODO start compat
-
     // ---------------------------------------------------------------------------------------------
 
     public static Capture capture(String accessor, ParsingExpression operand)
@@ -107,8 +105,6 @@ public final class ParsingExpressionFactory
     {
         return new Array<>(tags);
     }
-
-    // TODO end compat
 
     // ---------------------------------------------------------------------------------------------
 
@@ -499,6 +495,15 @@ public final class ParsingExpressionFactory
     {
         Token result = new Token();
         result.operand = operand;
+        return result;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static Token token(String string)
+    {
+        Token result = new Token();
+        result.operand = literal(string);
         return result;
     }
 

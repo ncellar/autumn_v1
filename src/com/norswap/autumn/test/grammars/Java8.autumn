@@ -280,29 +280,29 @@ constraints:
     - type arguments and bounds must be reference types (classes or arrays, not primitive types)
 
 <basicType>
-    :+~basicType
+    :+~BasicType
 
 <primitiveType>
-    :~primitiveType
+    :~PrimitiveType
         <annotations>
         <basicType>
 
 <classType>
-    :~classType
+    :~ClassType
         :#components
             <annotations>
             :+-id
             <typeArgs>
 
 <type>
-    :~type
+    :~Type
         OR
             <primitiveType>
             <classType>
         <dims>
 
 <stemType>
-    ~stemType
+    ~StemType
         OR
             <primitiveType>
             <classType>
@@ -325,7 +325,7 @@ constraints:
             <type>
 
 <wildcard>
-    :~ wildcard
+    :~ Wildcard
         <annotations>
         OR?
             -extends
@@ -335,7 +335,7 @@ constraints:
 
 */
 
-BasicType :+~ basicType
+BasicType :+~$
     = BYTE
     / SHORT
     / INT
@@ -345,16 +345,16 @@ BasicType :+~ basicType
     / DOUBLE
     / BOOLEAN ;
 
-PrimitiveType :~ primitiveType
+PrimitiveType :~$
     = Annotations BasicType ;
 
-ClassType :~ classType
+ClassType :~$
     = (Annotations Identifier:+-id TypeArguments?) :# components ,+ '.' ;
 
-Type :~ type
+Type :~$
     = StemType Dims ;
 
-StemType ~ stemType
+StemType ~$
     = PrimitiveType / ClassType ;
 
 Dim
@@ -381,7 +381,7 @@ TypeArguments
 TypeArgument
     = Type / Wildcard ;
 
-Wildcard :~ wildcard
+Wildcard :~$
     = Annotations QUERY WildcardBounds? ;
 
 WildcardBounds
@@ -395,7 +395,7 @@ WildcardBounds
 /*
 
 <root>
-    :- package
+    :- PackageDeclaration
         <annotations>
         :+-id
     :#imports
@@ -408,11 +408,11 @@ WildcardBounds
 */
 
 CompilationUnit
-    = PackageDeclaration?
+    = (PackageDeclaration :-$)?
       ((ImportDeclaration :# imports) / ';')*
       (TypeDeclaration :# types)* ;
 
-PackageDeclaration :- package
+PackageDeclaration
     = Annotations PACKAGE QualIdent:+-id ';' ;
 
 ImportDeclaration
@@ -438,16 +438,16 @@ constraints:
     #modifiers
         OR
             <annotation>
-            :~public
-            :~protected
-            :~private
-            :~abstract
-            :~static
-            :~final
-            :~strictfp
+            :~PUBLIC
+            :~PROTECTED
+            :~PRIVATE
+            :~ABSTRACT
+            :~STATIC
+            :~FINAL
+            :~STRICTFP
 
 <typeDeclaration>
-    :~typeDeclaration
+    :~TypeDeclaration
         <typeModifiers>
         ?:-annotationDeclaration
         OR
@@ -484,15 +484,15 @@ constraints:
 
 TypeModifier
     = Annotation
-    / PUBLIC        :~public
-    / PROTECTED     :~protected
-    / PRIVATE       :~private
-    / ABSTRACT      :~abstract
-    / STATIC        :~static
-    / FINAL         :~final
-    / STRICTFP      :~strictfp ;
+    / PUBLIC        :~$
+    / PROTECTED     :~$
+    / PRIVATE       :~$
+    / ABSTRACT      :~$
+    / STATIC        :~$
+    / FINAL         :~$
+    / STRICTFP      :~$ ;
 
-TypeDeclaration :~ typeDeclaration
+TypeDeclaration :~$
     = TypeModifier # modifiers *  (EnumDeclaration / OtherTypeDeclaration) ;
 
 EnumDeclaration

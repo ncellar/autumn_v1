@@ -52,6 +52,9 @@ public final class AutumnBench
 
                     return;
                 }
+
+                System.err.println("\n ------ \n");
+                System.err.println(result.tree.toTreeString());
             }
 
             Instant tmp = Instant.now();

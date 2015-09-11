@@ -49,7 +49,7 @@ public final class ParseTree implements Iterable<ParseTree>
     {
         ParseTree out = new ParseTree(
             state.accessor != null ? state.accessor : accessor,
-            Array.concat(state.tags, tags),
+            tags,//Array.concat(state.tags, tags),
             state.isCaptureGrouping() ? false : group);
 
         out.value = value;
@@ -64,7 +64,7 @@ public final class ParseTree implements Iterable<ParseTree>
     {
         ParseTree out = new ParseTree(
             state.accessor == null ? accessor : null,
-            Array.copyOf(tags, state.tags.size(), tags.size()),
+            tags,//Array.copyOf(tags, state.tags.size(), tags.size()),
             !state.isCaptureGrouping() ? group : false);
 
         out.value = value;
