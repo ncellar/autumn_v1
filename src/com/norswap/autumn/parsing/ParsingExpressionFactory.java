@@ -115,14 +115,25 @@ public final class ParsingExpressionFactory
 
     // ---------------------------------------------------------------------------------------------
 
+    private static void checkForAccessor(Capture c, String newAccessor)
+    {
+        if (c.accessor != null)
+        {
+            throw new RuntimeException(
+                "Trying to override accessor \"" + c.accessor
+                    + "\" with accessor \"" + newAccessor + "\".");
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     public static Capture accessor$(String accessor, ParsingExpression operand)
     {
         if (operand instanceof Capture)
         {
             Capture c2 = (Capture) operand;
+            checkForAccessor(c2, accessor);
             c2.accessor = accessor;
-            // TODO what should be done in those cases?
-            //c2.clearFlags(PEF_CAPTURE_GROUPED);
             return c2;
         }
 
@@ -156,6 +167,7 @@ public final class ParsingExpressionFactory
         if (operand instanceof Capture)
         {
             Capture c2 = (Capture) operand;
+            checkForAccessor(c2, accessor);
             c2.accessor = accessor;
             c2.flags |= PEF_CAPTURE_GROUPED;
             return c2;

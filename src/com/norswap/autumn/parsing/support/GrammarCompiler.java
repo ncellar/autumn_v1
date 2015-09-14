@@ -301,6 +301,8 @@ public final class GrammarCompiler
             ? capture((first = false), null)
             : child;
 
+        int accessors = 0;
+
         for (ParseTree suffix: suffixes)
         {
             suffix = suffix.child();
@@ -317,10 +319,12 @@ public final class GrammarCompiler
 
                 case "accessor":
                     out = accessor$(name(name, child, suffix), out);
+                    ++accessors;
                     break;
 
                 case "group":
                     out = group$(name(name, child, suffix), out);
+                    ++accessors;
                     break;
 
                 case "tag":
@@ -332,6 +336,11 @@ public final class GrammarCompiler
             }
 
             first = false;
+        }
+
+        if (accessors > 1)
+        {
+            throw new RuntimeException("More than one accessor or group specification.");
         }
 
         return out;

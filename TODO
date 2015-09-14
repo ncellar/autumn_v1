@@ -1,9 +1,6 @@
 --------------------------------------------------------------------------------
 TODO
 
-CAPTURE SYSTEM
-    - check against multiple uses of - accessor
-
 HOOKING
     - make output changes hookable
     - make reset hookable
