@@ -62,7 +62,7 @@ public final class Parser
     {
         this.grammar = grammar;
         this.source = source;
-        this.text = source.text();
+        this.text = source.text;
 
         this.errorHandler = config.errorHandler.get();
         this.memoHandler = config.memoizationStrategy.get();

@@ -189,7 +189,7 @@ public final class GrammarCompiler
             }
             else
             {
-                groups.put(precedence, group(precedence, leftRecursive, leftAssociative, null));
+                groups.put(precedence, group(precedence, leftRecursive, leftAssociative));
                 alts.put(precedence, new Array<>(pe));
             }
 

@@ -3,6 +3,7 @@ package com.norswap.autumn.test.benchmark;
 import com.norswap.autumn.Autumn;
 import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParseResult;
+import com.norswap.autumn.parsing.Source;
 import com.norswap.autumn.parsing.graph.Printer;
 import com.norswap.util.Array;
 import com.norswap.util.Glob;
@@ -24,7 +25,7 @@ public final class AutumnBench
     public static void main(String[] args) throws IOException
     {
         Instant startParse = Instant.now();
-        Grammar grammar = Autumn.grammarFromFile(grammarFile);
+        Grammar grammar =  Autumn.grammarFromSource(Source.fromFile(grammarFile, 1, 4));
 
         // inspect grammar
         //new Printer(System.err::print, false, false).visit(grammar.root());
@@ -53,8 +54,8 @@ public final class AutumnBench
                     return;
                 }
 
-                System.err.println("\n ------ \n");
-                System.err.println(result.tree.toTreeString());
+//                System.err.println("\n ------ \n");
+//                System.err.println(result.tree.toTreeString());
             }
 
             Instant tmp = Instant.now();

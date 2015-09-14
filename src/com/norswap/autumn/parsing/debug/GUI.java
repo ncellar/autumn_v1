@@ -55,7 +55,7 @@ public class GUI extends Application
             ClassLoader.getSystemResource("debugger/debugger.html").toExternalForm());
 
         JSBridge bridge = new JSBridge();
-        bridge._text = DEBUGGER.source.text().toString();
+        bridge._text = DEBUGGER.source.text.toString();
 
 
         engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) ->

@@ -16,34 +16,75 @@ public final class LineMap
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public TextPosition position(int position)
+    /**
+     * Return a position for the given offset, assuming that columns start at 0.
+     */
+    public TextPosition positionFromOffset(int offset)
     {
-        int line = Arrays.binarySearch(linePositions, position);
+        return positionFromOffset(offset, 0);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Return a position for the given offset, assuming that columns start at 0.
+     */
+    public TextPosition positionFromOffset(int offset, int lineStart)
+    {
+        int line = Arrays.binarySearch(linePositions, offset);
 
         if (line >= 0)
         {
-            return new TextPosition(position, line, 0);
+            return new TextPosition(offset, line, 0);
         }
         else
         {
             line = -line - 2;
 
-            return new TextPosition(position, line, position - linePositions[line]);
+            return new TextPosition(offset, line, offset - linePositions[line] + lineStart);
         }
     }
 
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * Return a position for the (line, column) pair, assuming that columns start at 0.
+     */
     public TextPosition position(int line, int column)
     {
-        return new TextPosition(fileOffset(line, column), line, column);
+        return new TextPosition(offset(line, column), line, column);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public int fileOffset(int line, int column)
+    /**
+     * Return a position for the (line, column) pair, assuming that columns start at {@code
+     * lineStart}.
+     */
+    public TextPosition position(int line, int column, int lineStart)
+    {
+        return new TextPosition(offset(line, column - lineStart), line, column);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Returns the file offset for the (line, column) pair, assuming that columns start at 0.
+     */
+    public int offset(int line, int column)
     {
         return linePositions[line] + column;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Returns the file offset for the (line, column) pair, assuming that columns start at {@code
+     * lineStart}.
+     */
+    public int offset(int line, int column, int lineStart)
+    {
+        return linePositions[line] + column - lineStart;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

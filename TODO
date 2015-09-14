@@ -1,9 +1,10 @@
 --------------------------------------------------------------------------------
 TODO
 
-HOOKING
+REWORK
     - make output changes hookable
     - make reset hookable
+    - unify state system
     - syntax for custom operators ($name?)
 
 GUMPTION
@@ -20,8 +21,6 @@ w4: presentation
 w5: manual
 
 TODO FURTHER SMALL
-
-- source: start from 0 or 1; tab as x chars
 
 - path-like getters for parsing expression graphs
 
@@ -58,11 +57,7 @@ TODO FURTHER BIG
 
 - trees: topological sort
 
-- rewrite GUI in Swing
-
 - mini type system for captures? automatic AST classes generation?
-
-- no state modifiers (no PSF!)
 
 - error handler is sort of like error merge strategy, do it like that instead?
 
