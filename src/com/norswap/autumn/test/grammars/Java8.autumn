@@ -25,7 +25,7 @@ Spacing
       / "//" _ *+ [\r\n]   // EndOfLineComment
       )* ;
 
-Identifier !%= !Keyword Letter LetterOrDigit* ;
+Identifier ^%= !Keyword Letter LetterOrDigit* ;
 
 QualIdent = Identifier ,+ '.';
 
@@ -53,57 +53,57 @@ Keyword
 
       ) !LetterOrDigit ;
 
-ABSTRACT     !%= "abstract"     !LetterOrDigit  ;
-ASSERT       !%= "assert"       !LetterOrDigit  ;
-BOOLEAN      !%= "boolean"      !LetterOrDigit  ;
-BREAK        !%= "break"        !LetterOrDigit  ;
-BYTE         !%= "byte"         !LetterOrDigit  ;
-CASE         !%= "case"         !LetterOrDigit  ;
-CATCH        !%= "catch"        !LetterOrDigit  ;
-CHAR         !%= "char"         !LetterOrDigit  ;
-CLASS        !%= "class"        !LetterOrDigit  ;
-CONTINUE     !%= "continue"     !LetterOrDigit  ;
-DEFAULT      !%= "default"      !LetterOrDigit  ;
-DOUBLE       !%= "double"       !LetterOrDigit  ;
-DO           !%= "do"           !LetterOrDigit  ;
-ELSE         !%= "else"         !LetterOrDigit  ;
-ENUM         !%= "enum"         !LetterOrDigit  ;
-EXTENDS      !%= "extends"      !LetterOrDigit  ;
-FALSE        !%= "false"        !LetterOrDigit  ;
-FINALLY      !%= "finally"      !LetterOrDigit  ;
-FINAL        !%= "final"        !LetterOrDigit  ;
-FLOAT        !%= "float"        !LetterOrDigit  ;
-FOR          !%= "for"          !LetterOrDigit  ;
-IF           !%= "if"           !LetterOrDigit  ;
-IMPLEMENTS   !%= "implements"   !LetterOrDigit  ;
-IMPORT       !%= "import"       !LetterOrDigit  ;
-INTERFACE    !%= "interface"    !LetterOrDigit  ;
-INT          !%= "int"          !LetterOrDigit  ;
-INSTANCEOF   !%= "instanceof"   !LetterOrDigit  ;
-LONG         !%= "long"         !LetterOrDigit  ;
-NATIVE       !%= "native"       !LetterOrDigit  ;
-NEW          !%= "new"          !LetterOrDigit  ;
-NULL         !%= "null"         !LetterOrDigit  ;
-PACKAGE      !%= "package"      !LetterOrDigit  ;
-PRIVATE      !%= "private"      !LetterOrDigit  ;
-PROTECTED    !%= "protected"    !LetterOrDigit  ;
-PUBLIC       !%= "public"       !LetterOrDigit  ;
-RETURN       !%= "return"       !LetterOrDigit  ;
-SHORT        !%= "short"        !LetterOrDigit  ;
-STATIC       !%= "static"       !LetterOrDigit  ;
-STRICTFP     !%= "strictfp"     !LetterOrDigit  ;
-SUPER        !%= "super"        !LetterOrDigit  ;
-SWITCH       !%= "switch"       !LetterOrDigit  ;
-SYNCHRONIZED !%= "synchronized" !LetterOrDigit  ;
-THIS         !%= "this"         !LetterOrDigit  ;
-THROWS       !%= "throws"       !LetterOrDigit  ;
-THROW        !%= "throw"        !LetterOrDigit  ;
-TRANSIENT    !%= "transient"    !LetterOrDigit  ;
-TRUE         !%= "true"         !LetterOrDigit  ;
-TRY          !%= "try"          !LetterOrDigit  ;
-VOID         !%= "void"         !LetterOrDigit  ;
-VOLATILE     !%= "volatile"     !LetterOrDigit  ;
-WHILE        !%= "while"        !LetterOrDigit  ;
+ABSTRACT     ^%= "abstract"     !LetterOrDigit  ;
+ASSERT       ^%= "assert"       !LetterOrDigit  ;
+BOOLEAN      ^%= "boolean"      !LetterOrDigit  ;
+BREAK        ^%= "break"        !LetterOrDigit  ;
+BYTE         ^%= "byte"         !LetterOrDigit  ;
+CASE         ^%= "case"         !LetterOrDigit  ;
+CATCH        ^%= "catch"        !LetterOrDigit  ;
+CHAR         ^%= "char"         !LetterOrDigit  ;
+CLASS        ^%= "class"        !LetterOrDigit  ;
+CONTINUE     ^%= "continue"     !LetterOrDigit  ;
+DEFAULT      ^%= "default"      !LetterOrDigit  ;
+DOUBLE       ^%= "double"       !LetterOrDigit  ;
+DO           ^%= "do"           !LetterOrDigit  ;
+ELSE         ^%= "else"         !LetterOrDigit  ;
+ENUM         ^%= "enum"         !LetterOrDigit  ;
+EXTENDS      ^%= "extends"      !LetterOrDigit  ;
+FALSE        ^%= "false"        !LetterOrDigit  ;
+FINALLY      ^%= "finally"      !LetterOrDigit  ;
+FINAL        ^%= "final"        !LetterOrDigit  ;
+FLOAT        ^%= "float"        !LetterOrDigit  ;
+FOR          ^%= "for"          !LetterOrDigit  ;
+IF           ^%= "if"           !LetterOrDigit  ;
+IMPLEMENTS   ^%= "implements"   !LetterOrDigit  ;
+IMPORT       ^%= "import"       !LetterOrDigit  ;
+INTERFACE    ^%= "interface"    !LetterOrDigit  ;
+INT          ^%= "int"          !LetterOrDigit  ;
+INSTANCEOF   ^%= "instanceof"   !LetterOrDigit  ;
+LONG         ^%= "long"         !LetterOrDigit  ;
+NATIVE       ^%= "native"       !LetterOrDigit  ;
+NEW          ^%= "new"          !LetterOrDigit  ;
+NULL         ^%= "null"         !LetterOrDigit  ;
+PACKAGE      ^%= "package"      !LetterOrDigit  ;
+PRIVATE      ^%= "private"      !LetterOrDigit  ;
+PROTECTED    ^%= "protected"    !LetterOrDigit  ;
+PUBLIC       ^%= "public"       !LetterOrDigit  ;
+RETURN       ^%= "return"       !LetterOrDigit  ;
+SHORT        ^%= "short"        !LetterOrDigit  ;
+STATIC       ^%= "static"       !LetterOrDigit  ;
+STRICTFP     ^%= "strictfp"     !LetterOrDigit  ;
+SUPER        ^%= "super"        !LetterOrDigit  ;
+SWITCH       ^%= "switch"       !LetterOrDigit  ;
+SYNCHRONIZED ^%= "synchronized" !LetterOrDigit  ;
+THIS         ^%= "this"         !LetterOrDigit  ;
+THROWS       ^%= "throws"       !LetterOrDigit  ;
+THROW        ^%= "throw"        !LetterOrDigit  ;
+TRANSIENT    ^%= "transient"    !LetterOrDigit  ;
+TRUE         ^%= "true"         !LetterOrDigit  ;
+TRY          ^%= "try"          !LetterOrDigit  ;
+VOID         ^%= "void"         !LetterOrDigit  ;
+VOLATILE     ^%= "volatile"     !LetterOrDigit  ;
+WHILE        ^%= "while"        !LetterOrDigit  ;
 
 //=========================================================================
 //  Literals (JLS 3.10)
@@ -131,7 +131,7 @@ Literal ~ literal
     / NullLiteral       :+~nullLiteral ;
 
 IntegerLiteral
-    !%= ( HexNumeral
+    ^%= ( HexNumeral
       / BinaryNumeral
       / OctalNumeral            // May be a prefix of HexNumeral or BinaryNumeral
       / DecimalNumeral          // May be a prefix of OctalNumeral
@@ -150,7 +150,7 @@ BinaryNumeral
     = ("0b" / "0B") [01]([_]*[01])* ;
 
 FloatLiteral
-    !%= HexadecimalFloatingPointLiteral
+    ^%= HexadecimalFloatingPointLiteral
       / DecimalFloatingPointLiteral ;   // May be a prefix of above
 
 DecimalFloatingPointLiteral
@@ -185,10 +185,10 @@ BooleanLiteral
     = TRUE / FALSE ;
 
 CharLiteral
-    !%= "'" (Escape / !['\\\n\r] _) "'" ;
+    ^%= "'" (Escape / !['\\\n\r] _) "'" ;
 
 StringLiteral
-    !%= "\"" (Escape / ![\"\\\n\r] _)* "\"" ;
+    ^%= "\"" (Escape / ![\"\\\n\r] _)* "\"" ;
 
 Escape
     = "\\" ([btnfr\"'\\] / OctalEscape / UnicodeEscape) ;

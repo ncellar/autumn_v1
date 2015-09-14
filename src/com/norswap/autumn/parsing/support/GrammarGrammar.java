@@ -40,6 +40,8 @@ public final class GrammarGrammar
     hash          = token("#"),
     dollar        = token("$"),
     dot           = token("."),
+    percent       = token("%"),
+    hat           = token("^"),
 
     digit         = charRange('0', '9'),
     hexDigit      = choice(digit, charRange('a', 'f'), charRange('A', 'F')),
@@ -123,7 +125,9 @@ public final class GrammarGrammar
 
         group(++i,
             capture("and", sequence(and, expr)),
-            capture("not", sequence(bang, expr))),
+            capture("not", sequence(bang, expr)),
+            capture("token", sequence(percent, expr)),
+            capture("dumb", sequence(hat, expr))),
 
         group(++i,
             capture("until", sequence(expr, starPlus, expr)),
@@ -162,13 +166,13 @@ public final class GrammarGrammar
         oneMore(captureGrouped("alts", sequence(
             arrow,
             capture("expr", filter(null, $(reference("choice")), parsingExpression)),
-            oneMore(captureGrouped("annotations", exprAnnotation)))))))),
+            zeroMore(captureGrouped("annotations", exprAnnotation)))))))),
 
     rule = named$("rule", sequence(
         captureText("ruleName", name),
         zeroMore(captureSuffix),
-        optional(capture("dumb", literal("!"))),
-        optional(capture("token", literal("%"))),
+        optional(capture("dumb", hat)),
+        optional(capture("token", percent)),
         equal,
         choice(exprCluster, capture("expr", parsingExpression)),
         semi)),

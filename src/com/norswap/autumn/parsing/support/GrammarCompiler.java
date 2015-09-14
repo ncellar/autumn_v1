@@ -115,18 +115,17 @@ public final class GrammarCompiler
 
     private ParsingExpression compileCluster(ParseTree expression)
     {
-        final int UNSET = -1;
-
-        Counter currentPrecedence = new Counter(0);
         Array<ParsingExpression> namedAlternates = new Array<>();
         Array<Group> groups = new Array<>();
         Array<Array<ParsingExpression>> alts = new Array<>();
+
+        int i = 0;
+        int precedence = 1;
 
         for (ParseTree alt: expression.group("alts"))
         {
             ParsingExpression pe = compilePE(alt.get("expr").child());
 
-            int precedence = UNSET;
             int psets = 0;
             boolean leftRecursive = false;
             boolean leftAssociative = false;
@@ -143,12 +142,11 @@ public final class GrammarCompiler
                         break;
 
                     case "increment":
-                        precedence = currentPrecedence.i + 1;
+                        if (i != 0) ++precedence;
                         ++psets;
                         break;
 
                     case "same":
-                        precedence = currentPrecedence.i;
                         ++psets;
                         break;
 
@@ -178,17 +176,7 @@ public final class GrammarCompiler
                 throw new RuntimeException(
                     "Precedence can't be 0. Don't use @0; or use @= in first position.");
             }
-            else if (precedence == UNSET)
-            {
-                throw new RuntimeException(
-                    "Expression alternate does not specify precedence.");
-            }
-            else if (precedence < currentPrecedence.i)
-            {
-                throw new RuntimeException(
-                    "Alternates must be grouped by precedence in expression cluster.");
-            }
-            else if (precedence == currentPrecedence.i)
+            else if (precedence < groups.size() && groups.get(precedence) != null)
             {
                 if (leftRecursive)
                 {
@@ -201,10 +189,11 @@ public final class GrammarCompiler
             }
             else
             {
-                groups.put(precedence, group(precedence, leftRecursive, leftAssociative, (Group[]) null));
+                groups.put(precedence, group(precedence, leftRecursive, leftAssociative, null));
                 alts.put(precedence, new Array<>(pe));
-                ++currentPrecedence.i;
             }
+
+            ++i;
         }
 
         namedAlternates.forEach(namedClusterAlternates::push);
@@ -213,7 +202,7 @@ public final class GrammarCompiler
 
         Array<Group> groupsArray = new Array<>();
 
-        for (int i = 0; i < groups.size(); ++i)
+        for (i = 0; i < groups.size(); ++i)
         {
             Group group = groups.get(i);
 
@@ -378,6 +367,12 @@ public final class GrammarCompiler
 
             case "not":
                 return not(compilePE(tree.child()));
+
+            case "token":
+                return token(compilePE(tree.child()));
+
+            case "dumb":
+                return dumb(compilePE(tree.child()));
 
             case "until":
                 return until(

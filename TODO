@@ -2,8 +2,6 @@
 TODO
 
 CAPTURE SYSTEM
-    - dumb (%) and token (symbol? ^?) operators
-    - allow not writing @=
     - modify precedence of capture so that (X* # name) becomes valid
     - check against multiple uses of - accessor
 
