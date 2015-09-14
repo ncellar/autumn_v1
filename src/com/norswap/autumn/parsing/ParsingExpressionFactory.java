@@ -54,6 +54,13 @@ public final class ParsingExpressionFactory
 
     // ---------------------------------------------------------------------------------------------
 
+    public static Capture marker(String accessor)
+    {
+        return capture(accessor, null);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     public static Capture captureText(String accessor, ParsingExpression operand)
     {
         Capture result = capture(true, operand);

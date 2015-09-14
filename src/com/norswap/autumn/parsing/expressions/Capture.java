@@ -3,6 +3,7 @@ package com.norswap.autumn.parsing.expressions;
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.ParseTree;
 import com.norswap.autumn.parsing.Parser;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
 import com.norswap.util.Array;
 
@@ -65,6 +66,10 @@ public final class Capture extends UnaryParsingExpression
         {
             operand.parse(parser, state);
         }
+        else if (operand == null)
+        {
+            state.tree.add(new ParseTree(state));
+        }
         else
         {
             ParseTree oldTree = state.tree;
@@ -124,6 +129,16 @@ public final class Capture extends UnaryParsingExpression
         return String.format("accessor: %s, tags: %s, capture: %s",
             accessor, tags,
             shouldCaptureText() ? "text" : shouldGroup() ? "group" : shouldCapture());
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public ParsingExpression[] children()
+    {
+        return operand != null
+            ? super.children()
+            : new ParsingExpression[0];
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

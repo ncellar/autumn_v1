@@ -275,6 +275,12 @@ public final class GrammarCompiler
 
         // ... or a reference (possibly wrapped in a filter).
 
+        if (expr == null)
+        {
+            throw new RuntimeException(
+                "Dollar ($) capture name used in conjuction with a marker.");
+        }
+
         if (expr instanceof Filter)
         {
             expr = ((Filter) expr).operand;
@@ -291,11 +297,20 @@ public final class GrammarCompiler
 
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * The name field is for rule names, if this is a capture over a rule definition.
+     * <p>
+     * If the child field is null, this is a marker capture.
+     */
     private ParsingExpression compileCapture
         (String name, ParsingExpression child, List<ParseTree> suffixes)
     {
-        ParsingExpression out = child;
         boolean first = true;
+
+        // A marker implies capture!
+        ParsingExpression out = child == null
+            ? capture((first = false), null)
+            : child;
 
         for (ParseTree suffix: suffixes)
         {
@@ -347,6 +362,9 @@ public final class GrammarCompiler
 
     private ParsingExpression compilePE(ParseTree tree)
     {
+        ParseTree child;
+        ParsingExpression childPE;
+
         switch (tree.accessor)
         {
             case "choice":
@@ -391,7 +409,9 @@ public final class GrammarCompiler
                 return oneMore(compilePE(tree.child()));
 
             case "capture":
-                return compileCapture(null, compilePE(tree.child(0)), tree.group("captureSuffixes"));
+                child = tree.child(0);
+                childPE = child.accessor.equals("marker") ? null : compilePE(child);
+                return compileCapture(null, childPE, tree.group("captureSuffixes"));
 
             case "drop":
                 return exprDropPrecedence(compilePE(tree.child()));

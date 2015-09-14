@@ -2,7 +2,10 @@
 TODO
 
 CAPTURE SYSTEM
-    - "marker" capture (capture on its own, no depth increase) (noop expression)
+    - dumb (%) and token (symbol? ^?) operators
+    - allow not writing @=
+    - modify precedence of capture so that (X* # name) becomes valid
+    - check against multiple uses of - accessor
 
 HOOKING
     - make output changes hookable
@@ -39,15 +42,7 @@ TODO FURTHER SMALL
 
 - source: start from 0 or 1; tab as x chars
 
-- dumb (%) and token (symbol? ^?) operators
-
-- modify precedence of capture so that (X* # name) becomes valid
-
 - better way to exclude reserved identifiers or warn about them
-
-- allow not writing @=
-
-- check against multiple uses of - accessor
 
 - scoped memoization
 

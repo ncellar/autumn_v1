@@ -17,7 +17,9 @@ public abstract class UnaryParsingExpression extends ParsingExpression
     @Override
     public ParsingExpression[] children()
     {
-        return new ParsingExpression[]{operand};
+        return operand != null
+            ? new ParsingExpression[]{operand}
+            : new ParsingExpression[0];
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -33,12 +35,9 @@ public abstract class UnaryParsingExpression extends ParsingExpression
     @Override
     public Nullability nullability(Grammar grammar)
     {
-        if (operand == null)
-        {
-            System.err.println("NULL OPERAND: " + this);
-        }
-
-        return Nullability.single(this, operand);
+        return operand != null
+            ? Nullability.single(this, operand)
+            : Nullability.no(this);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -46,7 +45,9 @@ public abstract class UnaryParsingExpression extends ParsingExpression
     @Override
     public ParsingExpression[] firsts(Grammar grammar)
     {
-        return new ParsingExpression[]{operand};
+        return operand != null
+            ? new ParsingExpression[]{operand}
+            : new ParsingExpression[0];
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

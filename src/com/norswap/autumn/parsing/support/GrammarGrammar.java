@@ -39,6 +39,7 @@ public final class GrammarGrammar
     minus         = token("-"),
     hash          = token("#"),
     dollar        = token("$"),
+    dot           = token("."),
 
     digit         = charRange('0', '9'),
     hexDigit      = choice(digit, charRange('a', 'f'), charRange('A', 'F')),
@@ -134,7 +135,7 @@ public final class GrammarGrammar
             capture("oneMore", sequence(expr, plus))),
 
         groupLeftRec(++i,
-            capture("capture", sequence(expr, oneMore(captureSuffix)))),
+            capture("capture", sequence(choice(expr, capture("marker", dot)), oneMore(captureSuffix)))),
 
         group(++i,
             sequence(lParen, exprDropPrecedence(expr), rParen),
