@@ -113,71 +113,71 @@ public final class GrammarGrammar
 
     parsingExpression = recursive$("expr", cluster(
 
-        // NOTE(norswap)
-        // Using left associativity for choice and sequence ensures that sub-expressions
-        // have higher precedence. So we don't get pesky choice of choices or sequence of sequences.
+            // NOTE(norswap)
+            // Using left associativity for choice and sequence ensures that sub-expressions
+            // have higher precedence. So we don't get pesky choice of choices or sequence of sequences.
 
-        groupLeftAssoc(++i,
-            named$("choice", capture("choice", aloSeparated(expr, slash)))),
+            groupLeftAssoc(++i,
+                named$("choice", capture("choice", aloSeparated(expr, slash)))),
 
-        groupLeftAssoc(++i,
-            capture("sequence", sequence(expr, oneMore(expr)))),
+            groupLeftAssoc(++i,
+                capture("sequence", sequence(expr, oneMore(expr)))),
 
-        group(++i,
-            capture("and", sequence(and, expr)),
-            capture("not", sequence(bang, expr)),
-            capture("token", sequence(percent, expr)),
-            capture("dumb", sequence(hat, expr))),
+            groupLeftRec(++i, // binary & capture
+                capture("until", sequence(expr, starPlus, expr)),
+                capture("aloUntil", sequence(expr, plusPlus, expr)),
+                capture("separated", sequence(expr, comma, expr)),
+                capture("aloSeparated", sequence(expr, commaPlus, expr)),
+                capture("capture", sequence(choice(expr, capture("marker", dot)), oneMore(captureSuffix)))),
 
-        group(++i,
-            capture("until", sequence(expr, starPlus, expr)),
-            capture("aloUntil", sequence(expr, plusPlus, expr)),
-            capture("separated", sequence(expr, comma, expr)),
-            capture("aloSeparated", sequence(expr, commaPlus, expr)),
-            capture("optional", sequence(expr, qMark)),
-            capture("zeroMore", sequence(expr, star)),
-            capture("oneMore", sequence(expr, plus))),
+            group(++i, // prefix
+                capture("and", sequence(and, expr)),
+                capture("not", sequence(bang, expr)),
+                capture("token", sequence(percent, expr)),
+                capture("dumb", sequence(hat, expr))),
 
-        groupLeftRec(++i,
-            capture("capture", sequence(choice(expr, capture("marker", dot)), oneMore(captureSuffix)))),
+            group(++i, // suffix
+                capture("optional", sequence(expr, qMark)),
+                capture("zeroMore", sequence(expr, star, not(plus))),
+                capture("oneMore", sequence(expr, plus, not(plus)))),
 
-        group(++i,
-            sequence(lParen, exprDropPrecedence(expr), rParen),
-            capture("drop", sequence(dropLit, expr)),
-            capture("ref", reference),
-            capture("any", underscore),
-            capture("charRange", range),
-            captureText("stringLit", stringLit),
-            captureText("charSet", charSet),
-            captureText("notCharSet", notCharSet)))),
+            group(++i, // primary
+                sequence(lParen, exprDropPrecedence(expr), rParen),
+                capture("drop", sequence(dropLit, expr)),
+                capture("ref", reference),
+                capture("any", underscore),
+                capture("charRange", range),
+                captureText("stringLit", stringLit),
+                captureText("charSet", charSet),
+                captureText("notCharSet", notCharSet)))),
 
-    exprAnnotation = sequence(
-        literal("@"),
-        choice(
-            captureText("precedence", num),
-            capture("increment", plus),
-            capture("same", equal),
-            capture("left_assoc", left_assoc),
-            capture("left_recur", left_recur),
-            captureText("name", name))),
+        exprAnnotation = sequence(
+            literal("@"),
+            choice(
+                captureText("precedence", num),
+                capture("increment", plus),
+                capture("same", equal),
+                capture("left_assoc", left_assoc),
+                capture("left_recur", left_recur),
+                captureText("name", name))),
 
-    exprCluster = named$("cluster", capture("cluster", sequence(
-        exprLit,
-        oneMore(captureGrouped("alts", sequence(
-            arrow,
-            capture("expr", filter(null, $(reference("choice")), parsingExpression)),
-            zeroMore(captureGrouped("annotations", exprAnnotation)))))))),
+        exprCluster = named$("cluster", capture("cluster", sequence(
+            exprLit,
+            oneMore(captureGrouped("alts", sequence(
+                arrow,
+                capture("expr", filter(null, $(reference("choice")), parsingExpression)),
+                zeroMore(captureGrouped("annotations", exprAnnotation)))))))),
 
-    rule = named$("rule", sequence(
-        captureText("ruleName", name),
-        zeroMore(captureSuffix),
-        optional(capture("dumb", hat)),
-        optional(capture("token", percent)),
-        equal,
-        choice(exprCluster, capture("expr", parsingExpression)),
-        semi)),
+        rule = named$("rule", sequence(
+            captureText("ruleName", name),
+            zeroMore(captureSuffix),
+            optional(capture("dumb", hat)),
+            optional(capture("token", percent)),
+            equal,
+            choice(exprCluster, capture("expr", parsingExpression)),
+            semi)),
 
-    root = named$("grammar", oneMore(captureGrouped("rules", rule)));
+        root = named$("grammar", oneMore(captureGrouped("rules", rule)));
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

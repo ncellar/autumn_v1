@@ -2,7 +2,6 @@
 TODO
 
 CAPTURE SYSTEM
-    - modify precedence of capture so that (X* # name) becomes valid
     - check against multiple uses of - accessor
 
 HOOKING
@@ -25,6 +24,10 @@ w5: manual
 
 TODO FURTHER SMALL
 
+- source: start from 0 or 1; tab as x chars
+
+- path-like getters for parsing expression graphs
+
 - performance
     - store accessor, tag, groups as tabular
     - force captures for changes?
@@ -32,13 +35,9 @@ TODO FURTHER SMALL
 
 - keep an array instead of a tree in parsestate
 
-- path-like getters for parsing expression graphs
-
 - well formedness check (ford: WF -- can't loop without consuming)
 
 - re-allow memoization when dropping precedence in both schemes
-
-- source: start from 0 or 1; tab as x chars
 
 - better way to exclude reserved identifiers or warn about them
 
