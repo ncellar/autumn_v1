@@ -768,7 +768,7 @@ ExplicitConstructorInvocation :- constrInvoc
     / TypeArguments? SUPER:-super Arguments ';'
 
     // http://stackoverflow.com/questions/2831484
-    // TODO: only primary expression allowed here?
+    // TODO: only primary expression allowed here (needs precedence filter?)
 
     / Expression - enclosingInstance '.' TypeArguments? SUPER:-super Arguments ';' ;
 

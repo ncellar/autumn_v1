@@ -8,7 +8,6 @@ import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.util.Array;
 
 import static com.norswap.autumn.parsing.Registry.PEF_ERROR_RECORDING;
-import static com.norswap.autumn.parsing.Registry.PSH_STACK_TRACE;
 
 /**
  * The default error handling strategy consist of keeping only the error(s) occuring at the farthest
@@ -26,8 +25,6 @@ public final class DefaultErrorHandler implements ErrorHandler
 
     private Array<ParsingExpression> farthestExpressions = new Array<>(1);
 
-    private Array<Array<ParsingExpression>> stackTraces = new Array<>(1);
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
@@ -42,15 +39,11 @@ public final class DefaultErrorHandler implements ErrorHandler
         {
             farthestErrorPosition = state.start;
             farthestExpressions = new Array<>();
-            stackTraces = new Array<>();
         }
 
         if (state.start == farthestErrorPosition)
         {
             farthestExpressions.add(pe);
-
-            Array<ParsingExpression> stackTrace = state.ext.get(PSH_STACK_TRACE);
-            stackTraces.add(stackTrace != null ? stackTrace.clone() : null);
         }
     }
 
@@ -59,31 +52,19 @@ public final class DefaultErrorHandler implements ErrorHandler
     @Override
     public ParseError error(Source source)
     {
-        StringBuilder builder = new StringBuilder();
+        StringBuilder b = new StringBuilder();
 
-        builder.append("The parser failed to match any of the following expressions at position "
-            + source.position(farthestErrorPosition) + ":\n");
+        b.append("The parser failed to match any of the following expressions at position ");
+        b.append(source.position(farthestErrorPosition));
+        b.append(":\n");
 
-        for (int i = 0; i < farthestExpressions.size(); ++i)
+        for (ParsingExpression farthestExpression: farthestExpressions)
         {
-            builder.append(farthestExpressions.get(i));
-            builder.append("\n");
-
-            Array<ParsingExpression> stackTrace = stackTraces.get(i);
-
-            if (stackTrace != null)
-            {
-                builder.append("stack trace: \n");
-
-                for (ParsingExpression pe: stackTrace.reverseIterable())
-                {
-                    builder.append(pe);
-                    builder.append("\n");
-                }
-            }
+            b.append(farthestExpression);
+            b.append("\n");
         }
 
-        String message = builder.toString();
+        String message = b.toString();
         return () -> message;
     }
 

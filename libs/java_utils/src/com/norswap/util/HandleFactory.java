@@ -65,9 +65,9 @@ public final class HandleFactory
     {
         if (end > 0 && next >= end - stride || next >= Integer.MAX_VALUE - stride)
         {
-            // TODO inaccurate if end != 0
-            throw new RuntimeException(
-                "Handle space (2^32 handles / stride (" + stride + ")) exhausted.");
+            throw new RuntimeException(String.format(
+                "Handle space (%s handles / stride (%d) = %d) exhausted.",
+                end == 0 ? "2^32" : (end - start), stride, size()));
         }
 
         next += stride;
@@ -80,9 +80,9 @@ public final class HandleFactory
     {
         if (end > 0 && next >= end - stride || next >= Long.MAX_VALUE - stride)
         {
-            // TODO inaccurate if end != 0
-            throw new RuntimeException(
-                "Handle space (2^64 handles / stride (" + stride + ")) exhausted.");
+            throw new RuntimeException(String.format(
+                "Handle space (%s handles / stride (%d) = %d) exhausted.",
+                end == 0 ? "2^64" : (end - start), stride, size64()));
         }
 
         next += stride;

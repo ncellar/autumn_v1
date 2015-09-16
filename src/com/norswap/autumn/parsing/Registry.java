@@ -23,8 +23,6 @@ public final class Registry
 
     public static final FlagFactory ParseStateFlagsFactory = new FlagFactory();
 
-    public static final HandleFactory ParseStateHandleFactory = new HandleFactory();
-
     public static final HandleFactory ParseInputHandleFactory = new HandleFactory();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -110,15 +108,6 @@ public final class Registry
      */
     public static final int PSF_GROUPING_CAPTURE
         = ParseStateFlagsFactory.next();
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // PARSE STATE HANDLES (PSH)
-
-    /**
-     * Fetches the stack trace that shows parsing expressions we are currently traversing.
-     */
-    public static final int PSH_STACK_TRACE
-        = ParseStateHandleFactory.next();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

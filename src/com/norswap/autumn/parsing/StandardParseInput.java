@@ -20,7 +20,7 @@ public class StandardParseInput
     public int start;
 
     /**
-     * (TYPE 3) The last non-whitespace input position preceding start.
+     * (TYPE 3) The last non-whitespace input position preceding {@link #start}.
      * <p>
      * We keep this particular tidbit of information for a single purpose: restoring {@link
      * ParseState#blackEnd} (the last non-whitespace input position preceding {@link

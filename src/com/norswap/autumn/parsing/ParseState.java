@@ -3,26 +3,57 @@ package com.norswap.autumn.parsing;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.util.Array;
 import com.norswap.util.DeepCopy;
-import com.norswap.util.HandleMap;
 
 import static com.norswap.autumn.parsing.Registry.*; // PSF_*
 
 /**
- * TODO
+ * An instance of this class is passed to every parsing expression invocation {@link
+ * ParsingExpression#parse}.
+ * <p>
+ * Its role is dual. On the one hand, it holds both the inputs for the invocation (things that will
+ * influence the invocation, or the produced outputs). On the other hand, the parse state is also
+ * where the produced outputs will be attached. As such, it allows parsing expressions to exchange
+ * information on the way down (inputs) and on the way up (outputs).
+ * <p>
+ * The standard Autumn inputs are described in {@link StandardParseInput}.
+ *
+ * TODO more
  */
 public final class ParseState extends StandardParseInput implements Cloneable
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    // OUTPUT
 
-    // output
+    /**
+     * The position of the end of the text matched by the parsing expression, or -1 if no match
+     * could be made. Initially equal to {@link #start}.
+     */
     public int end;
+
+    /**
+     * The position of the last non-whitespace character preceding {@link #end}. This is useful
+     * to avoid including trailing whitespaces in captures.
+     */
     public int blackEnd;
+
+    /**
+     * The parse tree which is to be the parent of parse trees produced by captures in
+     * the parsing expression.
+     */
     public ParseTree tree;
 
+    /**
+     * The number of children of {@link #tree} prior to invocation. Kept so that we can rollback
+     * {@link #tree} to its original state if required.
+     */
     public int treeChildrenCount;
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * An array of additional user-defined parse inputs.
+     */
     public ParseInput[] inputs;
-    public HandleMap ext;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -34,7 +65,6 @@ public final class ParseState extends StandardParseInput implements Cloneable
         root.tree = new ParseTree(null, new Array<>(), false);
         root.tags = new Array<>();
         root.inputs = new ParseInput[Registry.ParseInputHandleFactory.size()];
-        root.ext = new HandleMap();
         return root;
     }
 
