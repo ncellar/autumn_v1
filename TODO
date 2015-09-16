@@ -1,6 +1,9 @@
 --------------------------------------------------------------------------------
 TODO
 
+DEBUGGER
+    - must invoke parser with parseinput & config options
+
 REWORK
     - make output changes hookable
     - make reset hookable
@@ -22,18 +25,18 @@ w5: manual
 
 TODO FURTHER SMALL
 
-- path-like getters for parsing expression graphs
+- remove old memo handler
+
+- scope Registry to parser
+
+- keep an array instead of a tree in parsestate
 
 - performance
     - store accessor, tag, groups as tabular
     - force captures for changes?
     - tags as linked list
 
-- keep an array instead of a tree in parsestate
-
 - well formedness check (ford: WF -- can't loop without consuming)
-
-- re-allow memoization when dropping precedence in both schemes
 
 - better way to exclude reserved identifiers or warn about them
 
@@ -62,6 +65,8 @@ TODO FURTHER BIG
 - error handler is sort of like error merge strategy, do it like that instead?
 
 - think about building in validation rules
+
+- grammar composition & parameterization
 
 TODO MUCH LATER
 

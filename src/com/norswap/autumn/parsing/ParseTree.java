@@ -77,6 +77,11 @@ public final class ParseTree implements Iterable<ParseTree>
 
     public Array<ParseTree> unqualifiedAddedChildren(ParseState state)
     {
+        if (children == null)
+        {
+            return null;
+        }
+        
         int start = state.treeChildrenCount;
         int size = children.size();
         Array<ParseTree> out = new Array<>(size - start);

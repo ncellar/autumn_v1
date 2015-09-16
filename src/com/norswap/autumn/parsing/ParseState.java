@@ -2,6 +2,7 @@ package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.util.Array;
+import com.norswap.util.DeepCopy;
 import com.norswap.util.HandleMap;
 
 import static com.norswap.autumn.parsing.Registry.*; // PSF_*
@@ -9,19 +10,9 @@ import static com.norswap.autumn.parsing.Registry.*; // PSF_*
 /**
  * TODO
  */
-public final class ParseState implements Cloneable
+public final class ParseState extends StandardParseInput implements Cloneable
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public int start;
-    public int blackStart;
-    public int precedence;
-
-    public int flags;
-    public Array<Seed> seeds;
-
-    public String accessor;
-    public Array<String> tags;
 
     // output
     public int end;
@@ -30,6 +21,7 @@ public final class ParseState implements Cloneable
 
     public int treeChildrenCount;
 
+    public ParseInput[] inputs;
     public HandleMap ext;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -41,6 +33,7 @@ public final class ParseState implements Cloneable
         root.blackEnd = 0;
         root.tree = new ParseTree(null, new Array<>(), false);
         root.tags = new Array<>();
+        root.inputs = new ParseInput[Registry.ParseInputHandleFactory.size()];
         root.ext = new HandleMap();
         return root;
     }
@@ -104,7 +97,7 @@ public final class ParseState implements Cloneable
      */
     public void setSeed(OutputChanges changes)
     {
-        seeds.peek().changes = changes;
+        seeds.push(new Seed(seeds.pop().expression, changes));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -179,6 +172,15 @@ public final class ParseState implements Cloneable
     {
         this.end = child.end;
         this.blackEnd = child.blackEnd;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public ParseInputs inputs(ParsingExpression pe)
+    {
+        StandardParseInput stdInput = new StandardParseInput(this);
+        ParseInput[] inputs = DeepCopy.of(this.inputs, ParseInput[]::new);
+        return new ParseInputs(pe, stdInput, inputs);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -12,7 +12,6 @@ import com.norswap.autumn.parsing.config.ParserConfiguration;
 import com.norswap.autumn.parsing.Source;
 import com.norswap.autumn.parsing.Whitespace;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-import com.norswap.autumn.parsing.graph.Printer;
 import com.norswap.autumn.parsing.graph.Replacer;
 import com.norswap.autumn.parsing.graph.LeftRecursionDetector;
 import com.norswap.autumn.parsing.graph.ReferenceResolver;
