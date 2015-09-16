@@ -15,9 +15,13 @@ import static com.norswap.autumn.parsing.Registry.*; // PSF_*
  * where the produced outputs will be attached. As such, it allows parsing expressions to exchange
  * information on the way down (inputs) and on the way up (outputs).
  * <p>
- * The standard Autumn inputs are described in {@link StandardParseInput}.
+ * The standard Autumn inputs are described in {@link StandardParseInput}, while the outputs are
+ * described in this file (single-inheritance meant they couldn't get their own file).
+ * <p>
+ * Custom parse inputs can be manipulated via the {@link #inputs} field. You must index this array
+ * with a handle you received from {@link Registry#ParseInputHandleFactory}.
  *
- * TODO more
+ * // TODO custom outputs
  */
 public final class ParseState extends StandardParseInput implements Cloneable
 {
@@ -57,6 +61,9 @@ public final class ParseState extends StandardParseInput implements Cloneable
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Creates the parse state to be passed to the root parsing expression.
+     */
     static ParseState root()
     {
         ParseState root = new ParseState();
@@ -70,9 +77,12 @@ public final class ParseState extends StandardParseInput implements Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
-    public static ParseState from(ParseState parent)
+    /**
+     * Creates a clone (not a deep copy) of the passed state.
+     */
+    public static ParseState from(ParseState state)
     {
-        return parent.clone();
+        return state.clone();
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -123,7 +133,7 @@ public final class ParseState extends StandardParseInput implements Cloneable
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Sets the seed of the innermost left-recursion or exression cluster being parsed.
+     * Sets the seed of the innermost left-recursive node or expression cluster being parsed.
      */
     public void setSeed(OutputChanges changes)
     {
@@ -133,7 +143,7 @@ public final class ParseState extends StandardParseInput implements Cloneable
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Removes the seed of the innermost left-recursive or expression cluster being parsed.
+     * Removes the seed of the innermost left-recursive node or expression cluster being parsed.
      */
     public OutputChanges popSeed()
     {
@@ -142,6 +152,9 @@ public final class ParseState extends StandardParseInput implements Cloneable
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Merges the outputs of this parse state into its inputs.
+     */
     public void advance()
     {
         if (end > start)
@@ -156,6 +169,9 @@ public final class ParseState extends StandardParseInput implements Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * Advances the end (and black end) position by n characters.
+     */
     public void advance(int n)
     {
         if (n != 0)
@@ -167,6 +183,10 @@ public final class ParseState extends StandardParseInput implements Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * Removes all of this parse state's output. This may imply reverting changes that were done to
+     * data structures in order to attach the outputs.
+     */
     public void resetOutput()
     {
         end = start;
@@ -176,6 +196,9 @@ public final class ParseState extends StandardParseInput implements Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * Sets the end position to indicate that no match could be found.
+     */
     public void fail()
     {
         this.end = -1;
@@ -184,6 +207,9 @@ public final class ParseState extends StandardParseInput implements Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * Indicates whether the match was successful.
+     */
     public boolean succeeded()
     {
         return end != -1;
@@ -191,6 +217,9 @@ public final class ParseState extends StandardParseInput implements Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * Indicates whether the match was unsuccessful.
+     */
     public boolean failed()
     {
         return end == -1;
@@ -198,6 +227,9 @@ public final class ParseState extends StandardParseInput implements Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * Merges the outputs of the child with this parse state.
+     */
     public void merge(ParseState child)
     {
         this.end = child.end;
@@ -206,6 +238,10 @@ public final class ParseState extends StandardParseInput implements Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * Produce an object that combines all parse inputs of this state, fit to be used as
+     * a memoization key, or to preserve the inputs for a later run.
+     */
     public ParseInputs inputs(ParsingExpression pe)
     {
         StandardParseInput stdInput = new StandardParseInput(this);
@@ -254,8 +290,6 @@ public final class ParseState extends StandardParseInput implements Cloneable
     }
 
     // ---------------------------------------------------------------------------------------------
-
-    boolean forbidErrorRecording = false;
 
     public void forbidErrorRecording()
     {

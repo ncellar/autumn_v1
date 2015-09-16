@@ -5,8 +5,9 @@ import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 
 /**
  * A collection of parse inputs obtained from a {@link ParseState} along with the parsing expression
- * these inputs are used for. This is used as a memoization key in the {@link
- * DefaultMemoHandler}.
+ * these inputs are used for. This is used as a memoization key in the {@link DefaultMemoHandler}.
+ * It's {@code equals} and {@code hashCode} methods consider only type 1 input fields (see {@link
+ * ParseInput}).
  */
 public final class ParseInputs
 {
