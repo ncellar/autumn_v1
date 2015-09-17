@@ -6,6 +6,7 @@ import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
 import com.norswap.util.Array;
+import com.norswap.util.annotations.NonNull;
 
 import static com.norswap.autumn.parsing.Registry.*; // PEF_* PSF_*
 
@@ -36,9 +37,80 @@ public final class Capture extends UnaryParsingExpression
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    public Capture(ParsingExpression operand, String accessor, @NonNull Array<String> tags, int flags)
+    {
+        this.operand = operand;
+        this.accessor = accessor;
+        this.tags = tags;
+        this.flags = flags;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     @Override
     public void parse(Parser parser, ParseState state)
     {
+        if (shouldCapture())
+        {
+            ParseTree newTree;
+
+            if (operand == null)
+            {
+                newTree = new ParseTree(state);
+                state.tree.add(newTree);
+            }
+            else
+            {
+                // save
+                ParseTree oldTree = state.tree;
+                int oldCount = state.treeChildrenCount;
+
+                // setup
+                newTree = state.tree = new ParseTree(state);
+                state.treeChildrenCount = 0;
+
+                // parse
+                operand.parse(parser, state);
+
+                // restore
+                state.tree = oldTree;
+                state.treeChildrenCount = oldCount;
+
+                // add new into old
+                if (state.succeeded())
+                {
+                    oldTree.add(newTree);
+
+                    if (shouldCaptureText())
+                    {
+                        newTree.value = parser.text
+                            .subSequence(state.start, state.blackEnd)
+                            .toString();
+                    }
+                }
+            }
+
+            System.err.println("===2");
+            annotate(newTree);
+        }
+        else
+        {
+            operand.parse(parser, state);
+
+            int start = state.treeChildrenCount;
+            int end = state.tree.childrenCount();
+
+            for (int i = start; i < end; ++i)
+            {
+                System.err.println("===1");
+                System.err.println(operand);
+                annotate(state.tree.child(i));
+            }
+        }
+
+        ///////////
+
+        /*
         int oldFlags = state.flags;
         String oldAccessor = state.accessor;
 
@@ -107,18 +179,49 @@ public final class Capture extends UnaryParsingExpression
         state.flags = oldFlags;
         state.accessor = oldAccessor;
         state.tags.truncate(oldTagsCount);
+        */
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public void addTag(String tag)
+//    public void addTag(String tag)
+//    {
+//        if (tags == null)
+//        {
+//            tags = new Array<>();
+//        }
+//
+//        tags.add(tag);
+//    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private void annotate(ParseTree tree)
     {
-        if (tags == null)
+        System.err.println("-----------");
+        System.err.println(tree);
+        if (accessor != null)
         {
-            tags = new Array<>();
+            if (tree.accessor != null)
+            {
+                throw new RuntimeException(String.format(
+                    "Trying to override accessor \"%s\" with accessor \"%s\".",
+                    tree.accessor,
+                    accessor));
+            }
+
+            tree.accessor = accessor;
         }
 
-        tags.add(tag);
+        if (shouldGroup())
+        {
+            tree.group = true;
+        }
+
+        for (String tag: tags)
+        {
+            tree.addTag(tag);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------

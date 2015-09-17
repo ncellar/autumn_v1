@@ -20,8 +20,9 @@ import static com.norswap.autumn.parsing.Registry.*; // PSF_*
  * <p>
  * Custom parse inputs can be manipulated via the {@link #inputs} field. You must index this array
  * with a handle you received from {@link Registry#ParseInputHandleFactory}.
- *
- * // TODO custom outputs
+ * <p>
+ * Custom parse outputs can be manipulated via the {@link #outputs} field. You must index this array
+ * with a handle you received from {@link Registry#ParseOutputHandleFactory}.
  */
 public final class ParseState extends StandardParseInput implements Cloneable
 {
@@ -59,6 +60,11 @@ public final class ParseState extends StandardParseInput implements Cloneable
      */
     public ParseInput[] inputs;
 
+    /**
+     * An array of additional user-defined parse outputs.
+     */
+    public ParseOutput[] outputs;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -72,6 +78,7 @@ public final class ParseState extends StandardParseInput implements Cloneable
         root.tree = new ParseTree(null, new Array<>(), false);
         root.tags = new Array<>();
         root.inputs = new ParseInput[Registry.ParseInputHandleFactory.size()];
+        root.outputs = new ParseOutput[Registry.ParseOutputHandleFactory.size()];
         return root;
     }
 
@@ -165,6 +172,14 @@ public final class ParseState extends StandardParseInput implements Cloneable
         start = end;
         blackStart = blackEnd;
         treeChildrenCount = tree.childrenCount();
+
+        for (ParseOutput output: outputs)
+        {
+            if (output != null)
+            {
+                output.advance(this);
+            }
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -192,6 +207,14 @@ public final class ParseState extends StandardParseInput implements Cloneable
         end = start;
         blackEnd = blackStart;
         tree.truncate(treeChildrenCount);
+
+        for (ParseOutput output: outputs)
+        {
+            if (output != null)
+            {
+                output.reset(this);
+            }
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -234,6 +257,14 @@ public final class ParseState extends StandardParseInput implements Cloneable
     {
         this.end = child.end;
         this.blackEnd = child.blackEnd;
+
+        for (ParseOutput output: outputs)
+        {
+            if (output != null)
+            {
+                output.merge(this, child);
+            }
+        }
     }
 
     // ---------------------------------------------------------------------------------------------

@@ -4,6 +4,7 @@ import com.norswap.autumn.Autumn;
 import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParseTree;
 import com.norswap.autumn.parsing.Whitespace;
+import com.norswap.autumn.parsing.expressions.Capture;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster.Group;
 import com.norswap.autumn.parsing.expressions.Filter;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;

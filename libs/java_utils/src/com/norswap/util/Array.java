@@ -18,6 +18,7 @@ import java.util.function.Function;
  *
  * Future plans:
  * - implement Deque
+ * - read only array subset
  */
 public final class Array<T> implements List<T>, RandomAccess, Cloneable
 {
@@ -25,6 +26,16 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
 
     public static int DEFAULT_SIZE = 4;
     public static double GROWTH_FACTOR = 2.0f;
+
+    private static final Array<Object> EMPTY = new Array<>(0);
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @SuppressWarnings("unchecked")
+    public static <T> Array<T> empty()
+    {
+        return (Array<T>) EMPTY;
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -156,6 +167,27 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         }
 
         return out;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public Array<T> copyOfRange(int from, int to)
+    {
+        return copyOf(this, from, to);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public Array<T> copyOfPrefix(int to)
+    {
+        return copyOf(this, 0, to);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public Array<T> copyOfSuffix(int from)
+    {
+        return copyOf(this, from, next);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -543,7 +575,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public List<T> subList(int from, int to)
+    public Array<T> subList(int from, int to)
     {
         throw new UnsupportedOperationException("Array doesn't support sublist for now");
     }

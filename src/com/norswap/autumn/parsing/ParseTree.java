@@ -133,6 +133,13 @@ public final class ParseTree implements Iterable<ParseTree>
 
     // ---------------------------------------------------------------------------------------------
 
+    public void addTag(String tag)
+    {
+        tags.add(tag);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     public void addAll(Iterable<ParseTree> children)
     {
         children.forEach(this::add);

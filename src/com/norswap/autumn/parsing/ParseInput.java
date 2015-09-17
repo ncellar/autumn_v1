@@ -24,6 +24,10 @@ import com.norswap.util.DeepCopy;
  * This mostly explains the necessity for type 3 fields.
  * <p>
  * A parse input must be deep copyable (but if it is immutable, it can just return itself).
+ * <p>
+ * Parsing expressions are responsible for the manipulation of parse inputs: modifying them, and
+ * adding/removing them from a {@link ParseState}. Many strategies are possible, including
+ * repurposing the same ParseInput object to be used many times.
  */
 public interface ParseInput extends DeepCopy
 {
@@ -42,6 +46,10 @@ public interface ParseInput extends DeepCopy
      * fields.
      */
     boolean inputEquals(ParseInput other);
+
+    // ---------------------------------------------------------------------------------------------
+
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

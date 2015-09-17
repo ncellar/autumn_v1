@@ -1,7 +1,6 @@
 package com.norswap.autumn.parsing;
 
 import com.norswap.util.Array;
-import com.norswap.util.HandleMap;
 
 /**
  * TODO
@@ -14,7 +13,8 @@ public final class OutputChanges
     public final int blackEnd;
 
     private Array<ParseTree> children;
-    private HandleMap ext;
+
+    private Object[] changes;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -37,7 +37,17 @@ public final class OutputChanges
     {
         this.end = state.end;
         this.blackEnd = state.blackEnd;
-        this.children = state.tree.unqualifiedAddedChildren(state);
+        this.children = state.tree.children().copyOfSuffix(state.treeChildrenCount);
+        //this.children = state.tree.unqualifiedAddedChildren(state);
+        this.changes = new Object[state.outputs.length];
+
+        for (int i = 0; i < state.outputs.length; ++i)
+        {
+            ParseOutput output = state.outputs[i];
+            changes[i] = output == null
+                ? null
+                : output.changes();
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -49,10 +59,27 @@ public final class OutputChanges
 
         if (children != null)
         {
-            for (ParseTree child: children)
+            state.tree.addAll(children);
+        }
+
+//        if (children != null)
+//        {
+//            for (ParseTree child: children)
+//            {
+//                ParseTree qualified = child.qualify(state);
+//                state.tree.add(qualified);
+//                state.tree.add(child);
+//            }
+//        }
+
+        for (int i = 0; i < state.outputs.length; ++i)
+        {
+            ParseOutput output = state.outputs[i];
+            Object change = changes[i];
+
+            if (output != null && change != null)
             {
-                ParseTree qualified = child.qualify(state);
-                state.tree.add(qualified);
+                output.merge(change);
             }
         }
     }

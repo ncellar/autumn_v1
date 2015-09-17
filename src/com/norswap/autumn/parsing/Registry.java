@@ -25,6 +25,8 @@ public final class Registry
 
     public static final HandleFactory ParseInputHandleFactory = new HandleFactory();
 
+    public static final HandleFactory ParseOutputHandleFactory = new HandleFactory();
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // PARSER HANDLES (PH)
 

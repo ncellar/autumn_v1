@@ -3,6 +3,8 @@ TODO
 
 DEBUGGER
     - must invoke parser with parseinput & config options
+        - change the way accessors and tags are written?
+        - clarify parse output and parse input lifetime
 
 REWORK
     - make output changes hookable
