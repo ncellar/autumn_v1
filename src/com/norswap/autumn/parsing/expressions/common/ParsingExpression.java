@@ -165,6 +165,13 @@ public abstract class ParsingExpression implements DeepCopy
         ext.set(Registry.PEH_NAME, name);
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    public final void clearName()
+    {
+        ext.unset(Registry.PEH_NAME);
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // PROPERTIES
 

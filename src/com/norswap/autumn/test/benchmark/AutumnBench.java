@@ -4,6 +4,7 @@ import com.norswap.autumn.Autumn;
 import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParseResult;
 import com.norswap.autumn.parsing.Source;
+import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.graph.Printer;
 import com.norswap.util.Array;
 import com.norswap.util.Glob;
@@ -27,6 +28,10 @@ public final class AutumnBench
         Instant startParse = Instant.now();
         Grammar grammar =  Autumn.grammarFromSource(Source.fromFile(grammarFile, 1, 4));
 
+        // TODO
+        System.err.println(grammar.getRule("Expression").toStringUnroll());
+        System.exit(0);
+
         // inspect grammar
         //new Printer(System.err::print, false, false).visit(grammar.root());
 
@@ -37,6 +42,9 @@ public final class AutumnBench
         Instant start = Instant.now();
         Instant mid = start;
         int iters = 1;
+
+        int j = 0;
+        int target = 7;
 
         for (int i = 0; i < iters; ++i)
         {
@@ -54,8 +62,13 @@ public final class AutumnBench
                     return;
                 }
 
-//                System.err.println("\n ------ \n");
-//                System.err.println(result.tree.toTreeString());
+                if (++j == target)
+                {
+                    System.err.println(path);
+                    System.err.println("-------");
+                    System.err.println(result.tree.toTreeString());
+                }
+
             }
 
             Instant tmp = Instant.now();

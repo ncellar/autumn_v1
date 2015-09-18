@@ -37,7 +37,8 @@ public final class OutputChanges
     {
         this.end = state.end;
         this.blackEnd = state.blackEnd;
-        this.children = state.tree.children().copyOfSuffix(state.treeChildrenCount);
+        // TODO better call
+        this.children = state.tree.children().copyOfRange(state.treeChildrenCount, state.tree.childrenCount());
         //this.children = state.tree.unqualifiedAddedChildren(state);
         this.changes = new Object[state.outputs.length];
 

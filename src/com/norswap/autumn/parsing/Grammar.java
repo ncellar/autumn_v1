@@ -9,6 +9,7 @@ import com.norswap.util.slot.Slot;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -39,7 +40,7 @@ public final class Grammar
      * See the documentation of getters.
      *
      * {@code rules} is the set of rules in the grammar (including the root), can be null if
-     * only the root is to be considered.
+     * only the root is to be considered. Its iteration order must be predictable and unchanging.
      */
     public Grammar(
         ParsingExpression root,
@@ -122,7 +123,7 @@ public final class Grammar
 
                 if (key != null)
                 {
-                    rulesByName.put(pe.name(), pe);
+                    rulesByName.put(key, pe);
                 }
             });
         }
@@ -134,15 +135,47 @@ public final class Grammar
 
     public Grammar walk(GraphVisitor<ParsingExpression> visitor)
     {
-        Slot<ParsingExpression> newRoot = visitor.partialVisit(root);
-        Collection<ParsingExpression> newRules = visitor.partialVisit(rules);
-        Slot<ParsingExpression> newWhitespace = visitor.partialVisit(whitespace);
+        Slot<ParsingExpression> root2 = visitor.partialVisit(root);
+        Collection<ParsingExpression> rules2 = visitor.partialVisit(rules);
+        Slot<ParsingExpression> whitespace2 = visitor.partialVisit(whitespace);
 
         visitor.conclude();
 
-        root = newRoot.get();
-        rules = newRules;
-        whitespace = newWhitespace.get();
+        boolean rulesChanged = false;
+        Iterator<ParsingExpression> it1 = rules.iterator();
+        Iterator<ParsingExpression> it2 = rules2.iterator();
+
+        while (it1.hasNext())
+        {
+            ParsingExpression oldRule = it1.next();
+            ParsingExpression newRule = it2.next();
+
+            if (oldRule != newRule)
+            {
+                rulesChanged = true;
+                String name = oldRule.name();
+                oldRule.clearName();
+                newRule.setName(name);
+            }
+        }
+
+        ParsingExpression root3 = root2.get();
+        ParsingExpression whitespace3 = whitespace2.get();
+
+        if (rulesChanged)
+        {
+            rulesByName = null;
+        }
+
+        if (rulesChanged || root != root3 || whitespace != whitespace3)
+        {
+            nullabilityCalculator = null;
+        }
+
+        root = root3;
+        rules = rules2;
+        whitespace = whitespace3;
+
         return this;
     }
 
@@ -152,11 +185,26 @@ public final class Grammar
     {
         if (nullabilityCalculator == null)
         {
-            nullabilityCalculator = new NullabilityCalculator(this);
-            walk(nullabilityCalculator);
+            throw new IllegalStateException(
+                "Must call Grammar#computeNullability() before using Grammar#IsNullable.");
         }
 
         return nullabilityCalculator.isNullable(pe);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public boolean nullabilityComputed()
+    {
+        return nullabilityCalculator != null;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void computeNullability()
+    {
+        nullabilityCalculator = new NullabilityCalculator(this);
+        walk(nullabilityCalculator);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

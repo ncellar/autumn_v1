@@ -22,7 +22,10 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 
-public class Autumn
+/**
+ * A collection of entry points into the library for the most common tasks.
+ */
+public final class Autumn
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -238,6 +241,8 @@ public class Autumn
         if (preprocess)
         {
             grammar.walk(new ReferenceResolver());
+
+            grammar.computeNullability();
 
             LeftRecursionDetector detector = new LeftRecursionDetector(grammar);
             grammar.walk(detector);

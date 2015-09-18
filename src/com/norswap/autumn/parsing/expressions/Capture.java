@@ -90,7 +90,6 @@ public final class Capture extends UnaryParsingExpression
                 }
             }
 
-            System.err.println("===2");
             annotate(newTree);
         }
         else
@@ -102,8 +101,6 @@ public final class Capture extends UnaryParsingExpression
 
             for (int i = start; i < end; ++i)
             {
-                System.err.println("===1");
-                System.err.println(operand);
                 annotate(state.tree.child(i));
             }
         }
@@ -198,16 +195,14 @@ public final class Capture extends UnaryParsingExpression
 
     private void annotate(ParseTree tree)
     {
-        System.err.println("-----------");
-        System.err.println(tree);
         if (accessor != null)
         {
             if (tree.accessor != null)
             {
-                throw new RuntimeException(String.format(
-                    "Trying to override accessor \"%s\" with accessor \"%s\".",
-                    tree.accessor,
-                    accessor));
+//                throw new RuntimeException(String.format(
+//                    "Trying to override accessor \"%s\" with accessor \"%s\".",
+//                    tree.accessor,
+//                    accessor));
             }
 
             tree.accessor = accessor;

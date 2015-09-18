@@ -2,6 +2,7 @@ package com.norswap.autumn.parsing.graph;
 
 import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParsingExpressionFactory;
+import com.norswap.autumn.parsing.expressions.ExpressionCluster;
 import com.norswap.autumn.parsing.expressions.LeftRecursive;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.util.Array;
@@ -21,14 +22,14 @@ import java.util.List;
  * The node selected to break a cycle is the first node pertaining to the cycle encountered in a
  * top-down left-to-right walk of the graph.
  * <p>
- * The visitor is aware of pre-existent {@link LeftRecursive} nodes and does not detect already
- * cycles anew.
+ * The visitor is aware of pre-existent {@link LeftRecursive} an {@link ExpressionCluster} nodes and
+ * does not detect already cycles anew.
  * <p>
  * To handle these nodes, we map each expression to the recursion depth at which it occurs. We also
- * record the recursion depth of each encountered LeftRecursive node. When detecting recursion; if
- * the recursive node occurs at a lower stack depth than the last encountered LeftRecursive node, it
- * means that the cycle goes through the LeftRecursive node and is thus already broken; so we do not
- * record it.
+ * record the recursion depth of each encountered LeftRecursive / ExpressionCluster node. When
+ * detecting recursion; if the recursive node occurs at a lower stack depth than the last
+ * encountered LeftRecursive node, it means that the cycle goes through the LeftRecursive node and
+ * is thus already broken; so we do not record it.
  */
 public class LeftRecursionDetector extends GraphVisitor<ParsingExpression>
 {
@@ -37,6 +38,13 @@ public class LeftRecursionDetector extends GraphVisitor<ParsingExpression>
     public LeftRecursionDetector(Grammar grammar)
     {
         super(Walks.inPlaceFirsts(grammar));
+
+        if (!grammar.nullabilityComputed())
+        {
+            throw new IllegalStateException(
+                "Nullability on the grammar must have been computed "
+                + "(using Grammar#computeNullability()) before detecting left recursion.");
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -54,7 +62,7 @@ public class LeftRecursionDetector extends GraphVisitor<ParsingExpression>
     @Override
     public void before(ParsingExpression pe)
     {
-        if (pe instanceof LeftRecursive)
+        if (pe instanceof LeftRecursive || pe instanceof ExpressionCluster)
         {
             leftRecursiveStackPositions.push(stackDepth);
         }

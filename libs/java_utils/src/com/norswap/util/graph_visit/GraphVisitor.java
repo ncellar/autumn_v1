@@ -132,7 +132,7 @@ public abstract class GraphVisitor<Node>
 
     public final Collection<Node> partialVisit(Collection<Node> nodes)
     {
-        Array<Node> container = new Array<>(nodes.size());
+        Array<Node> container = Array.ofSize(nodes.size());
 
         int i = 0;
         for (Node node: nodes)
