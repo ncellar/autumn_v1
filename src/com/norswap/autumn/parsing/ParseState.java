@@ -75,7 +75,7 @@ public final class ParseState extends StandardParseInput implements Cloneable
         ParseState root = new ParseState();
         root.end = 0;
         root.blackEnd = 0;
-        root.tree = new ParseTree(null, new Array<>(), false);
+        root.tree = new ParseTree();
         root.tags = new Array<>();
         root.inputs = new ParseInput[Registry.ParseInputHandleFactory.size()];
         root.outputs = new ParseOutput[Registry.ParseOutputHandleFactory.size()];

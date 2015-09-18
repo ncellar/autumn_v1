@@ -56,7 +56,7 @@ public final class Capture extends UnaryParsingExpression
 
             if (operand == null)
             {
-                newTree = new ParseTree(state);
+                newTree = new ParseTree();
                 state.tree.add(newTree);
             }
             else
@@ -66,7 +66,7 @@ public final class Capture extends UnaryParsingExpression
                 int oldCount = state.treeChildrenCount;
 
                 // setup
-                newTree = state.tree = new ParseTree(state);
+                newTree = state.tree = new ParseTree();
                 state.treeChildrenCount = 0;
 
                 // parse
@@ -104,92 +104,7 @@ public final class Capture extends UnaryParsingExpression
                 annotate(state.tree.child(i));
             }
         }
-
-        ///////////
-
-        /*
-        int oldFlags = state.flags;
-        String oldAccessor = state.accessor;
-
-        if (state.accessor == null)
-        {
-            state.accessor = accessor;
-        }
-        else if (accessor != null)
-        {
-            throw new RuntimeException(String.format(
-                "Trying to override accessor \"%s\" with accessor \"%s\".",
-                state.accessor,
-                accessor));
-        }
-
-        if (shouldGroup())
-        {
-            state.enableGroupingCapture();
-        }
-
-        int oldTagsCount = state.tags.size();
-        state.tags.addAll(tags);
-
-        if (!shouldCapture())
-        {
-            operand.parse(parser, state);
-        }
-        else if (operand == null)
-        {
-            state.tree.add(new ParseTree(state));
-        }
-        else
-        {
-            ParseTree oldTree = state.tree;
-            ParseTree newTree = new ParseTree(state);
-
-            int oldCount = state.treeChildrenCount;
-            Array<String> oldTags = state.tags;
-
-            state.accessor = null;
-            state.tags = new Array<>();
-            state.tree = newTree;
-            state.treeChildrenCount = 0;
-            state.disableGroupingCapture();
-
-            operand.parse(parser, state);
-
-            state.tags = oldTags;
-            state.tree = oldTree;
-            state.treeChildrenCount = oldCount;
-            // the grouping status will be restored with the flags!
-
-            if (state.succeeded())
-            {
-                oldTree.add(newTree);
-
-                if (shouldCaptureText())
-                {
-                    newTree.value = parser.text
-                        .subSequence(state.start, state.blackEnd)
-                        .toString();
-                }
-            }
-        }
-
-        state.flags = oldFlags;
-        state.accessor = oldAccessor;
-        state.tags.truncate(oldTagsCount);
-        */
     }
-
-    // ---------------------------------------------------------------------------------------------
-
-//    public void addTag(String tag)
-//    {
-//        if (tags == null)
-//        {
-//            tags = new Array<>();
-//        }
-//
-//        tags.add(tag);
-//    }
 
     // ---------------------------------------------------------------------------------------------
 
@@ -199,10 +114,10 @@ public final class Capture extends UnaryParsingExpression
         {
             if (tree.accessor != null)
             {
-//                throw new RuntimeException(String.format(
-//                    "Trying to override accessor \"%s\" with accessor \"%s\".",
-//                    tree.accessor,
-//                    accessor));
+                throw new RuntimeException(String.format(
+                    "Trying to override accessor \"%s\" with accessor \"%s\".",
+                    tree.accessor,
+                    accessor));
             }
 
             tree.accessor = accessor;

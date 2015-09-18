@@ -27,14 +27,6 @@ public final class AutumnBench
         Instant startParse = Instant.now();
         Grammar grammar =  Autumn.grammarFromSource(Source.fromFile(grammarFile, 1, 4));
 
-        // TODO think about
-        //   - reference resolution first is necessary!
-        //   - how about that names do not reflect references?
-
-        // TODO dem fix
-        //  - must copy on save AND on restore as with did with the unqualify shit
-        //  - alternative: undoers; hasName, hasGroup, tagsCount ...
-
         // inspect grammar
         //new Printer(System.err::print, false, false).visit(grammar.root());
 

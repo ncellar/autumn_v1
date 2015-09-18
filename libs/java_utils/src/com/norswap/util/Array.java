@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.RandomAccess;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
 /**
@@ -875,17 +876,18 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
             for (int i = 0; i < next; ++i)
             {
                 T elem = (T) array[i];
-                assert elem instanceof Cloneable;
 
                 if (elem != null)
                 {
+                    assert elem instanceof Cloneable;
+
                     if (clone == null)
                     {
                         clone = elem.getClass().getMethod("clone");
                         clone.setAccessible(true);
                     }
 
-                    array[i] = (T) clone.invoke(elem);
+                    array[i] = clone.invoke(elem);
                 }
             }
         }
@@ -902,6 +904,106 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         Array<T> out = clone();
         out.cloneElements();
         return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @SuppressWarnings("unchecked")
+    public <U> Array<U> map(Function<T, U> f)
+    {
+        Array<U> out = new Array<>(next);
+
+        for (int i = 0; i < next; ++i)
+        {
+            out.add(f.apply((T) array[i]));
+        }
+
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @SuppressWarnings("unchecked")
+    public <U> Array<U> mapNonNull(Function<T, U> f)
+    {
+        return map(x -> x == null ? null : f.apply(x));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public Array<T> filter(Predicate<T> p)
+    {
+        Array<T> out = new Array<>();
+
+        for (int i = 0; i < next; ++i)
+        {
+            @SuppressWarnings("unchecked")
+            T elem = (T) array[i];
+
+            if (p.test(elem))
+            {
+                out.add(elem);
+            }
+        }
+
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public Array<T> filterNonNull(Predicate<T> p)
+    {
+        return filter(x -> x != null && p.test(x));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public T first(Predicate<T> p)
+    {
+        for (int i = 0; i < next; ++i)
+        {
+            @SuppressWarnings("unchecked")
+            T elem = (T) array[i];
+
+            if (p.test(elem))
+            {
+                return elem;
+            }
+        }
+
+        return null;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public T firstNonNull(Predicate<T> p)
+    {
+        return first(x -> x != null && p.test(x));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public T last(Predicate<T> p)
+    {
+        for (int i = next - 1 ; i >= next; --i)
+        {
+            @SuppressWarnings("unchecked")
+            T elem = (T) array[i];
+
+            if (p.test(elem))
+            {
+                return elem;
+            }
+        }
+
+        return null;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public T lastNonNull(Predicate<T> p)
+    {
+        return last(x -> x != null && p.test(x));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

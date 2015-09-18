@@ -9,7 +9,8 @@ public class ParseTreeBuilder
 
     public static ParseTree $(ParseTree... children)
     {
-        ParseTree tree = new ParseTree(null, new Array<>(), false, new Array<>(children));
+        ParseTree tree = new ParseTree();
+        tree.addAll(new Array<>(children));
         return tree;
     }
 
@@ -17,7 +18,8 @@ public class ParseTreeBuilder
 
     public static ParseTree $(String accessor, ParseTree... children)
     {
-        ParseTree tree = new ParseTree(accessor, new Array<>(), false, new Array<>(children));
+        ParseTree tree = $(children);
+        tree.accessor = accessor;
         return tree;
     }
 
