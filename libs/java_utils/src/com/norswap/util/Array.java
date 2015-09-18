@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.RandomAccess;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -17,6 +16,9 @@ import java.util.stream.IntStream;
  * <p>
  * TODO
  * <ul>
+ *     <li>Finish implementing map view</li>
+ *     <li>Implement deepcopy</li>
+ *     <li>Implement sublist</li>
  *     <li>Implement Deque</li>
  *     <li>Read only subset</li>
  * </ul>
@@ -340,22 +342,16 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    // COLLECTION OVERRIDES
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void fill(T value)
+    @Override
+    public int size()
     {
-        Arrays.fill(array, 0, next, value);
+        return next;
     }
 
     // ---------------------------------------------------------------------------------------------
-
-    public void fill(T value, int from, int to)
-    {
-        assert next <= to;
-
-        Arrays.fill(array, from, to, value);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public boolean isEmpty()
@@ -366,20 +362,49 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public int size()
+    public boolean contains(Object t)
     {
-        return next;
+        return indexOf(Caster.cast(t)) >= 0;
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public int capacity()
+    @Override
+    public Iterator<T> iterator()
     {
-        return array.length;
+        return new ArrayIterator();
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // INSERTIONS
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public Object[] toArray()
+    {
+        Object[] out = new Object[next];
+        System.arraycopy(array, 0, out, 0, next);
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <U> U[] toArray(U[] out)
+    {
+        if (out.length < next)
+        {
+            out = JArrays.newInstance(out, next);
+        }
+
+        System.arraycopy(array, 0, out, 0, next);
+
+        if (out.length != next)
+        {
+            out[next] = null;
+        }
+
+        return out;
+    }
 
     // ---------------------------------------------------------------------------------------------
 
@@ -399,35 +424,33 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void add(int index, T element)
+    public boolean remove(Object t)
     {
-        if (next == array.length)
+        for (int i = 0; i < next; ++i)
         {
-            ensureCapacity(array.length + 1);
+            if (array[i].equals(t))
+            {
+                remove(i);
+                return true;
+            }
         }
 
-        System.arraycopy(array, index, array, index + 1, next - index - 1);
-        array[index] = element;
-        next++;
+        return false;
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public T get(int index)
+    public boolean containsAll(Collection<?> c)
     {
-        return Caster.cast(array[index]);
-    }
+        for (Object o: c)
+        {
+            if (!contains(o)) {
+                return false;
+            }
+        }
 
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public T set(int index, T t)
-    {
-        @SuppressWarnings("unchecked")
-        T element = (T) array[index];
-        array[index] = t;
-        return element;
+        return true;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -448,6 +471,155 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         }
 
         return size != next;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public boolean removeAll(Collection<?> c)
+    {
+        int size = next;
+        c.forEach(this::remove);
+        return size != next;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public boolean retainAll(Collection<?> c)
+    {
+        int size = next;
+
+        for (int i = 0; i < next; ++i)
+        {
+            if (!c.contains(array[i]))
+            {
+                remove(i--);
+            }
+        }
+
+        return size != next;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void clear()
+    {
+        truncate(0);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // LIST OVERRIDES
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public T get(int index)
+    {
+        return Caster.cast(array[index]);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public T set(int index, T t)
+    {
+        @SuppressWarnings("unchecked")
+        T element = (T) array[index];
+        array[index] = t;
+        return element;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void add(int index, T element)
+    {
+        if (next == array.length)
+        {
+            ensureCapacity(array.length + 1);
+        }
+
+        System.arraycopy(array, index, array, index + 1, next - index - 1);
+        array[index] = element;
+        next++;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public T remove(int index)
+    {
+        @SuppressWarnings("unchecked")
+        T item = (T) array[index];
+        System.arraycopy(array, index + 1, array, index, next - index - 1);
+        --next;
+        return item;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public int indexOf(Object t)
+    {
+        for (int i = 0; i < next; ++i)
+        {
+            if (t == null ? array[i] == null : t.equals(array[i]))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public int lastIndexOf(Object t)
+    {
+        for (int i = next - 1; i >= 0; --i)
+        {
+            if (t == null ? array[i] == null : t.equals(array[i]))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public ListIterator<T> listIterator()
+    {
+        return new ArrayIterator();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public ListIterator<T> listIterator(int index)
+    {
+        ArrayIterator out = new ArrayIterator();
+        out.index = index;
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public Array<T> subList(int from, int to)
+    {
+        throw new UnsupportedOperationException("Array doesn't support sublist for now");
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public int capacity()
+    {
+        return array.length;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -502,8 +674,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // NEW OPERATIONS
-
-    // ---------------------------------------------------------------------------------------------
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void ensureSize(int size)
     {
@@ -595,38 +766,6 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         return next == 0 ? t : peek();
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // REMOVALS
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public T remove(int index)
-    {
-        @SuppressWarnings("unchecked")
-        T item = (T) array[index];
-        System.arraycopy(array, index + 1, array, index, next - index - 1);
-        --next;
-        return item;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public boolean remove(Object t)
-    {
-        for (int i = 0; i < next; ++i)
-        {
-            if (array[i].equals(t))
-            {
-                remove(i);
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     // ---------------------------------------------------------------------------------------------
 
     public boolean removeFromEnd(T t)
@@ -645,93 +784,86 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
-    @Override
-    public boolean removeAll(Collection<?> c)
+    public void fill(T value)
     {
-        int size = next;
-        c.forEach(this::remove);
-        return size != next;
+        Arrays.fill(array, 0, next, value);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    @Override
-    public boolean retainAll(Collection<?> c)
+    public void fill(T value, int from, int to)
     {
-        int size = next;
+        assert next <= to;
 
-        for (int i = 0; i < next; ++i)
+        Arrays.fill(array, from, to, value);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public Iterable<T> reverseIterable()
+    {
+        return this::reverseIterator;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public ListIterator<T> reverseIterator()
+    {
+        return new ReverseArrayIterator();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Returns a Java array containing the same elements as this array. The returned array
+     * will be produced by the given supplier (in general something like {@code Object[]::new}).
+     */
+    public T[] toArray(Function<Integer, T[]> supplier)
+    {
+        T[] out = supplier.apply(next);
+        System.arraycopy(array, 0, out, 0, next);
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public T put(Integer key, T value)
+    {
+        if (next <= key)
         {
-            if (!c.contains(array[i]))
-            {
-                remove(i--);
-            }
+            ensureSize(key + 1);
         }
 
-        return size != next;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void clear()
-    {
-        truncate(0);
+        return set(key, value);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // MISC
-
-    // ---------------------------------------------------------------------------------------------
+    // OBJECT OVERRIDES
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public int indexOf(Object t)
+    public boolean equals(Object o)
     {
+        // part auto-generated, part lifted from Arrays.equals
+
+        if (this == o)
+            return true;
+
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        Array<?> array1 = (Array<?>) o;
+
+        if (next != array1.next)
+            return false;
+
         for (int i = 0; i < next; ++i)
         {
-            if (t == null ? array[i] == null : t.equals(array[i]))
-            {
-                return i;
-            }
-        }
+            Object o1 = array[i];
+            Object o2 = array1.array[i];
 
-        return -1;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public int lastIndexOf(Object t)
-    {
-        for (int i = next - 1; i >= 0; --i)
-        {
-            if (t == null ? array[i] == null : t.equals(array[i]))
-            {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public boolean contains(Object t)
-    {
-        return indexOf(Caster.cast(t)) >= 0;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public boolean containsAll(Collection<?> c)
-    {
-        for (Object o: c)
-        {
-            if (!contains(o)) {
+            if (!(o1==null ? o2==null : o1.equals(o2)))
                 return false;
-            }
         }
 
         return true;
@@ -740,15 +872,55 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public Array<T> subList(int from, int to)
+    public int hashCode()
     {
-        throw new UnsupportedOperationException("Array doesn't support sublist for now");
+        // lifted from Arrays.hashCode
+
+        int result = 1;
+
+        for (T t: this)
+        {
+            result = 31 * result + (t == null ? 0 : t.hashCode());
+        }
+
+        return result;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public String toString()
+    {
+        StringBuilder b = new StringBuilder();
+        b.append("[");
+
+        for (int i = 0; i < next; ++i)
+        {
+            b.append(array[i]);
+            b.append(", ");
+        }
+
+        if (next > 0)
+        {
+            b.setLength(b.length() - 2);
+        }
+
+        b.append("]");
+        return b.toString();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    @SuppressWarnings({"unchecked", "CloneDoesntCallSuperClone"})
+    public Array<T> clone()
+    {
+        return new Array(array.clone(), next);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // ITERATORS
-
-    // ---------------------------------------------------------------------------------------------
+    // ITERATOR
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     private class ArrayIterator implements ListIterator<T>
     {
@@ -841,7 +1013,9 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         }
     }
 
-    // ---------------------------------------------------------------------------------------------
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // ITERATOR
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     private final class ReverseArrayIterator extends ArrayIterator
     {
@@ -894,209 +1068,6 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         }
     }
 
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public Iterator<T> iterator()
-    {
-        return new ArrayIterator();
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ListIterator<T> listIterator()
-    {
-        return new ArrayIterator();
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public ListIterator<T> listIterator(int index)
-    {
-        ArrayIterator out = new ArrayIterator();
-        out.index = index;
-        return out;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public Iterable<T> reverseIterable()
-    {
-        return this::reverseIterator;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public ListIterator<T> reverseIterator()
-    {
-        return new ReverseArrayIterator();
-    }
-
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // MAP METHODS
-
-    // TODO offer a map view on this collection
-
-    public boolean containsValue(Object value)
-    {
-        return contains(value);
-    }
-
-    public boolean containsKey(Object key)
-    {
-        return (int) key < next;
-    }
-
-    public T get(Object key)
-    {
-        return get((int) key);
-    }
-
-    public T put(Integer key, T value)
-    {
-        if (next <= key)
-        {
-            ensureSize(key + 1);
-        }
-
-        return set(key, value);
-    }
-
-    public Collection<T> values()
-    {
-        return this;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // CONVERSIONS TO JAVA ARRAYS
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Returns a Java array containing the same elements as this array. The returned array
-     * will be produced by the given supplier (in general something like {@code Object[]::new}).
-     */
-    public T[] toArray(Function<Integer, T[]> supplier)
-    {
-        T[] out = supplier.apply(next);
-        System.arraycopy(array, 0, out, 0, next);
-        return out;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public Object[] toArray()
-    {
-        Object[] out = new Object[next];
-        System.arraycopy(array, 0, out, 0, next);
-        return out;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <U> U[] toArray(U[] out)
-    {
-        if (out.length < next)
-        {
-            out = JArrays.newInstance(out, next);
-        }
-
-        System.arraycopy(array, 0, out, 0, next);
-
-        if (out.length != next)
-        {
-            out[next] = null;
-        }
-
-        return out;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // OBJECT OVERRIDES
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    @Override
-    public boolean equals(Object o)
-    {
-        // part auto-generated, part lifted from Arrays.equals
-
-        if (this == o)
-            return true;
-
-        if (o == null || getClass() != o.getClass())
-            return false;
-
-        Array<?> array1 = (Array<?>) o;
-
-        if (next != array1.next)
-            return false;
-
-        for (int i = 0; i < next; ++i)
-        {
-            Object o1 = array[i];
-            Object o2 = array1.array[i];
-
-            if (!(o1==null ? o2==null : o1.equals(o2)))
-                return false;
-        }
-
-        return true;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public int hashCode()
-    {
-        // lifted from Arrays.hashCode
-
-        int result = 1;
-
-        for (T t: this)
-        {
-            result = 31 * result + (t == null ? 0 : t.hashCode());
-        }
-
-        return result;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public String toString()
-    {
-        StringBuilder b = new StringBuilder();
-        b.append("[");
-
-        for (int i = 0; i < next; ++i)
-        {
-            b.append(array[i]);
-            b.append(", ");
-        }
-
-        if (next > 0)
-        {
-            b.setLength(b.length() - 2);
-        }
-
-        b.append("]");
-        return b.toString();
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    @SuppressWarnings({"unchecked", "CloneDoesntCallSuperClone"})
-    public Array<T> clone()
-    {
-        return new Array(array.clone(), next);
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // MAP VIEW
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1147,8 +1118,8 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         @Override
         public T get(Object key)
         {
-            // TODO
-            return Array.this.get(key);
+            int i = (int) key;
+            return Array.this.get(i);
         }
 
         // -----------------------------------------------------------------------------------------
@@ -1156,7 +1127,6 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         @Override
         public T put(Integer key, T value)
         {
-            // TODO
             return Array.this.put(key, value);
         }
 
@@ -1283,7 +1253,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         // -----------------------------------------------------------------------------------------
 
         @Override
-        public <T> T[] toArray(T[] a)
+        public <U> U[] toArray(U[] a)
         {
             return IntStream.range(0, next).filter(i -> array[i] != null).boxed()
                 .toArray(size -> JArrays.newInstance(a, size));
