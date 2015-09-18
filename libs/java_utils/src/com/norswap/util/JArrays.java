@@ -1,5 +1,6 @@
 package com.norswap.util;
 
+
 /**
  * Utilities to deal with plain Java arrays.
  */
@@ -15,6 +16,28 @@ public final class JArrays
     public static <T> T[] array(T... ts)
     {
         return ts;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Returns the given array if its size is superior to the given size, otherwise returns
+     * a new array of the same type with the given size.
+     */
+    public static <T> T[] largeEnough(T[] array, int size)
+    {
+        return array.length >= size ? array : newInstance(array, size);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Returns a new array of the same type as the witness, with the given size.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T[] newInstance(T[] witness, int size)
+    {
+        return (T[]) java.lang.reflect.Array.newInstance(witness.getClass().getComponentType(), size);
     }
 
     // ---------------------------------------------------------------------------------------------

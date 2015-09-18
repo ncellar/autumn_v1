@@ -45,55 +45,55 @@ public final class ParseTree implements Iterable<ParseTree>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParseTree qualify(ParseState state)
-    {
-        ParseTree out = new ParseTree(
-            state.accessor != null ? state.accessor : accessor,
-            tags,//Array.concat(state.tags, tags),
-            state.isCaptureGrouping() ? false : group);
-
-        out.value = value;
-        out.children = children;
-
-        return out;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public ParseTree unqualify(ParseState state)
-    {
-        ParseTree out = new ParseTree(
-            state.accessor == null ? accessor : null,
-            tags,//Array.copyOf(tags, state.tags.size(), tags.size()),
-            !state.isCaptureGrouping() ? group : false);
-
-        out.value = value;
-        out.children = children;
-
-        return out;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public Array<ParseTree> unqualifiedAddedChildren(ParseState state)
-    {
-        if (children == null)
-        {
-            return null;
-        }
-
-        int start = state.treeChildrenCount;
-        int size = children.size();
-        Array<ParseTree> out = new Array<>(size - start);
-
-        for (int i = start; i < size; ++i)
-        {
-            ParseTree child = children.get(i).unqualify(state);
-            out.add(child);
-        }
-
-        return out;
-    }
+//    public ParseTree qualify(ParseState state)
+//    {
+//        ParseTree out = new ParseTree(
+//            state.accessor != null ? state.accessor : accessor,
+//            tags,//Array.concat(state.tags, tags),
+//            state.isCaptureGrouping() ? false : group);
+//
+//        out.value = value;
+//        out.children = children;
+//
+//        return out;
+//    }
+//
+//    // ---------------------------------------------------------------------------------------------
+//
+//    public ParseTree unqualify(ParseState state)
+//    {
+//        ParseTree out = new ParseTree(
+//            state.accessor == null ? accessor : null,
+//            tags,//Array.copyOf(tags, state.tags.size(), tags.size()),
+//            !state.isCaptureGrouping() ? group : false);
+//
+//        out.value = value;
+//        out.children = children;
+//
+//        return out;
+//    }
+//
+//    // ---------------------------------------------------------------------------------------------
+//
+//    public Array<ParseTree> unqualifiedAddedChildren(ParseState state)
+//    {
+//        if (children == null)
+//        {
+//            return null;
+//        }
+//
+//        int start = state.treeChildrenCount;
+//        int size = children.size();
+//        Array<ParseTree> out = new Array<>(size - start);
+//
+//        for (int i = start; i < size; ++i)
+//        {
+//            ParseTree child = children.get(i).unqualify(state);
+//            out.add(child);
+//        }
+//
+//        return out;
+//    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
