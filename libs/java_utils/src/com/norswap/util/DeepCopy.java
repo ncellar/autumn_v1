@@ -1,6 +1,7 @@
 package com.norswap.util;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.util.function.Function;
 
 /**
@@ -50,7 +51,9 @@ public interface DeepCopy extends Cloneable
     static <T extends Cloneable> T clone(T t)
     {
         try {
-            return (T) t.getClass().getMethod("clone").invoke(t);
+            Method m = t.getClass().getMethod("clone");
+            m.setAccessible(true);
+            return (T) m.invoke(t);
         }
         catch (ReflectiveOperationException e)
         {

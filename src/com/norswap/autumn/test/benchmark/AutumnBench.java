@@ -4,7 +4,6 @@ import com.norswap.autumn.Autumn;
 import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParseResult;
 import com.norswap.autumn.parsing.Source;
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.graph.Printer;
 import com.norswap.util.Array;
 import com.norswap.util.Glob;
@@ -28,7 +27,6 @@ public final class AutumnBench
         Instant startParse = Instant.now();
         Grammar grammar =  Autumn.grammarFromSource(Source.fromFile(grammarFile, 1, 4));
 
-        // TODO group for statements
         // TODO think about
         //   - reference resolution first is necessary!
         //   - how about that names do not reflect references?

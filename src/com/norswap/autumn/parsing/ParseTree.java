@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public final class ParseTree implements Iterable<ParseTree>
+public final class ParseTree implements Iterable<ParseTree>, Cloneable
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -483,6 +483,23 @@ public final class ParseTree implements Iterable<ParseTree>
         result = 31 * result + (children == null || children.isEmpty() ? 0 : children.hashCode());
         result = 31 * result + (group ? 1 : 0);
         return result;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public ParseTree clone()
+    {
+        try {
+            ParseTree clone = (ParseTree) super.clone();
+            clone.tags = tags.clone();
+            return clone;
+        }
+        catch (CloneNotSupportedException e)
+        {
+            throw new Error(); // never happens;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

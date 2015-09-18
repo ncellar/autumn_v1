@@ -1,5 +1,7 @@
 package com.norswap.util;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -835,6 +837,71 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         }
 
         return set(key, value);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @SuppressWarnings("unchecked")
+    public void transform(Function<T, T> transform)
+    {
+        for (int i = 0; i < next; ++i)
+        {
+            array[i] = transform.apply((T) array[i]);
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @SuppressWarnings("unchecked")
+    public void transformNonNull(Function<T, T> transform)
+    {
+        for (int i = 0; i < next; ++i)
+        {
+            if (array[i] != null)
+            {
+                array[i] = transform.apply((T) array[i]);
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @SuppressWarnings("unchecked")
+    public void cloneElements()
+    {
+        Method clone = null;
+
+        try {
+            for (int i = 0; i < next; ++i)
+            {
+                T elem = (T) array[i];
+                assert elem instanceof Cloneable;
+
+                if (elem != null)
+                {
+                    if (clone == null)
+                    {
+                        clone = elem.getClass().getMethod("clone");
+                        clone.setAccessible(true);
+                    }
+
+                    array[i] = (T) clone.invoke(elem);
+                }
+            }
+        }
+        catch (ReflectiveOperationException e)
+        {
+            throw new Error(e); // shouldn't happen
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public Array<T> deepClone()
+    {
+        Array<T> out = clone();
+        out.cloneElements();
+        return out;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
