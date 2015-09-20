@@ -577,7 +577,7 @@ public final class ParsingExpressionFactory
 
     public static ParsingExpression errorRecording$(String name, ParsingExpression pe)
     {
-        pe.setFlags(Registry.PEF_ERROR_RECORDING);
+        pe.flags |= Registry.PEF_ERROR_RECORDING;
         return pe;
     }
 

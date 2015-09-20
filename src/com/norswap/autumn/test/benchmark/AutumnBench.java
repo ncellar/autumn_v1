@@ -57,7 +57,7 @@ public final class AutumnBench
                     return;
                 }
 
-                if (false)//(++j == target)
+                if (++j == target)
                 {
                     System.err.println(path);
                     System.err.println("-------");

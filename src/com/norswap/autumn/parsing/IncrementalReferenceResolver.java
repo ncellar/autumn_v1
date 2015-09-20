@@ -2,6 +2,7 @@ package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.parsing.expressions.Reference;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.graph.ReferenceResolver;
 import com.norswap.util.Array;
 import com.norswap.util.Caster;
 
@@ -43,7 +44,8 @@ public final class IncrementalReferenceResolver
 
     public int walk(ParsingExpression pe)
     {
-        if (pe.hasFlagsSet(Registry.PEF_RESOLVED) || visited.contains(pe))
+        // PEF_RESOLVED is set
+        if ((pe.flags & Registry.PEF_RESOLVED) != 0 || visited.contains(pe))
         {
             return 0;
         }
@@ -88,7 +90,7 @@ public final class IncrementalReferenceResolver
 
         if (nUnresolved == 0)
         {
-            pe.setFlags(Registry.PEF_RESOLVED);
+            pe.flags |= Registry.PEF_RESOLVED;
         }
 
         return nUnresolved;

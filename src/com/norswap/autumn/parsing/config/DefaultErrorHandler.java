@@ -30,7 +30,8 @@ public final class DefaultErrorHandler implements ErrorHandler
     @Override
     public void handle(ParsingExpression pe, ParseState state)
     {
-        if (!pe.hasFlagsSet(PEF_ERROR_RECORDING) && !(pe instanceof Token))
+        // error recording not set, and not a token instance
+        if (((pe.flags & PEF_ERROR_RECORDING) == 0) && !(pe instanceof Token))
         {
             return;
         }

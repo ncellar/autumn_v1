@@ -50,7 +50,8 @@ public class Printer extends GraphVisitor<ParsingExpression>
     @Override
     public void before(ParsingExpression pe)
     {
-        if (pe.hasFlagsSet(Registry.PEF_UNARY_INVISIBLE))
+        // PEF_UNARY_INVISIBLE is set
+        if ((pe.flags & Registry.PEF_UNARY_INVISIBLE) != 0)
         {
             return;
         }
@@ -119,7 +120,8 @@ public class Printer extends GraphVisitor<ParsingExpression>
     @Override
     public void after(ParsingExpression pe, List<Slot<ParsingExpression>> children, NodeState state)
     {
-        if (!pe.hasFlagsSet(Registry.PEF_UNARY_INVISIBLE))
+        // PEF_UNARY_INVISIBLE is set
+        if ((pe.flags & Registry.PEF_UNARY_INVISIBLE) != 0)
         {
             stack.pop();
             indices.pop();

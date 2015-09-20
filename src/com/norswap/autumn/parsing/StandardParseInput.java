@@ -7,7 +7,7 @@ import com.norswap.util.Array;
  * parsing expression.
  * <p>
  * Note that this does not (currently) implement {@link ParseInput} since it will always be handled
- * sepately. However the same distinction between type 1 and type 2 fields applies (see {@link
+ * separately. However the same distinction between modifier and other fields applies (see {@link
  * ParseInput}).
  */
 public class StandardParseInput
@@ -15,12 +15,12 @@ public class StandardParseInput
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * (TYPE 1) Position where the parsing expression will be invoked.
+     * (MODIFIER) Position where the parsing expression will be invoked.
      */
     public int start;
 
     /**
-     * (TYPE 3) The last non-whitespace input position preceding {@link #start}.
+     * The last non-whitespace input position preceding {@link #start}.
      * <p>
      * We keep this particular tidbit of information for a single purpose: restoring {@link
      * ParseState#blackEnd} (the last non-whitespace input position preceding {@link
@@ -31,20 +31,20 @@ public class StandardParseInput
     public int blackStart;
 
     /**
-     * (TYPE 1) The current precedence level for {@link com.norswap.autumn.parsing.expressions.Precedence}
+     * (MODIFIER) The current precedence level for {@link com.norswap.autumn.parsing.expressions.Precedence}
      * expressions.
      */
     public int precedence;
 
     /**
-     * (TYPE 1) Holds a set of flags that can serve as additional parse input. Can be set both by
+     * (MODIFIER) Holds a set of flags that can serve as additional parse input. Can be set both by
      * Autumn and the user, who can register his own flags with {@link
      * Registry#ParseStateFlagsFactory}.
      */
     public int flags;
 
     /**
-     * (TYPE 1) Holds the seeds for all the expression clusters in the parsing expression stack (all
+     * (MODIFIER) Holds the seeds for all the expression clusters in the parsing expression stack (all
      * the parsing expressions whose invocation is ongoing).
      */
     public Array<Seed> seeds;
@@ -77,7 +77,7 @@ public class StandardParseInput
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Returns a hash code factoring in only this input's type 1 fields.
+     * Returns a hash code factoring in only this input's modifier fields.
      */
     public int inputHashCode()
     {
@@ -91,7 +91,7 @@ public class StandardParseInput
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Indicate whether this input is equivalent to another, factoring in only this input's type 1
+     * Indicate whether this input is equivalent to another, factoring in only this input's modifier
      * fields.
      */
     public boolean inputEquals(StandardParseInput o)

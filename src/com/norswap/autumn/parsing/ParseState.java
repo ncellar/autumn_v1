@@ -313,73 +313,49 @@ public final class ParseState extends StandardParseInput implements Cloneable
 
     public void forbidMemoization()
     {
-        setFlags(PSF_DONT_MEMOIZE);
+        flags |= PSF_DONT_MEMOIZE;
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public boolean isMemoizationForbidden()
     {
-        return hasFlagsSet(PSF_DONT_MEMOIZE);
+        return (flags & PSF_DONT_MEMOIZE) != 0;
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public void forbidErrorRecording()
     {
-        setFlags(PSF_DONT_RECORD_ERRORS);
+        flags |= PSF_DONT_RECORD_ERRORS;
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public boolean isErrorRecordingForbidden()
     {
-        return hasFlagsSet(PSF_DONT_RECORD_ERRORS);
+        return (flags & PSF_DONT_RECORD_ERRORS) != 0;
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public void enableGroupingCapture()
     {
-        setFlags(PSF_GROUPING_CAPTURE);
+        flags |= PSF_GROUPING_CAPTURE;
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public void disableGroupingCapture()
     {
-        clearFlags(PSF_GROUPING_CAPTURE);
+        flags &= ~PSF_GROUPING_CAPTURE;
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public boolean isCaptureGrouping()
     {
-        return hasFlagsSet(PSF_GROUPING_CAPTURE);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // Generic Flag Manipulation Functions
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public boolean hasAnyFlagsSet(int flagsToCheck)
-    {
-        return (flags & flagsToCheck) != 0;
-    }
-
-    public boolean hasFlagsSet(int flagsToCheck)
-    {
-        return (flags & flagsToCheck) == flagsToCheck ;
-    }
-
-    public void setFlags(int flagsToAdd)
-    {
-        flags |= flagsToAdd;
-    }
-
-    public void clearFlags(int flagsToClear)
-    {
-        flags &= ~flagsToClear;
+        return (flags & PSF_GROUPING_CAPTURE) != 0;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

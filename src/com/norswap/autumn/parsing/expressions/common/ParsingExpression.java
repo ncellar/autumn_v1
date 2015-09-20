@@ -231,35 +231,4 @@ public abstract class ParsingExpression implements DeepCopy
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // FLAG MANIPULATION
-
-    // ---------------------------------------------------------------------------------------------
-
-    public final boolean hasAnyFlagsSet(int flagsToCheck)
-    {
-        return (flags & flagsToCheck) != 0;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public final boolean hasFlagsSet(int flagsToCheck)
-    {
-        return (flags & flagsToCheck) == flagsToCheck ;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public final void setFlags(int flagsToAdd)
-    {
-        flags |= flagsToAdd;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public final void clearFlags(int flagsToClear)
-    {
-        flags &= ~flagsToClear;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
 }

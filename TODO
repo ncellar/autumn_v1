@@ -2,8 +2,6 @@
 TODO
 
 DEBUGGER
-    - minus type 2
-    - change the way accessors and tags are written?
     - clarify parse output and parse input lifetime
     - must invoke parser with parseinput & config options
 
