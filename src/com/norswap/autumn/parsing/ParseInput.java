@@ -6,13 +6,11 @@ import com.norswap.util.DeepCopy;
  * The interface to be implemented by user-defined classes to be used as additional input to the
  * parse.
  * <p>
+ * Certain fields 
  * One can separate the fields of each parse input into three types.
  * <p>
  * TYPE 1 FIELDS: these fields (potentially) modifies how the sub-expressions are parsed. These
  * fields needs to be included in the key when memoizing.
- * <p>
- * TYPE 2 FIELDS: these fields modify the parse output after the parse is complete, through
- * {@linkTODO} (see TODO).
  * <p>
  * TYPE 3 FIELDS: fields that do not fall into the 1 or 2 categories, but are nevertheless part of
  * the input.
@@ -46,10 +44,6 @@ public interface ParseInput extends DeepCopy
      * fields.
      */
     boolean inputEquals(ParseInput other);
-
-    // ---------------------------------------------------------------------------------------------
-
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

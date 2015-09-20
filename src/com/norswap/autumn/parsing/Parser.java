@@ -6,6 +6,7 @@ import com.norswap.autumn.parsing.config.ParserConfiguration;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster;
 import com.norswap.autumn.parsing.expressions.LeftRecursive;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.tree.BuildParseTree;
 import com.norswap.util.Array;
 import com.norswap.util.HandleMap;
 
@@ -19,7 +20,7 @@ public final class Parser
 
     public CharSequence text;
 
-    private ParseTree tree;
+    private BuildParseTree tree;
 
     private Array<LeftRecursive> blocked;
 
@@ -109,7 +110,7 @@ public final class Parser
         }
 
         // TODO
-        return new ParseResult(endPosition == source.length(), endPosition >= 0, endPosition, tree, null, errorHandler.error(source));
+        return new ParseResult(endPosition == source.length(), endPosition >= 0, endPosition, tree.build(), null, errorHandler.error(source));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

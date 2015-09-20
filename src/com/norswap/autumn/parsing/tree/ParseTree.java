@@ -13,6 +13,9 @@ import java.util.Set;
  * data structures.
  * <p>
  * Beware that most of the methods can return null if asking for something that isn't there.
+ * <p>
+ * Such a tree is acquired by calling {@link BuildParseTree#build} on an instance of {@link
+ * BuildParseTree}.
  */
 public final class ParseTree implements Iterable<ParseTree>
 {
@@ -28,7 +31,7 @@ public final class ParseTree implements Iterable<ParseTree>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ParseTree(String accessor, String value, @NonNull Set<String> tags, @NonNull Array<ParseTree> children)
+    public ParseTree(String accessor, String value, @NonNull Set<String> tags, @NonNull Array<ParseTree> children)
     {
         this.accessor = accessor;
         this.value = value;
@@ -91,7 +94,6 @@ public final class ParseTree implements Iterable<ParseTree>
 
     /**
      * Return the first child, or null.
-     * @return
      */
     public ParseTree child()
     {
@@ -116,6 +118,16 @@ public final class ParseTree implements Iterable<ParseTree>
     public Array<ParseTree> tagged(String tag)
     {
         return children.filter(x -> x.hasTag(tag));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Does the tree have a child with the given accessor?
+     */
+    public boolean has(String accessor)
+    {
+        return get(accessor) != null;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

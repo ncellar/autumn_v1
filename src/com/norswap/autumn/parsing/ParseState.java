@@ -1,6 +1,7 @@
 package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.tree.BuildParseTree;
 import com.norswap.util.Array;
 import com.norswap.util.DeepCopy;
 
@@ -45,7 +46,7 @@ public final class ParseState extends StandardParseInput implements Cloneable
      * The parse tree which is to be the parent of parse trees produced by captures in
      * the parsing expression.
      */
-    public ParseTree tree;
+    public BuildParseTree tree;
 
     /**
      * The number of children of {@link #tree} prior to invocation. Kept so that we can rollback
@@ -75,8 +76,7 @@ public final class ParseState extends StandardParseInput implements Cloneable
         ParseState root = new ParseState();
         root.end = 0;
         root.blackEnd = 0;
-        root.tree = new ParseTree();
-        root.tags = new Array<>();
+        root.tree = new BuildParseTree();
         root.inputs = new ParseInput[Registry.ParseInputHandleFactory.size()];
         root.outputs = new ParseOutput[Registry.ParseOutputHandleFactory.size()];
         return root;
@@ -285,9 +285,12 @@ public final class ParseState extends StandardParseInput implements Cloneable
     @Override
     public String toString()
     {
-        return String.format("(%X) [%d/%d - %d/%d[ tree(%d/%d) acc(%s)%s tags(%d) flags(%s)",
-            hashCode(), start, blackStart, end, blackEnd, treeChildrenCount, tree.childrenCount(),
-            accessor, isCaptureGrouping() ? "(g)" : "", tags.size(), Integer.toString(flags, 2));
+        return String.format("(%X) [%d/%d - %d/%d[ tree(%d/%d) flags(%s)",
+            hashCode(),
+            start, blackStart,
+            end, blackEnd,
+            treeChildrenCount, tree.childrenCount(),
+            Integer.toString(flags, 2));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

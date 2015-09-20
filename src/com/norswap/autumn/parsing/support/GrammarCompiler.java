@@ -2,16 +2,14 @@ package com.norswap.autumn.parsing.support;
 
 import com.norswap.autumn.Autumn;
 import com.norswap.autumn.parsing.Grammar;
-import com.norswap.autumn.parsing.ParseTree;
+import com.norswap.autumn.parsing.tree.ParseTree;
 import com.norswap.autumn.parsing.Whitespace;
-import com.norswap.autumn.parsing.expressions.Capture;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster.Group;
 import com.norswap.autumn.parsing.expressions.Filter;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.ParsingExpressionFactory;
 import com.norswap.autumn.parsing.expressions.Reference;
 import com.norswap.util.Array;
-import com.norswap.util.Counter;
 import com.norswap.util.Streams;
 
 import java.util.List;
@@ -100,7 +98,7 @@ public final class GrammarCompiler
     private ParsingExpression compileOneOrGroup(
         Compiler itemCompiler, Grouper grouper, ParseTree tree)
     {
-        if (tree.childrenCount() == 1)
+        if (tree.children().size() == 1)
         {
             return itemCompiler.apply(tree.child());
         }

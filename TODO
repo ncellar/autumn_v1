@@ -2,14 +2,12 @@
 TODO
 
 DEBUGGER
+    - minus type 2
+    - change the way accessors and tags are written?
+    - clarify parse output and parse input lifetime
     - must invoke parser with parseinput & config options
-        - change the way accessors and tags are written?
-        - clarify parse output and parse input lifetime
 
 REWORK
-    - make output changes hookable
-    - make reset hookable
-    - unify state system
     - syntax for custom operators ($name?)
 
 GUMPTION
@@ -27,16 +25,11 @@ w5: manual
 
 TODO FURTHER SMALL
 
-- remove old memo handler
+- keep an array instead of a tree in parsestate
 
 - scope Registry to parser
 
-- keep an array instead of a tree in parsestate
-
-- performance
-    - store accessor, tag, groups as tabular
-    - force captures for changes?
-    - tags as linked list
+- allow options in grammar files, namely for root and whitespace spec
 
 - well formedness check (ford: WF -- can't loop without consuming)
 

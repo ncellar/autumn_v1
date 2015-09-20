@@ -44,8 +44,8 @@ public final class AutumnBench
         for (int i = 0; i < iters; ++i)
         {
             for (Path path: Glob.glob("**/*.java", Paths.get(
-                //"/Users/nilaurent/Documents/spring-framework")))
-                "../guava")))
+                "/Users/nilaurent/Documents/spring-framework")))
+                //"../guava")))
             {
                 ParseResult result = Autumn.parseFile(grammar, path.toString());
 
@@ -57,11 +57,11 @@ public final class AutumnBench
                     return;
                 }
 
-                if (++j == target)
+                if (false)//(++j == target)
                 {
                     System.err.println(path);
                     System.err.println("-------");
-                    System.err.println(result.tree.toTreeString());
+                    System.err.println(result.tree);
                 }
 
             }

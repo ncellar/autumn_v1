@@ -1,5 +1,6 @@
 package com.norswap.autumn.parsing;
 
+import com.norswap.autumn.parsing.tree.BuildParseTree;
 import com.norswap.util.Array;
 
 /**
@@ -12,7 +13,7 @@ public final class OutputChanges
     public final int end;
     public final int blackEnd;
 
-    private Array<ParseTree> children;
+    private Array<BuildParseTree> children;
 
     private Object[] changes;
 
@@ -37,9 +38,8 @@ public final class OutputChanges
     {
         this.end = state.end;
         this.blackEnd = state.blackEnd;
-        // TODO better call
-        this.children = state.tree.children().copyFrom(state.treeChildrenCount);
-        this.children.cloneElements();
+        this.children = state.tree.children.copyFromIndex(state.treeChildrenCount);
+
         this.changes = new Object[state.outputs.length];
 
         for (int i = 0; i < state.outputs.length; ++i)
@@ -60,8 +60,7 @@ public final class OutputChanges
 
         if (children != null)
         {
-            Array<ParseTree> clone = children.deepClone();
-            state.tree.addAll(clone);
+            state.tree.addAll(children);
         }
 
         for (int i = 0; i < state.outputs.length; ++i)

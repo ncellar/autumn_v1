@@ -49,16 +49,6 @@ public class StandardParseInput
      */
     public Array<Seed> seeds;
 
-    /**
-     * (TYPE 2) The accessor to bestow upon newly captures.
-     */
-    public String accessor;
-
-    /**
-     * (TYPE 2) The tags to bestow upon newly created captures.
-     */
-    public Array<String> tags;
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     StandardParseInput() {}
@@ -82,8 +72,6 @@ public class StandardParseInput
         this.precedence = other.precedence;
         this.flags = other.flags;
         this.seeds = other.seeds.clone();
-        this.accessor = other.accessor;
-        this.tags = other.tags.clone();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,28 +1,22 @@
 package com.norswap.autumn.parsing.expressions;
 
 import com.norswap.autumn.parsing.ParseState;
-import com.norswap.autumn.parsing.ParseTree;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
+import com.norswap.autumn.parsing.tree.BuildParseTree;
 import com.norswap.util.Array;
 import com.norswap.util.annotations.NonNull;
 
-import static com.norswap.autumn.parsing.Registry.*; // PEF_* PSF_*
+import static com.norswap.autumn.parsing.Registry.*; // PEF_*
 
 /**
  * Invokes its operand on the input, succeeding if the operand does, with the same end position.
  * <p>
- * This either specify the capture of its operand or alters the effect of captures occuring during
- * the invocation of its operand by modifying the parse state.
- * <p>
- * For these captures, the accessor will be {@link #accessor} or {@link ParseState#accessor} (which
- * overrides the former). The tags will be the union of {@link #tags} and {@link ParseState#tags}.
- * If {@link #shouldGroup}, the capture will belong to a group of captures with the same accessor.
- * <p>
- * Capture specifications do not accumulate: after a capture is performed, the {@link
- * ParseState#accessor} and {@link ParseState#tags} are reset for the children of the captured
- * expression.
+ * This either specify the capture of its operand or specify an alteration (specifying the accessor
+ * or adding tags) of captures occuring during the invocation of its operand, which it does by
+ * wrapping the new {@link BuildParseTree} instances in other {@link BuildParseTree} instances. The
+ * structure will be flattened by {@link BuildParseTree#build}.
  * <p>
  * If {@link #shouldCapture}, adds a new child node to the current parse tree node. This node
  * becomes the current parse tree node for the invocation of the operand. If {@link
@@ -52,21 +46,21 @@ public final class Capture extends UnaryParsingExpression
     {
         if (shouldCapture())
         {
-            ParseTree newTree;
-
-            if (operand == null)
+            if (operand == null) // marker capture
             {
-                newTree = new ParseTree();
+                BuildParseTree newTree = new BuildParseTree();
+                newTree.accessor = accessor;
+                newTree.tags = tags;
                 state.tree.add(newTree);
             }
             else
             {
                 // save
-                ParseTree oldTree = state.tree;
+                BuildParseTree oldTree = state.tree;
                 int oldCount = state.treeChildrenCount;
 
                 // setup
-                newTree = state.tree = new ParseTree();
+                BuildParseTree newTree = state.tree = new BuildParseTree();
                 state.treeChildrenCount = 0;
 
                 // parse
@@ -80,6 +74,8 @@ public final class Capture extends UnaryParsingExpression
                 if (state.succeeded())
                 {
                     oldTree.add(newTree);
+                    newTree.accessor = accessor;
+                    newTree.tags = tags;
 
                     if (shouldCaptureText())
                     {
@@ -89,8 +85,6 @@ public final class Capture extends UnaryParsingExpression
                     }
                 }
             }
-
-            annotate(newTree);
         }
         else
         {
@@ -101,37 +95,39 @@ public final class Capture extends UnaryParsingExpression
 
             for (int i = start; i < end; ++i)
             {
-                annotate(state.tree.child(i));
+                annotate(i, state.tree);
             }
         }
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    private void annotate(ParseTree tree)
+    private void annotate(int i, BuildParseTree parent)
     {
+        if (accessor == null && tags == null)
+        {
+            return;
+        }
+
+        BuildParseTree oldTree = parent.child(i);
+        BuildParseTree newTree = new BuildParseTree();
+        newTree.tags = tags;
+        newTree.wrappee = oldTree;
+
         if (accessor != null)
         {
-            if (tree.accessor != null)
+            if (oldTree.accessor != null)
             {
                 throw new RuntimeException(String.format(
                     "Trying to override accessor \"%s\" with accessor \"%s\".",
-                    tree.accessor,
+                    oldTree.accessor,
                     accessor));
             }
 
-            tree.accessor = accessor;
+            newTree.accessor = accessor;
         }
 
-        if (shouldGroup())
-        {
-            tree.group = true;
-        }
-
-        for (String tag: tags)
-        {
-            tree.addTag(tag);
-        }
+        parent.setChild(i, newTree);
     }
 
     // ---------------------------------------------------------------------------------------------

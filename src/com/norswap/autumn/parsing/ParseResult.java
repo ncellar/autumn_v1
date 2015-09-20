@@ -1,5 +1,6 @@
 package com.norswap.autumn.parsing;
 
+import com.norswap.autumn.parsing.tree.ParseTree;
 import com.norswap.util.HandleMap;
 
 /**

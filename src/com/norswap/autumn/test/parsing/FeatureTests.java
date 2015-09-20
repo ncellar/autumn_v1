@@ -1,6 +1,6 @@
 package com.norswap.autumn.test.parsing;
 
-import com.norswap.autumn.parsing.ParseTree;
+import com.norswap.autumn.parsing.tree.ParseTree;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.test.Ensure;
 import com.norswap.autumn.test.TestRunner;

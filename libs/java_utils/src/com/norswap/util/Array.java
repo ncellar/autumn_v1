@@ -269,7 +269,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
     /**
      * Returns a copy of the [from, size[ range of this array.
      */
-    public Array<T> copyFrom(int from)
+    public Array<T> copyFromIndex(int from)
     {
         assert from >= 0 && from <= next;
 

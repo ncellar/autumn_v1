@@ -1,6 +1,7 @@
 package com.norswap.autumn.parsing.tree;
 
 import com.norswap.util.Array;
+import com.norswap.util.annotations.NonNull;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -28,7 +29,10 @@ public final class BuildParseTree
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public BuildParseTree() {}
+    public BuildParseTree()
+    {
+        this.children = new Array<>();
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -63,6 +67,27 @@ public final class BuildParseTree
 
     // ---------------------------------------------------------------------------------------------
 
+    public BuildParseTree child(int i)
+    {
+        return children.get(i);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void setChild(int i, BuildParseTree tree)
+    {
+        children.set(i, tree);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void truncate(int size)
+    {
+        children.truncate(size);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     public ParseTree build()
     {
         return build(null, new HashSet<>());
@@ -88,7 +113,8 @@ public final class BuildParseTree
 
         return wrappee != null
             ? wrappee.build(accessor, tagSet)
-            : new ParseTree(accessor, value, tagSet, children.map(BuildParseTree::build));
+            : new ParseTree(accessor, value, tagSet,
+                children == null ? Array.empty() : children.map(BuildParseTree::build));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

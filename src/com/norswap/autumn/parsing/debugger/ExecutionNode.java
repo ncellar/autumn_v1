@@ -29,8 +29,6 @@ public final class ExecutionNode
         this.precedence = state.precedence;
         this.flags = state.flags;
         this.seeds = state.seeds.clone();
-        this.accessor = state.accessor;
-        this.tags = state.tags.clone();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
