@@ -83,10 +83,7 @@ public final class ExpressionCluster extends ParsingExpression
         state.pushSheed(this, changes);
         int changesPrecedence = 0;
 
-        // Because of precedence, memoized results might not be correct (might have been obtained
-        // with another precedence).
         final int oldFlags = state.flags;
-        state.forbidMemoization();
 
         // Get minimum precedence if we're already parsing this cluster (else it's 0).
         final int minPrecedence = parser.enterPrecedence(this, state.start, 0);

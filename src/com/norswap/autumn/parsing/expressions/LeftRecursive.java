@@ -42,12 +42,7 @@ public final class LeftRecursive extends UnaryParsingExpression
             parser.pushBlocked(this);
         }
 
-        // If we're in a left-recursive position, relying on memoized values will prevent
-        // the expansion of the seed, so don't do it. This is cleared when advancing input position
-        // with {@link ParseInput#advance()}.
-
         int oldFlags = state.flags;
-        state.forbidMemoization();
 
         // Keep parsing the operand, as long as long as the seed keeps growing.
 

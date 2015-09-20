@@ -12,12 +12,6 @@ public final class Memo extends UnaryParsingExpression
     @Override
     public void parse(Parser parser, ParseState state)
     {
-        if (state.isMemoizationForbidden())
-        {
-            operand.parse(parser, state);
-            return;
-        }
-
         OutputChanges changes = parser.memoHandler.get(this, state);
 
         if (changes != null)

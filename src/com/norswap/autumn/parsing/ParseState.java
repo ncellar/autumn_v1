@@ -311,20 +311,6 @@ public final class ParseState extends StandardParseInput implements Cloneable
     // Standard Flags
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void forbidMemoization()
-    {
-        flags |= PSF_DONT_MEMOIZE;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public boolean isMemoizationForbidden()
-    {
-        return (flags & PSF_DONT_MEMOIZE) != 0;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
     public void forbidErrorRecording()
     {
         flags |= PSF_DONT_RECORD_ERRORS;
@@ -335,27 +321,6 @@ public final class ParseState extends StandardParseInput implements Cloneable
     public boolean isErrorRecordingForbidden()
     {
         return (flags & PSF_DONT_RECORD_ERRORS) != 0;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public void enableGroupingCapture()
-    {
-        flags |= PSF_GROUPING_CAPTURE;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public void disableGroupingCapture()
-    {
-        flags &= ~PSF_GROUPING_CAPTURE;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public boolean isCaptureGrouping()
-    {
-        return (flags & PSF_GROUPING_CAPTURE) != 0;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

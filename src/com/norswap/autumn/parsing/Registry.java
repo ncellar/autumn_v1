@@ -92,23 +92,10 @@ public final class Registry
     // PARSE STATE FLAGS (PSF)
 
     /**
-     * Indicates that we shouldn't memoize any of the sub-expressions of the expression
-     * associated with this parse state.
-     */
-    public static final int PSF_DONT_MEMOIZE
-        = ParseStateFlagsFactory.next();
-
-    /**
      * Indicates that we shouldn't record errors when sub-expressions of the expression
      * associated with this parse state fail to parse.
      */
     public static final int PSF_DONT_RECORD_ERRORS
-        = ParseStateFlagsFactory.next();
-
-    /**
-     * Indicates that captures should be added to a group corresponding to their accessor.
-     */
-    public static final int PSF_GROUPING_CAPTURE
         = ParseStateFlagsFactory.next();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

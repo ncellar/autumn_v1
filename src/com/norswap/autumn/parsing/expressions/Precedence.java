@@ -32,14 +32,6 @@ public final class Precedence extends UnaryParsingExpression
             int oldPrecedence = state.precedence;
             state.precedence = precedence;
 
-            if (precedence > 0)
-            {
-                // If a precedence level is set, calling a sub-expression at the same position with
-                // another precedence might yield a different result, so don't memoize.
-
-                state.forbidMemoization();
-            }
-
             operand.parse(parser, state);
 
             state.precedence = oldPrecedence;
