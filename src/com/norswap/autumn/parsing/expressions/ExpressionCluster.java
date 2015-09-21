@@ -134,13 +134,13 @@ public final class ExpressionCluster extends ParsingExpression
                         changes = new OutputChanges(state);
                         changesPrecedence = group.precedence;
                         state.setSeed(changes);
-                        state.resetOutput();
+                        state.discard();
                         break;
                     }
                     else
                     {
                         // This rule couldn't grow the seed, try the next one.
-                        state.resetOutput();
+                        state.discard();
                     }
                 }
 

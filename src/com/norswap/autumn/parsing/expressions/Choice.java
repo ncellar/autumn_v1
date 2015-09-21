@@ -31,7 +31,7 @@ public final class Choice extends NaryParsingExpression
             }
             else
             {
-                state.resetOutput();
+                state.discard();
             }
         }
 

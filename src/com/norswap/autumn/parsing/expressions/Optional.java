@@ -25,7 +25,7 @@ public final class Optional extends UnaryParsingExpression
 
         if (state.failed())
         {
-            state.resetOutput();
+            state.discard();
         }
     }
 

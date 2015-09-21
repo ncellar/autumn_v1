@@ -32,7 +32,7 @@ public final class Not extends UnaryParsingExpression
         }
         else
         {
-            state.resetOutput();
+            state.discard();
         }
 
         state.flags = oldFlags;

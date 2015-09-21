@@ -2,6 +2,7 @@ package com.norswap.autumn.parsing.expressions;
 
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
+import com.norswap.autumn.parsing.StandardStateSnapshot;
 import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
 
 /**
@@ -19,35 +20,35 @@ public final class OneMore extends UnaryParsingExpression
     @Override
     public void parse(Parser parser, ParseState state)
     {
-        final ParseState down = ParseState.from(state);
+        StandardStateSnapshot snapshot = state.snapshot();
 
-        operand.parse(parser, down);
+        operand.parse(parser, state);
 
-        if (down.failed())
+        if (state.failed())
         {
-            state.resetOutput();
+            state.restore(snapshot);
             parser.fail(this, state);
             return;
         }
         else
         {
-            down.advance();
+            state.commit();
         }
 
         while (true)
         {
-            operand.parse(parser, down);
+            operand.parse(parser, state);
 
-            if (down.failed())
+            if (state.failed())
             {
-                down.resetOutput();
+                state.discard();
                 break;
             }
 
-            down.advance();
+            state.commit();
         }
 
-        state.merge(down);
+        state.uncommit(snapshot);
     }
 
     // ---------------------------------------------------------------------------------------------

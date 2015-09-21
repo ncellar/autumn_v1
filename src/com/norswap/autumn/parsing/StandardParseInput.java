@@ -24,7 +24,7 @@ public class StandardParseInput
      * <p>
      * We keep this particular tidbit of information for a single purpose: restoring {@link
      * ParseState#blackEnd} (the last non-whitespace input position preceding {@link
-     * ParseState#end}) with {@link ParseState#resetOutput()}.
+     * ParseState#end}) with {@link ParseState#discard()}.
      * <p>
      * As such, this does not influence the parse.
      */

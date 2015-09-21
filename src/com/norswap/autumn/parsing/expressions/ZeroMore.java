@@ -3,6 +3,7 @@ package com.norswap.autumn.parsing.expressions;
 import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
+import com.norswap.autumn.parsing.StandardStateSnapshot;
 import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
 import com.norswap.autumn.parsing.graph.Nullability;
 
@@ -22,22 +23,22 @@ public final class ZeroMore extends UnaryParsingExpression
     @Override
     public void parse(Parser parser, ParseState state)
     {
-        final ParseState down = ParseState.from(state);
+        StandardStateSnapshot snapshot = state.snapshot();
 
         while (true)
         {
-            operand.parse(parser, down);
+            operand.parse(parser, state);
 
-            if (down.failed())
+            if (state.failed())
             {
-                down.resetOutput();
+                state.discard();
                 break;
             }
 
-            down.advance();
+            state.commit();
         }
 
-        state.merge(down);
+        state.uncommit(snapshot);
     }
 
     // ---------------------------------------------------------------------------------------------

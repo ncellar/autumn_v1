@@ -61,11 +61,11 @@ public final class LeftRecursive extends UnaryParsingExpression
 
                 changes = new OutputChanges(state);
                 state.setSeed(changes);
-                state.resetOutput();
+                state.discard();
             }
         }
 
-        state.resetOutput();
+        state.discard();
 
         state.flags = oldFlags;
         changes.mergeInto(state);

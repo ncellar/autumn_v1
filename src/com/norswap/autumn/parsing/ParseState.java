@@ -168,61 +168,12 @@ public final class ParseState extends StandardParseInput implements Cloneable
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Merges the outputs of this parse state into its inputs.
-     */
-    public void advance()
-    {
-        if (end > start)
-        {
-            seeds = null;
-        }
-
-        start = end;
-        blackStart = blackEnd;
-        treeChildrenCount = tree.childrenCount();
-
-        for (ParseOutput output: outputs)
-        {
-            if (output != null)
-            {
-                output.advance(this);
-            }
-        }
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
      * Advances the end (and black end) position by n characters.
      */
     public void advance(int n)
     {
-        if (n != 0)
-        {
-            end += n;
-            blackEnd = end;
-        }
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Removes all of this parse state's output. This may imply reverting changes that were done to
-     * data structures in order to attach the outputs.
-     */
-    public void resetOutput()
-    {
-        end = start;
-        blackEnd = blackStart;
-        tree.truncate(treeChildrenCount);
-
-        for (ParseOutput output: outputs)
-        {
-            if (output != null)
-            {
-                output.reset(this);
-            }
-        }
+        end += n;
+        blackEnd = end;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -261,19 +212,19 @@ public final class ParseState extends StandardParseInput implements Cloneable
     /**
      * Merges the outputs of the child with this parse state.
      */
-    public void merge(ParseState child)
-    {
-        this.end = child.end;
-        this.blackEnd = child.blackEnd;
-
-        for (ParseOutput output: outputs)
-        {
-            if (output != null)
-            {
-                output.merge(this, child);
-            }
-        }
-    }
+//    public void merge(ParseState child)
+//    {
+//        this.end = child.end;
+//        this.blackEnd = child.blackEnd;
+//
+//        for (ParseOutput output: outputs)
+//        {
+//            if (output != null)
+//            {
+//                output.merge(this, child);
+//            }
+//        }
+//    }
 
     // ---------------------------------------------------------------------------------------------
 
@@ -286,6 +237,108 @@ public final class ParseState extends StandardParseInput implements Cloneable
         StandardParseInput stdInput = new StandardParseInput(this);
         ParseInput[] inputs = DeepCopy.of(this.inputs, ParseInput[]::new);
         return new ParseInputs(pe, stdInput, inputs);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public StandardStateSnapshot snapshot()
+    {
+        return new StandardStateSnapshot(
+            start,
+            blackStart,
+            end,
+            blackEnd,
+            treeChildrenCount,
+            flags,
+            seeds);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void restore(StandardStateSnapshot snapshot)
+    {
+        start               = snapshot.start;
+        blackStart          = snapshot.blackStart;
+        end                 = snapshot.end;
+        blackEnd            = snapshot.blackEnd;
+        treeChildrenCount   = snapshot.treeChildrenCount;
+        flags               = snapshot.flags;
+        seeds               = snapshot.seeds;
+
+        tree.truncate(treeChildrenCount);
+
+        for (ParseOutput output: outputs)
+        {
+            if (output != null) output.reset(this);
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Merges the outputs of this parse state into its inputs.
+     */
+    public void commit()
+    {
+        if (end > start)
+        {
+            seeds = null;
+        }
+
+        start = end;
+        blackStart = blackEnd;
+        treeChildrenCount = tree.childrenCount();
+
+        for (ParseOutput output: outputs)
+        {
+            if (output != null)
+            {
+                output.advance(this);
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Removes all of this parse state's output. This may imply reverting changes that were done to
+     * data structures in order to attach the outputs.
+     */
+    public void discard()
+    {
+        end = start;
+        blackEnd = blackStart;
+        tree.truncate(treeChildrenCount);
+
+        for (ParseOutput output: outputs)
+        {
+            if (output != null) output.reset(this);
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public OutputChanges extract()
+    {
+        return new OutputChanges(this);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void merge(OutputChanges changes)
+    {
+        changes.mergeInto(this);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void uncommit(StandardStateSnapshot snapshot)
+    {
+        start               = snapshot.start;
+        blackStart          = snapshot.blackStart;
+        treeChildrenCount   = snapshot.treeChildrenCount;
+        flags               = snapshot.flags; // needed?
+        seeds               = snapshot.seeds;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -106,7 +106,7 @@ public final class Parser
 
         if ((this.endPosition = rootState.end) < 0)
         {
-            rootState.resetOutput();
+            rootState.discard();
         }
 
         // TODO
@@ -120,7 +120,7 @@ public final class Parser
      * ParseState#fail} and passes the error to the error handler.
      * <p>
      * {@code state} should be in the same state as when the expression was invoked. This means
-     * {@link ParseState#resetOutput} should have been called on the state if necessary.
+     * {@link ParseState#discard} should have been called on the state if necessary.
      * <p>
      * In some cases, an expression may elect not to report a failure, in which case it must call
      * {@link ParseState#fail} directly instead (e.g. left-recursion for blocked recursive calls).

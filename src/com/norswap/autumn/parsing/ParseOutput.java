@@ -18,7 +18,7 @@ public interface ParseOutput
     /**
      * Reset this parse output to its state before the parsing expression invocation.
      * <p>
-     * Called by {@link ParseState#resetOutput}.
+     * Called by {@link ParseState#discard}.
      */
     void reset(ParseState state);
 
@@ -27,7 +27,7 @@ public interface ParseOutput
     /**
      * Assimilate these outputs, making them non-resettable.
      * <p>
-     * Called by {@link ParseState#advance}.
+     * Called by {@link ParseState#commit}.
      */
     void advance(ParseState state);
 

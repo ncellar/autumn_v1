@@ -24,7 +24,7 @@ public final class Lookahead extends UnaryParsingExpression
 
         if (state.succeeded())
         {
-            state.resetOutput();
+            state.discard();
         }
         else
         {
