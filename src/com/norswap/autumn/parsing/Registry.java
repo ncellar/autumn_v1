@@ -28,15 +28,6 @@ public final class Registry
     public static final HandleFactory ParseOutputHandleFactory = new HandleFactory();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // PARSER HANDLES (PH)
-
-    /**
-     * Fetches the recursion depth (number of {@code Trace} expression traversed).
-     */
-    public static final int PH_DEPTH
-        = ParserHandleFactory.next();
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     // PARSING EXPRESSION HANDLES (PEH)
 
     /**

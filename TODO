@@ -2,7 +2,7 @@
 TODO
 
 DEBUGGER
-    - clarify parse output and parse input lifetime
+    - error handler is sort of like error merge strategy, do it like that instead?
     - must invoke parser with parseinput & config options
 
 REWORK
@@ -15,7 +15,7 @@ TODO PLANNING
 
 4 weeks + 1 (try to interleave):
 
-w1: parse tree etc
+w1: parse tree etc  (over)
 w2: GUI model
 w3: GUI
 w4: presentation
@@ -38,15 +38,11 @@ TODO FURTHER SMALL
 TODO FURTHER BIG
 
 - better error handling
-    - "unexpected X" via rounding up token definitions?
+    - "unexpected X" via rounding up token definitions
 
 - better memo handling
     - memoize tokens?
     - discard children memo when parent finishes
-
-- generalize state handling to be able to define custom state
-    - + how memoize can handle custom state, including automatically
-      (chained hashs)
 
 - better support for layering with smart tree-building that automatically rewrites trees
   (see D5)
@@ -54,8 +50,6 @@ TODO FURTHER BIG
 - trees: topological sort
 
 - mini type system for captures? automatic AST classes generation?
-
-- error handler is sort of like error merge strategy, do it like that instead?
 
 - think about building in validation rules
 

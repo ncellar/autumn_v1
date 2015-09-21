@@ -10,8 +10,6 @@ package com.norswap.autumn.parsing;
  * Parsing expressions are responsible for the manipulation of parse inputs: modifying them, and
  * adding/removing them from a {@link ParseState}. Many strategies are possible, including
  * repurposing the same ParseOutput object to be used many times.
- *
- * TODO more
  */
 public interface ParseOutput
 {

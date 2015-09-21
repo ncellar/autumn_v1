@@ -54,6 +54,12 @@ public final class ParseState extends StandardParseInput implements Cloneable
      */
     public int treeChildrenCount;
 
+    /**
+     * The error information that result after attempting to parse the expression. Note that
+     * we may record errors even when the expresison succeeds.
+     */
+    public ErrorOutput errors;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -79,6 +85,8 @@ public final class ParseState extends StandardParseInput implements Cloneable
         root.tree = new BuildParseTree();
         root.inputs = new ParseInput[Registry.ParseInputHandleFactory.size()];
         root.outputs = new ParseOutput[Registry.ParseOutputHandleFactory.size()];
+        // TODO
+        root.errors = new DefaultErrorOutput();
         return root;
     }
 

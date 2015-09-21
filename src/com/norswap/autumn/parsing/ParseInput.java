@@ -24,8 +24,6 @@ import com.norswap.util.DeepCopy;
  * Parsing expressions are responsible for the manipulation of parse inputs: modifying them, and
  * adding/removing them from a {@link ParseState}. Many strategies are possible, including
  * repurposing the same ParseInput object to be used many times.
- *
- * TODO clarifiying
  */
 public interface ParseInput extends DeepCopy
 {
