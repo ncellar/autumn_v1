@@ -3,37 +3,25 @@ package com.norswap.autumn.parsing;
 import com.norswap.autumn.parsing.config.ErrorHandler;
 import com.norswap.autumn.parsing.config.MemoHandler;
 import com.norswap.autumn.parsing.config.ParserConfiguration;
-import com.norswap.autumn.parsing.expressions.ExpressionCluster;
-import com.norswap.autumn.parsing.expressions.LeftRecursive;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.tree.BuildParseTree;
-import com.norswap.util.Array;
 import com.norswap.util.HandleMap;
 
 public final class Parser
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private Grammar grammar;
+    public final Grammar grammar;
 
     public final Source source;
 
-    public CharSequence text;
+    public final CharSequence text;
 
-    private BuildParseTree tree;
-
-    private Array<LeftRecursive> blocked;
-
-    private Array<ExpressionCluster.PrecedenceEntry> minPrecedence;
-
-    public ParsingExpression clusterAlternate;
-
-    private int endPosition;
-    
-    public HandleMap ext = new HandleMap();
+    public final HandleMap ext = new HandleMap();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Configuration Fields
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public final ErrorHandler errorHandler;
 
@@ -86,11 +74,8 @@ public final class Parser
      */
     public ParseResult parse(ParsingExpression pe)
     {
-        this.blocked = new Array<>();
-        this.minPrecedence = new Array<>();
-
-        ParseState rootState = ParseState.root();
-        tree = rootState.tree;
+        ParseState rootState = new ParseState();
+        BuildParseTree tree = rootState.tree;
 
         if (processLeadingWhitespace)
         {
@@ -104,13 +89,15 @@ public final class Parser
 
         pe.parse(this, rootState);
 
-        if ((this.endPosition = rootState.end) < 0)
+        int end = rootState.end;
+
+        if (end < 0)
         {
             rootState.discard();
         }
 
         // TODO
-        return new ParseResult(endPosition == source.length(), endPosition >= 0, endPosition, tree.build(), null, errorHandler.error(source));
+        return new ParseResult(end == source.length(), end >= 0, end, tree.build(), null, errorHandler.error(source));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -135,116 +122,7 @@ public final class Parser
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public boolean isBlocked(LeftRecursive lr)
-    {
-        for (LeftRecursive la: blocked)
-        {
-            if (lr == la)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    //----------------------------------------------------------------------------------------------
-
-    public void pushBlocked(LeftRecursive lr)
-    {
-        blocked.push(lr);
-    }
-
-    //----------------------------------------------------------------------------------------------
-
-    public void popBlocked()
-    {
-        blocked.pop();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // PRECEDENCE
-
-    //----------------------------------------------------------------------------------------------
-
-    /**
-     * If {@code expr} is not yet in the process of being parsed, or if its current precedence is
-     * below the given precedence, registers the given precedence for this expression. Returns
-     * the old the precedence if there was one, else the given precedence.
-     */
-    public int enterPrecedence(ExpressionCluster expr, int position, int precedence)
-    {
-        ExpressionCluster.PrecedenceEntry entry = minPrecedence.peekOrNull();
-
-        if (entry == null || entry.cluster != expr)
-        {
-            entry = new ExpressionCluster.PrecedenceEntry();
-            entry.cluster = expr;
-            entry.initialPosition = position;
-            entry.minPrecedence = precedence;
-
-            minPrecedence.push(entry);
-            return precedence;
-        }
-        else if (entry.minPrecedence < precedence)
-        {
-            int result = entry.minPrecedence;
-            entry.minPrecedence = precedence;
-            return result;
-        }
-        else
-        {
-            return entry.minPrecedence;
-        }
-    }
-
-    //----------------------------------------------------------------------------------------------
-
-    /**
-     * Returns the current precedence value for the expression being parsed most recently.
-     * This is safe because inter-expression recursion is forbidden.
-     */
-    public int minPrecedence()
-    {
-        return minPrecedence.peek().minPrecedence;
-    }
-
-    //----------------------------------------------------------------------------------------------
-
-    /**
-     * Sets the current precedence value for the expression being parsed most recently.
-     * This is safe because inter-expression recursion is forbidden.
-     */
-    public void setMinPrecedence(int precedence)
-    {
-        minPrecedence.peek().minPrecedence = precedence;
-    }
-
-    //----------------------------------------------------------------------------------------------
-
-    /**
-     * If the expression being parsed most recently was entered at {@code position}, unregister
-     * the expression; otherwise sets its current precedence to {@code precedence}.
-     *
-     * This method is necessary because non-left recursion of expressions is done by invoking the
-     * expression at another position. When this call exits, it needs to restore the precedence
-     * that was in effect when it was entered. The initial call needs to unregister the expression.
-     */
-    public void exitPrecedence(int precedence, int position)
-    {
-        ExpressionCluster.PrecedenceEntry entry = minPrecedence.peek();
-
-        if (entry.initialPosition == position)
-        {
-            minPrecedence.pop();
-        }
-        else
-        {
-            entry.minPrecedence = precedence;
-        }
-    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

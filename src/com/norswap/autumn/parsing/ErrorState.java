@@ -7,8 +7,8 @@ package com.norswap.autumn.parsing;
  * <p>
  * It's totally possible to save the errors that occur under a successfull expression.
  * <p>
- * The default strategy is implemented by {@link DefaultErrorOutput}.
+ * The default strategy is implemented by {@link DefaultErrorState}.
  */
-public interface ErrorOutput extends ParseOutput
+public interface ErrorState extends CustomState
 {
 }

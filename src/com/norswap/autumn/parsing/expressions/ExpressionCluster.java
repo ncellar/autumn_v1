@@ -1,9 +1,10 @@
 package com.norswap.autumn.parsing.expressions;
 
 import com.norswap.autumn.parsing.Grammar;
-import com.norswap.autumn.parsing.OutputChanges;
+import com.norswap.autumn.parsing.ParseChanges;
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
+import com.norswap.autumn.parsing.Seed;
 import com.norswap.autumn.parsing.expressions.common.NaryParsingExpression;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.graph.Nullability;
@@ -17,9 +18,16 @@ public final class ExpressionCluster extends ParsingExpression
 
     public final static class PrecedenceEntry
     {
-        public ExpressionCluster cluster;
-        public int initialPosition;
+        public final ExpressionCluster cluster;
+        public final int initialPosition;
         public int minPrecedence;
+
+        public PrecedenceEntry(ExpressionCluster cluster, int initialPosition, int minPrecedence)
+        {
+            this.cluster = cluster;
+            this.initialPosition = initialPosition;
+            this.minPrecedence = minPrecedence;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -68,25 +76,39 @@ public final class ExpressionCluster extends ParsingExpression
         // can't contain any LeftRecursive or other cluster nodes.
 
         // This variable holds the current seed value throughout the function.
-        OutputChanges changes = state.getSeed(this);
+        ParseChanges changes = Seed.get(state, this);
 
         if (changes != null)
         {
             // If this cluster is already in the process of being parsed at this position, use
             // the seed value.
 
-            changes.mergeInto(state);
+            state.merge(changes);
             return;
         }
 
-        changes = OutputChanges.failure();
-        state.pushSheed(this, changes);
+        changes = ParseChanges.failure();
+        Seed.push(state, this, changes);
         int changesPrecedence = 0;
 
         final int oldFlags = state.flags;
 
-        // Get minimum precedence if we're already parsing this cluster (else it's 0).
-        final int minPrecedence = parser.enterPrecedence(this, state.start, 0);
+        // Acquire the current precedence for the cluster.
+
+        PrecedenceEntry entry = state.minPrecedence.peekOrNull();
+        final int minPrecedence;
+
+        if (entry == null || entry.cluster != this)
+        {
+            // This is the root invocation of the cluster, register an entry.
+            entry = new PrecedenceEntry(this, state.start, 0);
+            state.minPrecedence.push(entry);
+            minPrecedence = 0;
+        }
+        else
+        {
+            minPrecedence = entry.minPrecedence;
+        }
 
         // Used to sometimes inhibit error reporting.
         boolean report = true;
@@ -114,9 +136,10 @@ public final class ExpressionCluster extends ParsingExpression
                 break;
             }
 
-            parser.setMinPrecedence(group.precedence + (group.leftAssociative ? 1 : 0));
+            // Safe because inter-expression recursion is forbidden.
+            entry.minPrecedence = group.precedence + (group.leftAssociative ? 1 : 0);
 
-            OutputChanges oldChanges = changes;
+            ParseChanges oldChanges;
             do {
                 oldChanges = changes;
 
@@ -130,10 +153,10 @@ public final class ExpressionCluster extends ParsingExpression
                         // The seed was grown, try to grow it again starting from the first
                         // recursive rule.
 
-                        parser.clusterAlternate = operand;
-                        changes = new OutputChanges(state);
+                        state.clusterAlternate = operand;
+                        changes = state.extract();
                         changesPrecedence = group.precedence;
-                        state.setSeed(changes);
+                        Seed.set(state, changes);
                         state.discard();
                         break;
                     }
@@ -156,9 +179,19 @@ public final class ExpressionCluster extends ParsingExpression
         }
 
         state.flags = oldFlags;
-        changes.mergeInto(state);
-        state.popSeed();
-        parser.exitPrecedence(minPrecedence, state.start);
+        state.merge(changes);
+        Seed.pop(state);
+
+        // This is the root invocation of the cluster, unregister the entry.
+        if (entry.initialPosition == state.start)
+        {
+            state.minPrecedence.pop();
+        }
+        // This is a recursive invocation of the cluster, restore the previous precedence.
+        else
+        {
+            entry.minPrecedence = minPrecedence;
+        }
 
         if (state.failed() && report)
         {
@@ -166,7 +199,7 @@ public final class ExpressionCluster extends ParsingExpression
         }
     }
 
-    // ---------------------------------------------------------------------------------------------
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public ParsingExpression[] children()

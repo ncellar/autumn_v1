@@ -5,6 +5,7 @@ import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
 import com.norswap.util.Array;
+import com.norswap.util.annotations.NonNull;
 
 import java.util.Arrays;
 import java.util.stream.Stream;
@@ -13,10 +14,8 @@ public final class Filter extends UnaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Those must be non-null.
-
-    public ParsingExpression[] allowed;
-    public ParsingExpression[] forbidden;
+    public @NonNull ParsingExpression[] allowed;
+    public @NonNull ParsingExpression[] forbidden;
 
     // NOTE: The operand should be an ExpressionCluster (or some wrapper thereof).
 
@@ -33,7 +32,7 @@ public final class Filter extends UnaryParsingExpression
         }
 
         boolean success = allowed.length == 0;
-        ParsingExpression clusterAlternate = parser.clusterAlternate;
+        ParsingExpression clusterAlternate = state.clusterAlternate;
 
         for (ParsingExpression pe : allowed)
         {

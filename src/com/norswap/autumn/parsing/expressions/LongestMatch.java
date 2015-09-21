@@ -2,7 +2,7 @@ package com.norswap.autumn.parsing.expressions;
 
 import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.expressions.common.NaryParsingExpression;
-import com.norswap.autumn.parsing.OutputChanges;
+import com.norswap.autumn.parsing.ParseChanges;
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
@@ -23,7 +23,7 @@ public final class LongestMatch extends NaryParsingExpression
     @Override
     public void parse(Parser parser, ParseState state)
     {
-        OutputChanges farthestChanges = OutputChanges.failure();
+        ParseChanges farthestChanges = ParseChanges.failure();
 
         for (ParsingExpression operand : operands)
         {
@@ -31,13 +31,13 @@ public final class LongestMatch extends NaryParsingExpression
 
             if (state.end > farthestChanges.end)
             {
-                farthestChanges = new OutputChanges(state);
+                farthestChanges = state.extract();
             }
 
             state.discard();
         }
 
-        farthestChanges.mergeInto(state);
+        state.merge(farthestChanges);
 
         if (state.failed())
         {

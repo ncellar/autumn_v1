@@ -2,6 +2,10 @@
 TODO
 
 DEBUGGER
+    - snapshot semantics? -> ok, clarify (scoping!)
+    - check state handling of former parser fields
+
+    - need parsestate cloning
     - error handler is sort of like error merge strategy, do it like that instead?
     - must invoke parser with parseinput & config options
 
@@ -22,8 +26,6 @@ w4: presentation
 w5: manual
 
 TODO FURTHER SMALL
-
-- keep an array instead of a tree in parsestate
 
 - scope Registry to parser
 

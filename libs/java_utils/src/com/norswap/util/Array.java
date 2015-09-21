@@ -1006,6 +1006,21 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         return last(x -> x != null && p.test(x));
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Like {@link #contains}, but uses identity comparison (==) instead of {@link #equals}.
+     */
+    public boolean containsID(T t)
+    {
+        for (int i = 0; i < next; i++)
+        {
+            if (array[i] == t) return true;
+        }
+
+        return false;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // OBJECT OVERRIDES
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1249,11 +1264,20 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
     {
         ////////////////////////////////////////////////////////////////////////////////////////////
 
+        {
+            this.size = (int) Array.this.stream().filter(x -> x != null).count();
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+
+        private int size;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+
         @Override
         public int size()
         {
-            // TODO incorrect
-            return next;
+            return size;
         }
 
         // -----------------------------------------------------------------------------------------
@@ -1261,8 +1285,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         @Override
         public boolean isEmpty()
         {
-            // TODO incorrect
-            return next == 0;
+            return size == 0;
         }
 
         // -----------------------------------------------------------------------------------------
@@ -1296,7 +1319,9 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         @Override
         public T put(Integer key, T value)
         {
-            return Array.this.put(key, value);
+            T prev = Array.this.put(key, value);
+            if (prev == null) ++size;
+            return prev;
         }
 
         // -----------------------------------------------------------------------------------------
@@ -1304,7 +1329,9 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         @Override
         public T remove(Object key)
         {
-            return Array.this.set((int) key, null);
+            T prev = Array.this.set((int) key, null);
+            if (prev != null) --size;
+            return prev;
         }
 
         // -----------------------------------------------------------------------------------------
@@ -1320,6 +1347,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         @Override
         public void clear()
         {
+            size = 0;
             Array.this.truncate(0);
         }
 
@@ -1357,17 +1385,21 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         @Override
         public int hashCode()
         {
-            // TODO
-            return super.hashCode();
+            return entrySet().hashCode();
         }
 
         // -----------------------------------------------------------------------------------------
 
         @Override
-        public boolean equals(Object obj)
+        public boolean equals(Object o)
         {
-            // TODO
-            return super.equals(obj);
+            if (this == o) return true;
+            if (!(o instanceof Map)) return false;
+
+            Map that = (Map<?, ?>) o;
+
+            if (size() != that.size()) return false;
+            return entrySet().equals(that.entrySet());
         }
     }
 
@@ -1377,11 +1409,22 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
 
     private class KeySetView implements Set<Integer>
     {
+        ////////////////////////////////////////////////////////////////////////////////////////////
+
+        {
+            this.size = (int) Array.this.stream().filter(x -> x != null).count();
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+
+        private int size;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+
         @Override
         public int size()
         {
-            // TODO incorrect
-            return next;
+            return size;
         }
 
         // -----------------------------------------------------------------------------------------
@@ -1389,8 +1432,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         @Override
         public boolean isEmpty()
         {
-            // TODO incorrect
-            return next == 0;
+            return size == 0;
         }
 
         // -----------------------------------------------------------------------------------------
@@ -1445,6 +1487,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
 
             if (out)
             {
+                --size;
                 int i = (int) o;
                 array[i] = null;
             }
@@ -1485,8 +1528,9 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
 
             for (int i = 0; i < next; ++i)
             {
-                if (!c.contains(i))
+                if (array[i] != null && !c.contains(i))
                 {
+                    --size;
                     modified = true;
                     array[i] = null;
                 }
@@ -1506,6 +1550,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
             {
                 if (contains(o))
                 {
+                    --size;
                     modified = true;
                     int i = (int) o;
                     array[i] = null;
@@ -1520,6 +1565,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         @Override
         public void clear()
         {
+            size = 0;
             Array.this.truncate(0);
         }
 
@@ -1528,17 +1574,28 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         @Override
         public int hashCode()
         {
-            // TODO
-            return super.hashCode();
+            int hash = 0;
+
+            for (int i: this)
+            {
+                if (array[i] != null) hash += i;
+            }
+
+            return hash;
         }
 
         // -----------------------------------------------------------------------------------------
 
         @Override
-        public boolean equals(Object obj)
+        public boolean equals(Object o)
         {
-            // TODO
-            return super.equals(obj);
+            if (this == o) return true;
+            if (!(o instanceof Set)) return false;
+
+            Set that = (Set<?>) o;
+
+            if (size() != that.size()) return false;
+            return containsAll(that);
         }
     }
 
@@ -1548,11 +1605,22 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
 
     private class EntrySetView implements Set<Map.Entry<Integer, T>>
     {
+        ////////////////////////////////////////////////////////////////////////////////////////////
+
+        {
+            this.size = (int) Array.this.stream().filter(x -> x != null).count();
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+
+        private int size;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+
         @Override
         public int size()
         {
-            // TODO incorrect
-            return next;
+            return size;
         }
 
         // -----------------------------------------------------------------------------------------
@@ -1560,16 +1628,16 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         @Override
         public boolean isEmpty()
         {
-            // TODO incorrect
-            return next != 0;
+            return size == 0;
         }
 
         // -----------------------------------------------------------------------------------------
 
         @Override
+        @SuppressWarnings("unchecked")
         public boolean contains(Object o)
         {
-            Map.Entry<Integer, T> entry = (Map.Entry<Integer, T>) o;
+            Map.Entry<Integer, T> entry = (Map.Entry) o;
             int i = entry.getKey();
             return i >= 0 && i < next && array[i].equals(entry.getValue());
         }
@@ -1658,6 +1726,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         @Override
         public void clear()
         {
+            size = 0;
             Array.this.truncate(0);
         }
 

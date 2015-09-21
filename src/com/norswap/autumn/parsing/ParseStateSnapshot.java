@@ -5,7 +5,7 @@ import com.norswap.util.Array;
 /**
  *
  */
-public final class StandardStateSnapshot
+public final class ParseStateSnapshot
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -16,10 +16,19 @@ public final class StandardStateSnapshot
     public final int treeChildrenCount;
     public final int flags;
     public final Array<Seed> seeds;
+    public final Object[] customSnapshots;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public StandardStateSnapshot(int start, int blackStart, int end, int blackEnd, int treeChildrenCount, int flags, Array<Seed> seeds)
+    public ParseStateSnapshot(
+        int start,
+        int blackStart,
+        int end,
+        int blackEnd,
+        int treeChildrenCount,
+        int flags,
+        Array<Seed> seeds,
+        Object[] customSnapshots)
     {
         this.start = start;
         this.blackStart = blackStart;
@@ -28,6 +37,7 @@ public final class StandardStateSnapshot
         this.treeChildrenCount = treeChildrenCount;
         this.flags = flags;
         this.seeds = seeds;
+        this.customSnapshots = customSnapshots;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

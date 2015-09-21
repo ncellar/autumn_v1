@@ -1,6 +1,6 @@
 package com.norswap.autumn.parsing.config;
 
-import com.norswap.autumn.parsing.OutputChanges;
+import com.norswap.autumn.parsing.ParseChanges;
 import com.norswap.autumn.parsing.ParseInputs;
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
@@ -17,12 +17,12 @@ public final class DefaultMemoHandler implements MemoHandler
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private HashMap<ParseInputs, OutputChanges> store;
+    private HashMap<ParseInputs, ParseChanges> store;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void memoize(ParsingExpression pe, ParseState state, OutputChanges changeset)
+    public void memoize(ParsingExpression pe, ParseState state, ParseChanges changeset)
     {
         store.put(state.inputs(pe), changeset);
     }
@@ -30,7 +30,7 @@ public final class DefaultMemoHandler implements MemoHandler
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public OutputChanges get(ParsingExpression pe, ParseState state)
+    public ParseChanges get(ParsingExpression pe, ParseState state)
     {
         return store.get(state.inputs(pe));
     }

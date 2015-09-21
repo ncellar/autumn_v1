@@ -1,34 +1,50 @@
 package com.norswap.autumn.parsing;
 
+import com.norswap.autumn.parsing.expressions.ExpressionCluster;
+import com.norswap.autumn.parsing.expressions.ExpressionCluster.PrecedenceEntry;
+import com.norswap.autumn.parsing.expressions.Filter;
+import com.norswap.autumn.parsing.expressions.LeftRecursive;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.tree.BuildParseTree;
 import com.norswap.util.Array;
-import com.norswap.util.DeepCopy;
+import com.norswap.util.JArrays;
 
 import static com.norswap.autumn.parsing.Registry.*; // PSF_*
 
 /**
- * An instance of this class is passed to every parsing expression invocation {@link
- * ParsingExpression#parse}.
+ * An instance of this class is passed to every parsing expression invocation
+ * {@link ParsingExpression#parse}.
  * <p>
+ * The parse state is the sole access point for all state (mutable data) that the expression
+ * will manipulate during the parse.
+ *
  * Its role is dual. On the one hand, it holds both the inputs for the invocation (things that will
  * influence the invocation, or the produced outputs). On the other hand, the parse state is also
  * where the produced outputs will be attached. As such, it allows parsing expressions to exchange
  * information on the way down (inputs) and on the way up (outputs).
  * <p>
- * The standard Autumn inputs are described in {@link StandardParseInput}, while the outputs are
- * described in this file (single-inheritance meant they couldn't get their own file).
- * <p>
- * Custom parse inputs can be manipulated via the {@link #inputs} field. You must index this array
- * with a handle you received from {@link Registry#ParseInputHandleFactory}.
- * <p>
- * Custom parse outputs can be manipulated via the {@link #outputs} field. You must index this array
- * with a handle you received from {@link Registry#ParseOutputHandleFactory}.
+ * Custom parse states can be manipulated via the {@link #customStates} field. You must index this
+ * array with a handle you received from {@link Registry#CustomParseStateHandleFactory}.
  */
-public final class ParseState extends StandardParseInput implements Cloneable
+public final class ParseState
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // OUTPUT
+
+    /**
+     * (MODIFIER) Position where the parsing expression will be invoked.
+     */
+    public int start;
+
+    /**
+     * The last non-whitespace input position preceding {@link #start}.
+     * <p>
+     * We keep this particular tidbit of information for a single purpose: restoring {@link
+     * ParseState#blackEnd} (the last non-whitespace input position preceding {@link
+     * ParseState#end}) with {@link ParseState#discard()}.
+     * <p>
+     * As such, this does not influence the parse.
+     */
+    public int blackStart;
 
     /**
      * The position of the end of the text matched by the parsing expression, or -1 if no match
@@ -41,6 +57,25 @@ public final class ParseState extends StandardParseInput implements Cloneable
      * to avoid including trailing whitespaces in captures.
      */
     public int blackEnd;
+
+    /**
+     * (MODIFIER) The current precedence level for {@link com.norswap.autumn.parsing.expressions.Precedence}
+     * expressions.
+     */
+    public int precedence;
+
+    /**
+     * (MODIFIER) Holds a set of flags that can serve as additional parse input. Can be set both by
+     * Autumn and the user, who can register his own flags with {@link
+     * Registry#ParseStateFlagsFactory}.
+     */
+    public int flags;
+
+    /**
+     * (MODIFIER) Holds the seeds for all the expression clusters in the parsing expression stack (all
+     * the parsing expressions whose invocation is ongoing).
+     */
+    public Array<Seed> seeds;
 
     /**
      * The parse tree which is to be the parent of parse trees produced by captures in
@@ -58,117 +93,51 @@ public final class ParseState extends StandardParseInput implements Cloneable
      * The error information that result after attempting to parse the expression. Note that
      * we may record errors even when the expresison succeeds.
      */
-    public ErrorOutput errors;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    public ErrorState errors;
 
     /**
-     * An array of additional user-defined parse inputs.
+     * An array of additional user-defined parse state.
      */
-    public ParseInput[] inputs;
+    public CustomState[] customStates;
 
     /**
-     * An array of additional user-defined parse outputs.
+     * The current cluster alternate; set by {@link ExpressionCluster} and read by {@link Filter}.
+     * <p>
+     * TODO unsafe, but clunky to begin with; rework the filtering mechanism
      */
-    public ParseOutput[] outputs;
+    public ParsingExpression clusterAlternate;
+
+    /**
+     *
+     */
+    public Array<LeftRecursive> blocked;
+
+    /**
+     *
+     */
+    public Array<PrecedenceEntry> minPrecedence;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Creates the parse state to be passed to the root parsing expression.
      */
-    static ParseState root()
+    ParseState()
     {
-        ParseState root = new ParseState();
-        root.end = 0;
-        root.blackEnd = 0;
-        root.tree = new BuildParseTree();
-        root.inputs = new ParseInput[Registry.ParseInputHandleFactory.size()];
-        root.outputs = new ParseOutput[Registry.ParseOutputHandleFactory.size()];
+        this.end = 0;
+        this.blackEnd = 0;
+        this.tree = new BuildParseTree();
+        this.customStates = new CustomState[Registry.CustomParseStateHandleFactory.size()];
         // TODO
-        root.errors = new DefaultErrorOutput();
-        return root;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Creates a clone (not a deep copy) of the passed state.
-     */
-    public static ParseState from(ParseState state)
-    {
-        return state.clone();
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    private ParseState()
-    {
+        this.errors = new DefaultErrorState();
+        this.blocked = new Array<>();
+        this.minPrecedence = new Array<>();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Gets the seed for the given expression, if any; otherwise returns null.
-     */
-    public OutputChanges getSeed(ParsingExpression pe)
-    {
-        if (seeds == null)
-        {
-            return null;
-        }
-
-        for (Seed seed: seeds)
-        {
-            if (seed.expression == pe)
-            {
-                return seed.changes;
-            }
-        }
-
-        return null;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Adds a seed for the given expression.
-     */
-    public void pushSheed(ParsingExpression pe, OutputChanges changes)
-    {
-        if (seeds == null)
-        {
-            seeds = new Array<>();
-        }
-
-        seeds.push(new Seed(pe, changes));
-    }
-
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Sets the seed of the innermost left-recursive node or expression cluster being parsed.
-     */
-    public void setSeed(OutputChanges changes)
-    {
-        seeds.push(new Seed(seeds.pop().expression, changes));
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Removes the seed of the innermost left-recursive node or expression cluster being parsed.
-     */
-    public OutputChanges popSeed()
-    {
-        return seeds.pop().changes;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Advances the end (and black end) position by n characters.
+     * Advances the end and black end positions by n characters.
      */
     public void advance(int n)
     {
@@ -207,55 +176,24 @@ public final class ParseState extends StandardParseInput implements Cloneable
         return end == -1;
     }
 
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Merges the outputs of the child with this parse state.
-     */
-//    public void merge(ParseState child)
-//    {
-//        this.end = child.end;
-//        this.blackEnd = child.blackEnd;
-//
-//        for (ParseOutput output: outputs)
-//        {
-//            if (output != null)
-//            {
-//                output.merge(this, child);
-//            }
-//        }
-//    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Produce an object that combines all parse inputs of this state, fit to be used as
-     * a memoization key, or to preserve the inputs for a later run.
-     */
-    public ParseInputs inputs(ParsingExpression pe)
-    {
-        StandardParseInput stdInput = new StandardParseInput(this);
-        ParseInput[] inputs = DeepCopy.of(this.inputs, ParseInput[]::new);
-        return new ParseInputs(pe, stdInput, inputs);
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public StandardStateSnapshot snapshot()
+    public ParseStateSnapshot snapshot()
     {
-        return new StandardStateSnapshot(
+        return new ParseStateSnapshot(
             start,
             blackStart,
             end,
             blackEnd,
             treeChildrenCount,
             flags,
-            seeds);
+            seeds,
+            JArrays.map(customStates, CustomState::snapshot));
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public void restore(StandardStateSnapshot snapshot)
+    public void restore(ParseStateSnapshot snapshot)
     {
         start               = snapshot.start;
         blackStart          = snapshot.blackStart;
@@ -267,9 +205,9 @@ public final class ParseState extends StandardParseInput implements Cloneable
 
         tree.truncate(treeChildrenCount);
 
-        for (ParseOutput output: outputs)
+        for (int i = 0; i < customStates.length; i++)
         {
-            if (output != null) output.reset(this);
+            customStates[i].restore(snapshot.customSnapshots[i]);
         }
     }
 
@@ -289,12 +227,9 @@ public final class ParseState extends StandardParseInput implements Cloneable
         blackStart = blackEnd;
         treeChildrenCount = tree.childrenCount();
 
-        for (ParseOutput output: outputs)
+        for (CustomState state: customStates)
         {
-            if (output != null)
-            {
-                output.advance(this);
-            }
+            state.commit();
         }
     }
 
@@ -310,35 +245,71 @@ public final class ParseState extends StandardParseInput implements Cloneable
         blackEnd = blackStart;
         tree.truncate(treeChildrenCount);
 
-        for (ParseOutput output: outputs)
+        for (CustomState state: customStates)
         {
-            if (output != null) output.reset(this);
+            state.discard();
         }
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public OutputChanges extract()
+    public ParseChanges extract()
     {
-        return new OutputChanges(this);
+        return new ParseChanges(
+            end,
+            blackEnd,
+            tree.children.copyFromIndex(treeChildrenCount),
+            JArrays.map(customStates, CustomState::extract));
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public void merge(OutputChanges changes)
+    public void merge(ParseChanges changes)
     {
-        changes.mergeInto(this);
+        end = changes.end;
+        blackEnd = changes.blackEnd;
+        tree.addAll(changes.children);
+
+        for (int i = 0; i < customStates.length; ++i)
+        {
+            customStates[i].merge(changes.customChanges[i]);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public void uncommit(StandardStateSnapshot snapshot)
+    public void uncommit(ParseStateSnapshot snapshot)
     {
         start               = snapshot.start;
         blackStart          = snapshot.blackStart;
         treeChildrenCount   = snapshot.treeChildrenCount;
         flags               = snapshot.flags; // needed?
         seeds               = snapshot.seeds;
+
+        for (int i = 0; i < customStates.length; ++i)
+        {
+            customStates[i].uncommit(snapshot.customSnapshots[i]);
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Produce an object that combines all parse inputs of this state, fit to be used as
+     * a memoization key, or to preserve the inputs for a later run.
+     */
+    public ParseInputs inputs(ParsingExpression pe)
+    {
+        return new ParseInputs(
+            pe,
+            start,
+            blackStart,
+            precedence,
+            flags,
+            seeds.clone(),
+            blocked.clone(),
+            minPrecedence.clone(),
+            JArrays.map(customStates, CustomState::inputs));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -348,28 +319,17 @@ public final class ParseState extends StandardParseInput implements Cloneable
     {
         return String.format("(%X) [%d/%d - %d/%d[ tree(%d/%d) flags(%s)",
             hashCode(),
-            start, blackStart,
-            end, blackEnd,
-            treeChildrenCount, tree.childrenCount(),
+            start,
+            blackStart,
+            end,
+            blackEnd,
+            treeChildrenCount,
+            tree.childrenCount(),
             Integer.toString(flags, 2));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    @Override
-    protected ParseState clone()
-    {
-        try {
-            return (ParseState) super.clone();
-        }
-        catch (CloneNotSupportedException e)
-        {
-            return null; // unreachable
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // Standard Flags
+    // FLAGS
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void forbidErrorRecording()

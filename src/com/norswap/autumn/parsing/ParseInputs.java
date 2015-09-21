@@ -1,31 +1,52 @@
 package com.norswap.autumn.parsing;
 
-import com.norswap.autumn.parsing.config.DefaultMemoHandler;
+import com.norswap.autumn.parsing.expressions.ExpressionCluster;
+import com.norswap.autumn.parsing.expressions.ExpressionCluster.PrecedenceEntry;
+import com.norswap.autumn.parsing.expressions.LeftRecursive;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.util.Array;
+
+import java.util.Arrays;
 
 /**
- * A collection of parse inputs obtained from a {@link ParseState} along with the parsing expression
- * these inputs are used for. This is used as a memoization key in the {@link DefaultMemoHandler}.
- * It's {@code equals} and {@code hashCode} methods consider only modifier input fields (see {@link
- * ParseInput}).
+ *
  */
 public final class ParseInputs
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParsingExpression pe;
-
-    public final StandardParseInput stdInput;
-
-    public final ParseInput[] inputs;
+    public final ParsingExpression pe;
+    public final int start;
+    public final int blackStart;
+    public final int precedence;
+    public final int flags;
+    public final Array<Seed> seeds;
+    public final Array<LeftRecursive> blocked;
+    public final Array<PrecedenceEntry> minPrecedence;
+    public final Object[] customInputs;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParseInputs(ParsingExpression pe, StandardParseInput stdInput, ParseInput[] inputs)
+    public ParseInputs(
+        ParsingExpression pe,
+        int start,
+        int blackStart,
+        int precedence,
+        int flags,
+        Array<Seed> seeds,
+        Array<LeftRecursive> blocked,
+        Array<PrecedenceEntry> minPrecedence,
+        Object[] customInputs)
     {
         this.pe = pe;
-        this.stdInput = stdInput;
-        this.inputs = inputs;
+        this.start = start;
+        this.blackStart = blackStart;
+        this.precedence = precedence;
+        this.flags = flags;
+        this.seeds = seeds;
+        this.blocked = blocked;
+        this.minPrecedence = minPrecedence;
+        this.customInputs = customInputs;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -38,25 +59,15 @@ public final class ParseInputs
 
         ParseInputs that = (ParseInputs) o;
 
-        if (!stdInput.inputEquals(that.stdInput)) return false;
-        if (inputs == that.inputs) return true;
-        if (inputs == null || that.inputs == null) return false;
+        if (start != that.start) return false;
+        if (blackStart != that.blackStart) return false;
+        if (precedence != that.precedence) return false;
+        if (!pe.equals(that.pe)) return false;
+        if (!seeds.equals(that.seeds)) return false;
+        if (!blocked.equals(that.blocked)) return false;
 
-        ParseInput[] inputs2 = that.inputs;
+        return Arrays.equals(customInputs, that.customInputs);
 
-        if (inputs.length != inputs2.length) return false;
-
-        for (int i = 0; i < inputs.length ; ++i)
-        {
-            ParseInput input1 = inputs[i];
-            ParseInput input2 = inputs2[i];
-
-            if (input1 == input2) continue;
-            if (input1 == null || input2 == null) return false;
-            if (!input1.inputEquals(input2)) return false;
-        }
-
-        return true;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -64,13 +75,13 @@ public final class ParseInputs
     @Override
     public int hashCode()
     {
-        int result = stdInput.inputHashCode();
-
-        for (ParseInput input: inputs)
-        {
-            result = input.inputHashCode(result);
-        }
-
+        int result = pe.hashCode();
+        result = 31 * result + start;
+        result = 31 * result + blackStart;
+        result = 31 * result + precedence;
+        result = 31 * result + seeds.hashCode();
+        result = 31 * result + blocked.hashCode();
+        result = 31 * result + Arrays.hashCode(customInputs);
         return result;
     }
 

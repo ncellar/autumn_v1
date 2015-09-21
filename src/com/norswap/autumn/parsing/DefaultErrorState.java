@@ -1,11 +1,19 @@
 package com.norswap.autumn.parsing;
 
-public final class DefaultErrorOutput implements ErrorOutput
+public final class DefaultErrorState implements ErrorState
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void reset(ParseState state)
+    public Object snapshot()
+    {
+        return null;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void restore(Object snapshot)
     {
 
     }
@@ -13,7 +21,7 @@ public final class DefaultErrorOutput implements ErrorOutput
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void advance(ParseState state)
+    public void commit()
     {
 
     }
@@ -21,7 +29,7 @@ public final class DefaultErrorOutput implements ErrorOutput
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void merge(ParseState parent, ParseState child)
+    public void discard()
     {
 
     }
@@ -29,7 +37,7 @@ public final class DefaultErrorOutput implements ErrorOutput
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public Object changes()
+    public Object extract()
     {
         return null;
     }
@@ -40,6 +48,22 @@ public final class DefaultErrorOutput implements ErrorOutput
     public void merge(Object changes)
     {
 
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void uncommit(Object snapshot)
+    {
+
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public Object inputs()
+    {
+        return null;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

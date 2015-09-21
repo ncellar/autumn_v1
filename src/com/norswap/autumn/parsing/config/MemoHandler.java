@@ -1,6 +1,6 @@
 package com.norswap.autumn.parsing.config;
 
-import com.norswap.autumn.parsing.OutputChanges;
+import com.norswap.autumn.parsing.ParseChanges;
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 
@@ -14,7 +14,7 @@ import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
  * into account by the memoization handler; or memoization must be disabled while this state is in
  * effect. Otherwise, correctness is no longer guaranteed.
  * <p>
- * The "results" we allude to are saved as changesets ({@link OutputChanges}) that describe the
+ * The "results" we allude to are saved as changesets ({@link ParseChanges}) that describe the
  * difference in the parse state before/after the invocation.
  */
 public interface MemoHandler
@@ -24,14 +24,14 @@ public interface MemoHandler
     /**
      * Memoize a changeset for the given parsing expression and state.
      */
-    void memoize(ParsingExpression pe, ParseState state, OutputChanges changeset);
+    void memoize(ParsingExpression pe, ParseState state, ParseChanges changeset);
 
     // ---------------------------------------------------------------------------------------------
 
     /**
      * Return a memoized changeset; or null if no such changeset has been memoized.
      */
-    OutputChanges get(ParsingExpression pe, ParseState state);
+    ParseChanges get(ParsingExpression pe, ParseState state);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

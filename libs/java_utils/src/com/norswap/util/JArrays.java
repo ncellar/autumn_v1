@@ -1,6 +1,11 @@
 package com.norswap.util;
 
 
+import java.util.Arrays;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
+
 /**
  * Utilities to deal with plain Java arrays.
  */
@@ -74,6 +79,7 @@ public final class JArrays
     /**
      * Concatenates all items in {@code ts} to the given array.
      */
+    @SafeVarargs
     public static <T> T[] concat(T[] array, T... ts)
     {
         return concat(array, ts);
@@ -96,6 +102,47 @@ public final class JArrays
         }
 
         return dst;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Applies the function f to all elements of {@code src}, placing the results in the
+     * corresponding slot of a new array, which is then returned. Because of type erasure, the
+     * returned array has type {@code Object[]}.
+     */
+    public static <T> Object[] map(T[] src, Function<? super T, ? extends Object> f)
+    {
+        return map(src, new Object[src.length], f);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Applies the function f to all elements of {@code src}, placing the results in the
+     * corresponding slot of {@code dst}, which is then returned.
+     */
+    public static <T, U> U[] map(T[] src, U[] dst, Function<? super T, ? extends U> f)
+    {
+        assert dst.length >= src.length;
+
+        for (int i = 0; i < src.length; ++i)
+        {
+            dst[i] = f.apply(src[i]);
+        }
+
+        return dst;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Applies the function f to all elements of {@code src}, placing the results in the
+     * corresponding slot of new array created using {@code arrayGen}, which is then returned.
+     */
+    public static <T, U> U[] map(T[] src, IntFunction<U[]> arrayGen, Function<? super T, ? extends U> f)
+    {
+        return map(src, arrayGen.apply(src.length), f);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

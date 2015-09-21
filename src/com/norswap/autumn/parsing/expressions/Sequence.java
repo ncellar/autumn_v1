@@ -1,7 +1,7 @@
 package com.norswap.autumn.parsing.expressions;
 
 import com.norswap.autumn.parsing.Grammar;
-import com.norswap.autumn.parsing.StandardStateSnapshot;
+import com.norswap.autumn.parsing.ParseStateSnapshot;
 import com.norswap.autumn.parsing.expressions.common.NaryParsingExpression;
 import com.norswap.autumn.parsing.ParseState;
 import com.norswap.autumn.parsing.Parser;
@@ -24,7 +24,7 @@ public final class Sequence extends NaryParsingExpression
     @Override
     public void parse(Parser parser, ParseState state)
     {
-        StandardStateSnapshot snapshot = state.snapshot();
+        ParseStateSnapshot snapshot = state.snapshot();
 
         for (ParsingExpression operand : operands)
         {

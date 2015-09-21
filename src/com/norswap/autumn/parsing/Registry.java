@@ -23,9 +23,7 @@ public final class Registry
 
     public static final FlagFactory ParseStateFlagsFactory = new FlagFactory();
 
-    public static final HandleFactory ParseInputHandleFactory = new HandleFactory();
-
-    public static final HandleFactory ParseOutputHandleFactory = new HandleFactory();
+    public static final HandleFactory CustomParseStateHandleFactory = new HandleFactory();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // PARSING EXPRESSION HANDLES (PEH)
