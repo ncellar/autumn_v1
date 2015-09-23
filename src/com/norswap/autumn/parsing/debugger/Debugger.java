@@ -4,10 +4,9 @@ import com.norswap.autumn.Autumn;
 import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParseResult;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.Registry;
-import com.norswap.autumn.parsing.Source;
+import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.config.ParserConfiguration;
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.ParsingExpression;
 
 import java.io.IOException;
 
@@ -15,8 +14,9 @@ public final class Debugger
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static final int DEBUG_HANDLE = Registry.ParserHandleFactory.next();
-    public static final int DEBUG_WINDOW = Registry.ParserHandleFactory.next();
+    // TODO !!!
+    public static final int DEBUG_HANDLE = 0;
+    public static final int DEBUG_WINDOW = 1;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -48,7 +48,7 @@ public final class Debugger
         }
 
         try {
-            source = Source.fromFile(args[1]);
+            source = Source.fromFile(args[1]).build();
         }
         catch (IOException e)
         {
@@ -63,7 +63,7 @@ public final class Debugger
 
     public Debugger(Grammar grammar, Source source)
     {
-        this(grammar, source, ParserConfiguration.DEFAULT);
+        this(grammar, source, ParserConfiguration.build());
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -89,9 +89,10 @@ public final class Debugger
     // TODO need input
     public void parse(WindowModel window, ParsingExpression pe)
     {
+        // TODO register extension!
+//        parser.set(DEBUG_HANDLE, this);
+//        parser.set(DEBUG_WINDOW, window);
         Parser parser = new Parser(grammar, source, config);
-        parser.set(DEBUG_HANDLE, this);
-        parser.set(DEBUG_WINDOW, window);
         ParseResult result = parser.parse(pe);
     }
 

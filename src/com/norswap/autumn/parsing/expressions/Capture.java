@@ -1,9 +1,9 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.ParseState;
+import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
+import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.abstrakt.UnaryParsingExpression;
 import com.norswap.autumn.parsing.tree.BuildParseTree;
 import com.norswap.util.Array;
 import com.norswap.util.annotations.NonNull;

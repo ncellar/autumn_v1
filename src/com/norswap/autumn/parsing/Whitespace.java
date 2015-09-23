@@ -1,7 +1,5 @@
 package com.norswap.autumn.parsing;
 
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
-
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
 
 /**

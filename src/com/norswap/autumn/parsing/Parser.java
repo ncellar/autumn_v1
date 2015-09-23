@@ -3,9 +3,10 @@ package com.norswap.autumn.parsing;
 import com.norswap.autumn.parsing.config.ErrorHandler;
 import com.norswap.autumn.parsing.config.MemoHandler;
 import com.norswap.autumn.parsing.config.ParserConfiguration;
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.source.Source;
+import com.norswap.autumn.parsing.state.CustomState;
+import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.tree.BuildParseTree;
-import com.norswap.util.HandleMap;
 
 public final class Parser
 {
@@ -17,11 +18,9 @@ public final class Parser
 
     public final CharSequence text;
 
-    public final HandleMap ext = new HandleMap();
+    public final Object[] scoped;
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // Configuration Fields
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    private final CustomState[] customStates;
 
     public final ErrorHandler errorHandler;
 
@@ -35,7 +34,7 @@ public final class Parser
 
     public static ParseResult parse(Grammar grammar, Source source)
     {
-        return new Parser(grammar, source, ParserConfiguration.DEFAULT).parse(grammar.root());
+        return new Parser(grammar, source, ParserConfiguration.build()).parse(grammar.root());
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -52,9 +51,10 @@ public final class Parser
         this.grammar = grammar;
         this.source = source;
         this.text = source.text;
-
-        this.errorHandler = config.errorHandler.get();
-        this.memoHandler = config.memoizationStrategy.get();
+        this.scoped = config.scoped();
+        this.customStates = config.customStates();
+        this.errorHandler = config.errorHandler();
+        this.memoHandler = config.memoHandler();
         this.whitespace = grammar.whitespace();
         this.processLeadingWhitespace = grammar.processLeadingWhitespace();
     }
@@ -74,7 +74,7 @@ public final class Parser
      */
     public ParseResult parse(ParsingExpression pe)
     {
-        ParseState rootState = new ParseState();
+        ParseState rootState = new ParseState(null, customStates); // TODO
         BuildParseTree tree = rootState.tree;
 
         if (processLeadingWhitespace)
@@ -120,23 +120,6 @@ public final class Parser
         {
             errorHandler.handle(pe, state);
         }
-    }
-
-
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public void set(int handle, Object object)
-    {
-        ext.set(handle, object);
-    }
-
-    //----------------------------------------------------------------------------------------------
-
-    @SuppressWarnings("unchecked")
-    public <T> T get(int handle)
-    {
-        return (T) ext.get(handle);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

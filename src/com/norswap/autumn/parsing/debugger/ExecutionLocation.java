@@ -1,6 +1,6 @@
 package com.norswap.autumn.parsing.debugger;
 
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.util.JArrays;
 import com.norswap.util.JIntArrays;
 

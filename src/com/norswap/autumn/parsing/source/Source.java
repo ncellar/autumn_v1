@@ -1,14 +1,9 @@
-package com.norswap.autumn.parsing;
+package com.norswap.autumn.parsing.source;
 
-import com.norswap.util.Encoding;
 import com.norswap.util.Strings;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 
 /**
  * Contains the source text and associated meta-data.
@@ -25,13 +20,9 @@ public final class Source
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public final String text;
-
     public final String identifier;
-
-    public final int lineStart;
-
+    public final int columnStart;
     public final int tabSize;
-
     private LineMap lineMap;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -46,73 +37,50 @@ public final class Source
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // private because text needs to be 0-terminated!
+    // private because text needs to be 0-terminated and tabs needs to be replaced
 
-    private Source(String text, String identifier, int lineStart, int tabSize)
+    private Source(String text, String identifier, int columnStart, int tabSize)
     {
         this.text = text;
         this.identifier = identifier;
-        this.lineStart = lineStart;
+        this.columnStart = columnStart;
         this.tabSize = tabSize;
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public static Source fromFile(String filename) throws IOException
+    public static Source fromZeroTerminatedString(String string, String identifier, int lineStart, int tabSize)
     {
-        return fromFile(filename, Encoding.UTF_8, 0, 4);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public static Source fromFile(String filename, int lineStart, int tabSize) throws IOException
-    {
-        return fromFile(filename, Encoding.UTF_8, lineStart, tabSize);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public static Source fromFile(String filename, Charset charset, int lineStart, int tabSize)
-    throws IOException
-    {
-        File file = new File(filename);
-        BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file));
-
-        byte[] terminator = "\0".getBytes(charset);
-        byte[] data = new byte[(int) file.length() + terminator.length];
-
-        stream.read(data);
-        stream.close();
-
-        // EOF terminator
-        System.arraycopy(terminator, 0, data, data.length - terminator.length, terminator.length);
-
-        String string = new String(data, charset);
         string = string.replaceAll("\t", Strings.times(tabSize, " "));
-
-        return new Source(string, filename, lineStart, tabSize);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public static Source fromString(String string)
-    {
-        return fromString(string, null, 0, 4);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public static Source fromString(String string, String identifier)
-    {
-        return fromString(string, identifier, 0, 4);
+        return new Source(string, identifier, lineStart, tabSize);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public static Source fromString(String string, String identifier, int lineStart, int tabSize)
     {
-        string = string.replaceAll("\t", Strings.times(tabSize, " "));
-        return new Source(string + '\0', identifier, lineStart, tabSize);
+        return fromZeroTerminatedString(string + '\0', identifier, lineStart, tabSize);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static SourceBuilder fromString(String string)
+    {
+        return SourceBuilder.fromString(string);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static SourceBuilder fromFile(String filename) throws IOException
+    {
+        return SourceBuilder.fromFile(filename);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static SourceBuilder fromFile(String filename, Charset encoding) throws IOException
+    {
+        return SourceBuilder.fromFile(filename, encoding);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -143,7 +111,7 @@ public final class Source
             lineMap = new LineMap(text);
         }
 
-        return lineMap.offset(line, column, lineStart);
+        return lineMap.offset(line, column, columnStart);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,6 +1,7 @@
-package com.norswap.autumn.parsing.expressions.common;
+package com.norswap.autumn.parsing.expressions.abstrakt;
 
 import com.norswap.autumn.parsing.Grammar;
+import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.graph.Nullability;
 
 /**

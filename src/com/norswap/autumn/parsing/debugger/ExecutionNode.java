@@ -1,7 +1,7 @@
 package com.norswap.autumn.parsing.debugger;
 
-import com.norswap.autumn.parsing.ParseState;
-import com.norswap.autumn.parsing.Seed;
+import com.norswap.autumn.parsing.state.ParseState;
+import com.norswap.autumn.parsing.state.Seed;
 import com.norswap.util.Array;
 
 public final class ExecutionNode

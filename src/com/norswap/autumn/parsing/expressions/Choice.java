@@ -1,10 +1,10 @@
 package com.norswap.autumn.parsing.expressions;
 
 import com.norswap.autumn.parsing.Grammar;
-import com.norswap.autumn.parsing.expressions.common.NaryParsingExpression;
-import com.norswap.autumn.parsing.ParseState;
+import com.norswap.autumn.parsing.expressions.abstrakt.NaryParsingExpression;
+import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.graph.Nullability;
 
 /**

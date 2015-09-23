@@ -1,8 +1,8 @@
 package com.norswap.autumn.parsing.debug;
 
-import com.norswap.autumn.parsing.ParseState;
+import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.expressions.common.InstrumentedExpression;
+import com.norswap.autumn.parsing.expressions.abstrakt.InstrumentedExpression;
 
 import static com.norswap.autumn.parsing.debug.Debugger.DEBUGGER;
 

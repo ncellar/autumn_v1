@@ -1,6 +1,6 @@
 package com.norswap.autumn.parsing.debug;
 
-import com.norswap.autumn.parsing.TextPosition;
+import com.norswap.autumn.parsing.source.TextPosition;
 
 import static com.norswap.autumn.parsing.debug.Debugger.DEBUGGER;
 

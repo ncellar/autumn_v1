@@ -1,6 +1,5 @@
 package com.norswap.util;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
@@ -11,6 +10,7 @@ import java.util.Map;
 import java.util.RandomAccess;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
@@ -821,7 +821,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
      * Returns a Java array containing the same elements as this array. The returned array
      * will be produced by the given supplier (in general something like {@code Object[]::new}).
      */
-    public T[] toArray(Function<Integer, T[]> supplier)
+    public T[] toArray(IntFunction<T[]> supplier)
     {
         T[] out = supplier.apply(next);
         System.arraycopy(array, 0, out, 0, next);
@@ -909,7 +909,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
     // ---------------------------------------------------------------------------------------------
 
     @SuppressWarnings("unchecked")
-    public <U> Array<U> map(Function<T, U> f)
+    public <U> Array<U> map(Function<? super T, U> f)
     {
         Array<U> out = new Array<>(next);
 
@@ -923,15 +923,36 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
-    @SuppressWarnings("unchecked")
-    public <U> Array<U> mapNonNull(Function<T, U> f)
+    public Object[] mapToArray(Function<? super T, ?> f)
     {
-        return map(x -> x == null ? null : f.apply(x));
+        return mapToArray(f, new Object[next]);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public Array<T> filter(Predicate<T> p)
+    @SuppressWarnings("unchecked")
+    public <U> U[] mapToArray(Function<? super T, ? extends U> f, U[] out)
+    {
+        assert array.length >= next;
+
+        for (int i = 0; i < next; ++i)
+        {
+            out[i] = f.apply((T) array[i]);
+        }
+
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public <U> U[] mapToArray(Function<? super T, ? extends U> f, IntFunction<U[]> generator)
+    {
+        return mapToArray(f, generator.apply(next));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public Array<T> filter(Predicate<? super T> p)
     {
         Array<T> out = new Array<>();
 
@@ -951,14 +972,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
-    public Array<T> filterNonNull(Predicate<T> p)
-    {
-        return filter(x -> x != null && p.test(x));
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public T first(Predicate<T> p)
+    public T first(Predicate<? super T> p)
     {
         for (int i = 0; i < next; ++i)
         {
@@ -976,14 +990,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
-    public T firstNonNull(Predicate<T> p)
-    {
-        return first(x -> x != null && p.test(x));
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public T last(Predicate<T> p)
+    public T last(Predicate<? super T> p)
     {
         for (int i = next - 1 ; i >= next; --i)
         {
@@ -997,13 +1004,6 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         }
 
         return null;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public T lastNonNull(Predicate<T> p)
-    {
-        return last(x -> x != null && p.test(x));
     }
 
     // ---------------------------------------------------------------------------------------------

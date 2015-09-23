@@ -2,7 +2,7 @@ package com.norswap.autumn.parsing.graph;
 
 import com.norswap.autumn.parsing.ParsingExpressionFactory;
 import com.norswap.autumn.parsing.expressions.Reference;
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.util.graph_visit.GraphVisitor;
 import com.norswap.util.graph_visit.NodeState;
 import com.norswap.util.slot.Slot;
@@ -63,11 +63,9 @@ public class ReferenceResolver extends GraphVisitor<ParsingExpression>
     @Override
     public void before(ParsingExpression pe)
     {
-        String name = pe.name();
-
-        if (name != null)
+        if (pe.name != null)
         {
-            named.put(name, pe);
+            named.put(pe.name, pe);
         }
     }
 

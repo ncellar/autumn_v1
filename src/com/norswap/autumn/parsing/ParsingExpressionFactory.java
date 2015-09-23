@@ -3,7 +3,6 @@ package com.norswap.autumn.parsing;
 import com.norswap.autumn.parsing.expressions.*;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster.Group;
 import com.norswap.autumn.parsing.expressions.Whitespace;
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.util.Array;
 import com.norswap.util.annotations.NonNull;
 
@@ -585,7 +584,7 @@ public final class ParsingExpressionFactory
 
     public static ParsingExpression named$(String name, ParsingExpression pe)
     {
-        pe.setName(name);
+        pe.name = name;
         return pe;
     }
 
@@ -593,7 +592,7 @@ public final class ParsingExpressionFactory
 
     public static ParsingExpression recursive$(String name, ParsingExpression pe)
     {
-        pe.setName(name);
+        pe.name = name;
         new IncrementalReferenceResolver(pe).walk(pe);
         return pe;
     }

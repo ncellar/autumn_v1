@@ -1,7 +1,6 @@
 package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.Autumn;
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.graph.NullabilityCalculator;
 import com.norswap.util.graph_visit.GraphVisitor;
 import com.norswap.util.slot.Slot;
@@ -119,7 +118,7 @@ public final class Grammar
 
             rules.forEach(
             pe -> {
-                String key = pe.name();
+                String key = pe.name;
 
                 if (key != null)
                 {
@@ -153,9 +152,8 @@ public final class Grammar
             if (oldRule != newRule)
             {
                 rulesChanged = true;
-                String name = oldRule.name();
-                oldRule.clearName();
-                newRule.setName(name);
+                newRule.name = oldRule.name;
+                oldRule.name = null;
             }
         }
 

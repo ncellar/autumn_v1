@@ -1,7 +1,6 @@
 package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.parsing.expressions.Reference;
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
 import com.norswap.autumn.parsing.graph.ReferenceResolver;
 import com.norswap.util.Array;
 import com.norswap.util.Caster;
@@ -36,7 +35,7 @@ public final class IncrementalReferenceResolver
 
     public IncrementalReferenceResolver(ParsingExpression target)
     {
-        assert(target.name() != null);
+        assert(target.name != null);
         this.recursive = target;
     }
 
@@ -61,7 +60,7 @@ public final class IncrementalReferenceResolver
             {
                 Reference ref = Caster.cast(children[i]);
 
-                if (recursive.name().equals(ref.target))
+                if (recursive.name.equals(ref.target))
                 {
                     pe.setChild(i, recursive);
 

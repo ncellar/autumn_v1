@@ -2,10 +2,10 @@ package com.norswap.autumn.parsing.debug;
 
 import com.norswap.autumn.Autumn;
 import com.norswap.autumn.parsing.Grammar;
-import com.norswap.autumn.parsing.ParseState;
-import com.norswap.autumn.parsing.Source;
-import com.norswap.autumn.parsing.TextPosition;
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.state.ParseState;
+import com.norswap.autumn.parsing.source.Source;
+import com.norswap.autumn.parsing.source.TextPosition;
+import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.util.Array;
 import javafx.application.Platform;
 import netscape.javascript.JSObject;

@@ -1,9 +1,9 @@
 package com.norswap.autumn.parsing.config;
 
-import com.norswap.autumn.parsing.ParseChanges;
-import com.norswap.autumn.parsing.ParseInputs;
-import com.norswap.autumn.parsing.ParseState;
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.state.ParseChanges;
+import com.norswap.autumn.parsing.state.ParseInputs;
+import com.norswap.autumn.parsing.state.ParseState;
+import com.norswap.autumn.parsing.ParsingExpression;
 
 import java.util.HashMap;
 

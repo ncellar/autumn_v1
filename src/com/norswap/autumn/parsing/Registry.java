@@ -1,7 +1,6 @@
 package com.norswap.autumn.parsing;
 
 import com.norswap.util.FlagFactory;
-import com.norswap.util.HandleFactory;
 
 /**
  * The registry manages flags and handle spaces for the parser.
@@ -15,24 +14,9 @@ public final class Registry
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static final HandleFactory ParserHandleFactory = new HandleFactory();
-
-    public static final HandleFactory ParsingExpressionHandleFactory = new HandleFactory();
-
     public static final FlagFactory ParsingExpressionFlagsFactory = new FlagFactory();
 
     public static final FlagFactory ParseStateFlagsFactory = new FlagFactory();
-
-    public static final HandleFactory CustomParseStateHandleFactory = new HandleFactory();
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // PARSING EXPRESSION HANDLES (PEH)
-
-    /**
-     * Fetches the name of the expression, if it has one.
-     */
-    public static final int PEH_NAME
-        = ParsingExpressionHandleFactory.next();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // PARSING EXPRESSION FLAGS (PEF)

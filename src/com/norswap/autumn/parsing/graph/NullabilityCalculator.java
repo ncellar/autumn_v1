@@ -1,7 +1,7 @@
 package com.norswap.autumn.parsing.graph;
 
 import com.norswap.autumn.parsing.Grammar;
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.util.MultiMap;
 import com.norswap.util.graph_visit.GraphVisitor;
 import com.norswap.util.graph_visit.NodeState;

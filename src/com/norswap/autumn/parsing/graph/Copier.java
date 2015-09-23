@@ -1,8 +1,9 @@
 package com.norswap.autumn.parsing.graph;
 
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.util.Array;
 import com.norswap.util.Counter;
+import com.norswap.util.JArrays;
 import com.norswap.util.graph_visit.GraphVisitor;
 import com.norswap.util.graph_visit.GraphWalker;
 import com.norswap.util.graph_visit.NodeState;
@@ -33,13 +34,7 @@ public final class Copier extends GraphVisitor<ParsingExpression>
             Copier copier = (Copier) visitor;
             ParsingExpression copy = copier.copyStack.peek();
             Counter c = new Counter();
-
-            // TODO stream?
-
-            Object[] slots = Arrays.stream(pe.children())
-                .map(x -> new ChildSlot(copy, c.i++))
-                .toArray();
-
+            Object[] slots = JArrays.map(pe.children(), x -> new ChildSlot(copy, c.i++));
             return Array.<Slot<ParsingExpression>>fromUnsafe(slots);
         }
     }
@@ -63,7 +58,6 @@ public final class Copier extends GraphVisitor<ParsingExpression>
     {
         ParsingExpression copy = pe.clone();
         copy.copyOwnData();
-        copy.ext = copy.ext.deepCopy();
 
         copyStack.push(copy);
         copies.put(pe, copy);

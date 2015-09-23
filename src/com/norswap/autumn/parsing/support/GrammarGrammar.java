@@ -2,7 +2,7 @@ package com.norswap.autumn.parsing.support;
 
 import com.norswap.autumn.Autumn;
 import com.norswap.autumn.parsing.Grammar;
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.ParsingExpression;
 
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
 

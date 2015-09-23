@@ -1,15 +1,15 @@
-package com.norswap.autumn.parsing;
+package com.norswap.autumn.parsing.state;
 
-import com.norswap.autumn.parsing.expressions.ExpressionCluster;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster.PrecedenceEntry;
 import com.norswap.autumn.parsing.expressions.LeftRecursive;
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.util.Array;
+import com.norswap.util.annotations.Nullable;
 
 import java.util.Arrays;
 
 /**
- *
+ * See {@link ParseState}, "Parse Inputs" section.
  */
 public final class ParseInputs
 {
@@ -20,7 +20,7 @@ public final class ParseInputs
     public final int blackStart;
     public final int precedence;
     public final int flags;
-    public final Array<Seed> seeds;
+    public final @Nullable Array<Seed> seeds;
     public final Array<LeftRecursive> blocked;
     public final Array<PrecedenceEntry> minPrecedence;
     public final Object[] customInputs;

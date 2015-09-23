@@ -1,10 +1,10 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.ParseChanges;
-import com.norswap.autumn.parsing.ParseState;
+import com.norswap.autumn.parsing.state.ParseChanges;
+import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.Seed;
-import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
+import com.norswap.autumn.parsing.state.Seed;
+import com.norswap.autumn.parsing.expressions.abstrakt.UnaryParsingExpression;
 
 public final class LeftRecursive extends UnaryParsingExpression
 {
@@ -54,6 +54,7 @@ public final class LeftRecursive extends UnaryParsingExpression
             if (changes.end >= state.end)
             {
                 // If no rule could grow the seed, exit the loop.
+                state.discard();
                 break;
             }
             else
@@ -65,8 +66,6 @@ public final class LeftRecursive extends UnaryParsingExpression
                 state.discard();
             }
         }
-
-        state.discard();
 
         state.flags = oldFlags;
         state.merge(changes);

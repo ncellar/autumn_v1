@@ -2,12 +2,10 @@
 TODO
 
 DEBUGGER
-    - snapshot semantics? -> ok, clarify (scoping!)
-    - check state handling of former parser fields
-
-    - need parsestate cloning
     - error handler is sort of like error merge strategy, do it like that instead?
+    - move fail
     - must invoke parser with parseinput & config options
+    - scope Registry to parser
 
 REWORK
     - syntax for custom operators ($name?)
@@ -27,8 +25,6 @@ w5: manual
 
 TODO FURTHER SMALL
 
-- scope Registry to parser
-
 - allow options in grammar files, namely for root and whitespace spec
 
 - well formedness check (ford: WF -- can't loop without consuming)
@@ -36,6 +32,8 @@ TODO FURTHER SMALL
 - better way to exclude reserved identifiers or warn about them
 
 - scoped memoization
+
+- tidy Autumn
 
 TODO FURTHER BIG
 

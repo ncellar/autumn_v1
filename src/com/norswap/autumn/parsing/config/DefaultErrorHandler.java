@@ -1,10 +1,10 @@
 package com.norswap.autumn.parsing.config;
 
 import com.norswap.autumn.parsing.ParseError;
-import com.norswap.autumn.parsing.ParseState;
-import com.norswap.autumn.parsing.Source;
+import com.norswap.autumn.parsing.state.ParseState;
+import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.expressions.Token;
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.util.Array;
 
 import static com.norswap.autumn.parsing.Registry.PEF_ERROR_RECORDING;

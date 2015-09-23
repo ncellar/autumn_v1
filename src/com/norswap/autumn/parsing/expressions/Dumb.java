@@ -1,8 +1,8 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.ParseState;
+import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.expressions.common.UnaryParsingExpression;
+import com.norswap.autumn.parsing.expressions.abstrakt.UnaryParsingExpression;
 
 /**
  * Parses its operand in dumb mode, like a non-memoizing PEG parser. In this

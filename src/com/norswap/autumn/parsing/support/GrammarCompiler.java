@@ -6,7 +6,7 @@ import com.norswap.autumn.parsing.tree.ParseTree;
 import com.norswap.autumn.parsing.Whitespace;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster.Group;
 import com.norswap.autumn.parsing.expressions.Filter;
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.ParsingExpressionFactory;
 import com.norswap.autumn.parsing.expressions.Reference;
 import com.norswap.util.Array;
@@ -41,7 +41,7 @@ public final class GrammarCompiler
         Array<ParsingExpression> exprs = new GrammarCompiler().run(tree);
 
         ParsingExpression whitespace = exprs.stream()
-            .filter(rule -> "Spacing".equals(rule.name()))
+            .filter(rule -> "Spacing".equals(rule.name))
             .findFirst().orElse(Whitespace.DEFAULT());
 
         // TODO enable setting whitespace & root from grammar file
@@ -159,7 +159,7 @@ public final class GrammarCompiler
                         break;
 
                     case "name":
-                        pe.setName(annotation.value);
+                        pe.name = annotation.value;
                         namedAlternates.push(pe);
                         break;
                 }

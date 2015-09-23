@@ -1,9 +1,11 @@
-package com.norswap.autumn.parsing;
+package com.norswap.autumn.parsing.state;
 
+import com.norswap.autumn.parsing.state.CustomState.Snapshot;
 import com.norswap.util.Array;
+import com.norswap.util.annotations.Nullable;
 
 /**
- *
+ * See {@link ParseState}, "Snapshots" section.
  */
 public final class ParseStateSnapshot
 {
@@ -15,8 +17,8 @@ public final class ParseStateSnapshot
     public final int blackEnd;
     public final int treeChildrenCount;
     public final int flags;
-    public final Array<Seed> seeds;
-    public final Object[] customSnapshots;
+    public final @Nullable Array<Seed> seeds;
+    public final Snapshot[] customSnapshots;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -28,7 +30,7 @@ public final class ParseStateSnapshot
         int treeChildrenCount,
         int flags,
         Array<Seed> seeds,
-        Object[] customSnapshots)
+        Snapshot[] customSnapshots)
     {
         this.start = start;
         this.blackStart = blackStart;

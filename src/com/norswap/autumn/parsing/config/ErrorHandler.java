@@ -1,9 +1,9 @@
 package com.norswap.autumn.parsing.config;
 
 import com.norswap.autumn.parsing.ParseError;
-import com.norswap.autumn.parsing.ParseState;
-import com.norswap.autumn.parsing.Source;
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.state.ParseState;
+import com.norswap.autumn.parsing.source.Source;
+import com.norswap.autumn.parsing.ParsingExpression;
 
 /**
  * The error handler is called by the parser whenever a parsing expression fails to match.

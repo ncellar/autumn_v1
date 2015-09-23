@@ -4,7 +4,7 @@ import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParsingExpressionFactory;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster;
 import com.norswap.autumn.parsing.expressions.LeftRecursive;
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.util.Array;
 import com.norswap.util.graph_visit.GraphVisitor;
 import com.norswap.util.graph_visit.NodeState;

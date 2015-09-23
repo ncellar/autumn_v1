@@ -1,13 +1,19 @@
-package com.norswap.autumn.parsing;
+package com.norswap.autumn.parsing.state;
 
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.ExpressionCluster;
+import com.norswap.autumn.parsing.expressions.LeftRecursive;
+import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.util.Array;
 
 /**
- * A growing output change built-up by an expression cluster.
+ * A seed is a mapping from a parsing expression ({@link LeftRecursive} or {@link
+ * ExpressionCluster}) to a {@link ParseChanges}.
  * <p>
- * Seeds are immutable, so in practice growing the seed means replacing it in the {@link
- * ParseState}.
+ * A list of such mapping is maintained in {@link ParseState#seeds}. This class has static methods
+ * to manipulate this list.
+ * <p>
+ * During the parse, the seeds "grows", meaning the mapped {@code ParsingChanges} for an expression
+ * changes. Since seeds are immutable, in in practice growing the seed means replacing the mapping.
  */
 public final class Seed
 {

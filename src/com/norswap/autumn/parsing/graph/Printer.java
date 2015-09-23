@@ -1,7 +1,7 @@
 package com.norswap.autumn.parsing.graph;
 
 import com.norswap.autumn.parsing.Registry;
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.util.Array;
 import com.norswap.util.Strings;
 import com.norswap.util.graph_visit.GraphVisitor;
@@ -56,7 +56,7 @@ public class Printer extends GraphVisitor<ParsingExpression>
             return;
         }
 
-        String name = pe.name();
+        String name = pe.name;
         String data = pe.ownDataString();
 
         sink.accept(Strings.times(depth, "-|"));
@@ -95,7 +95,7 @@ public class Printer extends GraphVisitor<ParsingExpression>
         {
             case CUTOFF:
                 sink.accept(Strings.times(depth, "-|"));
-                sink.accept("recursive (" + slot.get().name() + ")");
+                sink.accept("recursive (" + slot.get().name + ")");
                 appendChildData();
                 sink.accept("\n");
                 break;
@@ -133,7 +133,7 @@ public class Printer extends GraphVisitor<ParsingExpression>
 
     private String nameOrHashCode(ParsingExpression pe)
     {
-        String name = pe.name();
+        String name = pe.name;
 
         return name != null
             ? name

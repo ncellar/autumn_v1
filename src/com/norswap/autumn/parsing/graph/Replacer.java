@@ -1,6 +1,6 @@
 package com.norswap.autumn.parsing.graph;
 
-import com.norswap.autumn.parsing.expressions.common.ParsingExpression;
+import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.util.graph_visit.GraphTransformer;
 
 import java.util.Map;

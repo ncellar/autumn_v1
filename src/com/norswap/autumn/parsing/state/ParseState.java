@@ -1,0 +1,426 @@
+package com.norswap.autumn.parsing.state;
+
+import com.norswap.autumn.parsing.ErrorState;
+import com.norswap.autumn.parsing.Extension;
+import com.norswap.autumn.parsing.config.DefaultMemoHandler;
+import com.norswap.autumn.parsing.config.ParserConfigurationBuilder;
+import com.norswap.autumn.parsing.expressions.ExpressionCluster;
+import com.norswap.autumn.parsing.expressions.ExpressionCluster.PrecedenceEntry;
+import com.norswap.autumn.parsing.expressions.Filter;
+import com.norswap.autumn.parsing.expressions.LeftRecursive;
+import com.norswap.autumn.parsing.expressions.Precedence;
+import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.state.CustomState.Changes;
+import com.norswap.autumn.parsing.state.CustomState.Snapshot;
+import com.norswap.autumn.parsing.tree.BuildParseTree;
+import com.norswap.util.Array;
+import com.norswap.util.JArrays;
+import com.norswap.util.annotations.Nullable;
+
+import static com.norswap.autumn.parsing.Registry.*; // PSF_*
+
+/**
+ * An instance of this class is passed to every parsing expression invocation {@link
+ * ParsingExpression#parse}.
+ * <p>
+ * The parse state is the sole access point for all state (mutable data) that the expression will
+ * manipulate during the parse. It contains things like the input position or the parse tree being
+ * built.
+ * <p>
+ * <strong>Committed and Uncommitted State</strong>
+ * <p>
+ * The parse state is divided between committed and uncommitted state. A very simple example is that
+ * of the input position. When a parsing expression succeeds, it may consume some input and signal
+ * so by setting the {@link #end} field. This is an uncommitted state change. Whenever {@link
+ * #commit} is called, the value of {@code end} is assigned to {@link #start}. Subsequent expression
+ * invocations using this state will parse at the new input position. Calling {@link #discard} will
+ * discard all the uncommitted data.
+ * <p>
+ * An important convention in Autumn is that an expression invocation shouldn't add any committed
+ * state to the parse state it receives. At first, this seems incompatible with the very existence
+ * of {@link #commit}. The trick is the {@link #uncommit} method, which will be explained later.
+ * <p>
+ * You can extract uncommitted to a {@link ParseChanges} object through the {@link #extract} method.
+ * Usually, this is done after invoking a sub-expression. Because of the convention we just
+ * mentioned, this means that the {@code ParseChanges} object contains the "output" of the
+ * sub-expression invocation: its net effect on the parse state. Because parse changes are just
+ * uncommitted changes to the state, you can re-apply them to any state, using the {@link #merge}
+ * method.
+ * <p>
+ * Finally, note that the separation between committed and uncommitted data is conceptual, in
+ * practice, the data is often twined (for performance reasons), and there is some additional data
+ * that allows to distinguish the committed and uncommitted parts.
+ * <p>
+ * <strong>Parse Inputs</strong>
+ * <p>
+ * The parse inputs are a particularly important subset of the parse state. The parse inputs consist
+ * of all the state that influences the result of expression invocations. Obviously this includes
+ * the input position, but also things like the precedence level or blocked expressions. Not all
+ * state is part of the parse inputs. For instance, some state is closer to what we could call an
+ * output (e.g. the parse tree). The set of parse inputs for the current parse state (a {@link
+ * ParseInputs} object) can be obtained via the {@link #inputs} method.
+ * <p>
+ * An expression invocation can be seen as a pure function from a {@link ParseInputs} object to a
+ * {@link ParseChanges} object. Of course, these objects aren't usually involved. They are only
+ * created on-demand, by calling {@link #inputs} and {@link #extract} respectively. This notion is
+ * used for memoization: the default memoization strategy ({@link DefaultMemoHandler} is to maintain
+ * a map from {@code ParseInputs} to {@code ParseChanges}.
+ * <p>
+ * <strong>Snapshots</strong>
+ * <p>
+ * As we mentioned earlier, the convention is to not have any committed changes appear after
+ * invoking a sub-expression. Yet sub-expressions might need to commit changes. For instance, a
+ * sequence expression will need to commit after each successful element in the sequence in order
+ * for the next element to parse at the correct position. A solution to this problem is offered by
+ * snapshots.
+ * <p>
+ * A snapshot ({@link ParseStateSnapshot}) captures the information needed to rollback a parse state
+ * to a time before changes were committed to it. A snapshot can be created using the {@link
+ * #snapshot} method. A parse state can be rolled back by passing a snapshot to the {@link #restore}
+ * method.
+ * <p>
+ * Alternatively, a snapshot can also be passed to the {@link #uncommit} method. In this case,
+ * changes made to the state after the snapshot was taken are not discarded, but treated as
+ * uncommitted instead.
+ * <p>
+ * In the sequence example, you would create a snapshot before beginning to invoke the elements of
+ * the sequence; then commit the results as these element invocations succeed; and finally either
+ * call {@link #restore} (if an element invocation fails) or {@link #uncommit} (if all element
+ * invocations succeed). This ensures that no changes made to the state by a sequence expression
+ * will appear committed to its parent expressions.
+ * <p>
+ * Snapshots have important restrictions placed on their use. In a {ParsingExpression#parse} method,
+ * you should only call {@code restore} and {@code uncommit} with a snapshot that was created in the
+ * same method (and for the same parse state). A snapshot should not be passed to parents or
+ * sub-expressions.
+ * <p>
+ * These restrictions allow snapshots to be relatively lightweight. They make it possible to use our
+ * knowledge that the sub-expressions will not discard certain parts of the parse state, or that we
+ * will never see some of the changes made by the sub-expressions because these changes are strictly
+ * scoped: they are only visible within an expression and (a subset of) its sub-expressions.
+ * <p>
+ * Despite its name, a snapshot is not a full picture of the parse state, and as such cannot be
+ * passed around to recall arbitrary parse states.
+ * <p>
+ * <strong>Custom Parse State</strong>
+ * <p>
+ * Users can add their own parse state, as classes implementing the {@link CustomState} interface.
+ * These states can be accessed through the {@link #customStates} field. Custom states should be
+ * part of an Autumn extension ({@link Extension}), and can be registered by calling {@link
+ * ParserConfigurationBuilder#customState} from {@link Extension#register}.
+ * <p>
+ * <strong>Misc</strong>
+ * <p>
+ * In addition to the afrementioned methods, the class also has a few methods to manipulate and
+ * query the {@link #end} and {@link #blackEnd} positions: {@link #advance}, {@link #fail}, {@link
+ * #succeeded} and {@link #failed}.
+ */
+public final class ParseState
+{
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * The current input position, i.e. the position where parsing expressions will be invoked.
+     */
+    public int start;
+
+    /**
+     * The last non-whitespace input position preceding {@link #start}. This is useful
+     * to avoid including trailing whitespaces in captures.
+     */
+    public int blackStart;
+
+    /**
+     * An uncommitted change to {@link #start}. You can think of it as the position of the end of
+     * the text matched by the parsing expression, or -1 if no match could be made.
+     */
+    public int end;
+
+    /**
+     * An uncommitted change to {@link #blackStart}: the position of the last non-whitespace
+     * character preceding {@link #end}.
+     */
+    public int blackEnd;
+
+    /**
+     * The current precedence level for {@link Precedence} expressions.
+     */
+    public int precedence;
+
+    /**
+     * Holds a set of flags that can serve as additional parse inputs.
+     * TODO remove
+     */
+    public int flags;
+
+    /**
+     * Holds a set of mapping between parsing expressions ({@link ExpressionCluster} and {@link
+     * LeftRecursive} instances whose invocation is ongoing) and their seed (an instance of {@link
+     * ParseChanges}).
+     */
+    public @Nullable Array<Seed> seeds;
+
+    /**
+     * The parse tree which is to be the parent of parse trees produced by captures in the parsing
+     * expression.
+     */
+    public BuildParseTree tree;
+
+    /**
+     * The number of committed children of {@link #tree}. Further children are uncommitted.
+     */
+    public int treeChildrenCount;
+
+    /**
+     * The error information that result after attempting to parse the expression. Note that
+     * we may record errors even when the expression succeeds.
+     * TODO improve
+     */
+    public ErrorState errors;
+
+    /**
+     * The current cluster alternate; set by {@link ExpressionCluster} and read by {@link Filter}.
+     * TODO unsafe, but clunky to begin with; rework the filtering mechanism
+     */
+    public ParsingExpression clusterAlternate;
+
+    /**
+     * A set of blocked {@link LeftRecursive} parsing expression. Invoking these expressions
+     * will never succeed.
+     */
+    public Array<LeftRecursive> blocked;
+
+    /**
+     * Holds a set of mapping between {@link ExpressionCluster} instances whose invocation is
+     * ongoing and their current precedence level.
+     */
+    public Array<PrecedenceEntry> minPrecedence;
+
+    /**
+     * A set of additional user-defined parse states.
+     */
+    public CustomState[] customStates;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Creates the parse state to be passed to the root parsing expression.
+     */
+    public ParseState(ErrorState errorState, CustomState[] customStates)
+    {
+        this.end = 0;
+        this.blackEnd = 0;
+        this.tree = new BuildParseTree();
+        this.customStates = customStates;
+        this.errors = errorState;
+        this.blocked = new Array<>();
+        this.minPrecedence = new Array<>();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Advances the end and black end positions by n characters.
+     */
+    public void advance(int n)
+    {
+        end += n;
+        blackEnd = end;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Sets the end position to indicate that no match could be found.
+     */
+    public void fail()
+    {
+        this.end = -1;
+        this.blackEnd = -1;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Indicates whether the match was successful.
+     */
+    public boolean succeeded()
+    {
+        return end != -1;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Indicates whether the match was unsuccessful.
+     */
+    public boolean failed()
+    {
+        return end == -1;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public void commit()
+    {
+        if (end > start)
+        {
+            seeds = null;
+        }
+
+        start = end;
+        blackStart = blackEnd;
+        treeChildrenCount = tree.childrenCount();
+
+        for (CustomState state: customStates)
+        {
+            state.commit();
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void discard()
+    {
+        end = start;
+        blackEnd = blackStart;
+        tree.truncate(treeChildrenCount);
+
+        for (CustomState state: customStates)
+        {
+            state.discard();
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public ParseChanges extract()
+    {
+        return new ParseChanges(
+            end,
+            blackEnd,
+            tree.children.copyFromIndex(treeChildrenCount),
+            JArrays.map(customStates, Changes[]::new, CustomState::extract));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void merge(ParseChanges changes)
+    {
+        end = changes.end;
+        blackEnd = changes.blackEnd;
+
+        if (changes.children != null)
+        {
+            tree.addAll(changes.children);
+        }
+
+        // TODO whataboutfailure?
+        if (changes.customChanges != null)
+        for (int i = 0; i < customStates.length; ++i)
+        {
+            customStates[i].merge(changes.customChanges[i]);
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public ParseStateSnapshot snapshot()
+    {
+        return new ParseStateSnapshot(
+            start,
+            blackStart,
+            end,
+            blackEnd,
+            treeChildrenCount,
+            flags,
+            seeds,
+            JArrays.map(customStates, Snapshot[]::new, CustomState::snapshot));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void restore(ParseStateSnapshot snapshot)
+    {
+        start               = snapshot.start;
+        blackStart          = snapshot.blackStart;
+        end                 = snapshot.end;
+        blackEnd            = snapshot.blackEnd;
+        treeChildrenCount   = snapshot.treeChildrenCount;
+        flags               = snapshot.flags;
+        seeds               = snapshot.seeds;
+
+        tree.truncate(treeChildrenCount);
+
+        for (int i = 0; i < customStates.length; i++)
+        {
+            customStates[i].restore(snapshot.customSnapshots[i]);
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void uncommit(ParseStateSnapshot snapshot)
+    {
+        start               = snapshot.start;
+        blackStart          = snapshot.blackStart;
+        treeChildrenCount   = snapshot.treeChildrenCount;
+        flags               = snapshot.flags; // needed?
+        seeds               = snapshot.seeds;
+
+        for (int i = 0; i < customStates.length; ++i)
+        {
+            customStates[i].uncommit(snapshot.customSnapshots[i]);
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public ParseInputs inputs(ParsingExpression pe)
+    {
+        return new ParseInputs(
+            pe,
+            start,
+            blackStart,
+            precedence,
+            flags,
+            seeds.clone(),
+            blocked.clone(),
+            minPrecedence.clone(),
+            JArrays.map(customStates, CustomState::inputs));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public String toString()
+    {
+        return String.format("(%X) [%d/%d - %d/%d[ tree(%d/%d) flags(%s)",
+            hashCode(),
+            start,
+            blackStart,
+            end,
+            blackEnd,
+            treeChildrenCount,
+            tree.childrenCount(),
+            Integer.toString(flags, 2));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // FLAGS
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public void forbidErrorRecording()
+    {
+        flags |= PSF_DONT_RECORD_ERRORS;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public boolean isErrorRecordingForbidden()
+    {
+        return (flags & PSF_DONT_RECORD_ERRORS) != 0;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+}

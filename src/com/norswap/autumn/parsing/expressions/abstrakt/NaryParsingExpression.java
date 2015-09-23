@@ -1,6 +1,6 @@
-package com.norswap.autumn.parsing.expressions.common;
+package com.norswap.autumn.parsing.expressions.abstrakt;
 
-import com.norswap.util.DeepCopy;
+import com.norswap.autumn.parsing.ParsingExpression;
 
 /**
  *  Base implementation for parsing expression with an array of operands.

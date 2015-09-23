@@ -1,24 +1,10 @@
 package com.norswap.autumn.parsing;
 
+import com.norswap.autumn.parsing.state.CustomState;
+
 public final class DefaultErrorState implements ErrorState
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    @Override
-    public Object snapshot()
-    {
-        return null;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void restore(Object snapshot)
-    {
-
-    }
-
-    // ---------------------------------------------------------------------------------------------
 
     @Override
     public void commit()
@@ -26,42 +12,44 @@ public final class DefaultErrorState implements ErrorState
 
     }
 
-    // ---------------------------------------------------------------------------------------------
-
     @Override
     public void discard()
     {
 
     }
 
-    // ---------------------------------------------------------------------------------------------
-
     @Override
-    public Object extract()
+    public Changes extract()
     {
         return null;
     }
 
-    // ---------------------------------------------------------------------------------------------
-
     @Override
-    public void merge(Object changes)
+    public void merge(Changes changes)
     {
 
     }
 
-    // ---------------------------------------------------------------------------------------------
+    @Override
+    public Snapshot snapshot()
+    {
+        return null;
+    }
 
     @Override
-    public void uncommit(Object snapshot)
+    public void restore(Snapshot snapshot)
     {
 
     }
 
-    // ---------------------------------------------------------------------------------------------
+    @Override
+    public void uncommit(Snapshot snapshot)
+    {
+
+    }
 
     @Override
-    public Object inputs()
+    public Inputs inputs()
     {
         return null;
     }

@@ -1,4 +1,4 @@
-package com.norswap.autumn.parsing.expressions.common;
+package com.norswap.autumn.parsing.expressions.abstrakt;
 
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.Registry;
