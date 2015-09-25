@@ -7,7 +7,7 @@ import com.norswap.util.graph_visit.GraphWalker;
 import com.norswap.util.Counter;
 import com.norswap.util.slot.Slot;
 
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.stream;
@@ -23,18 +23,26 @@ public class Walks
     /**
      * Walks the whole graph, modification are done in-place.
      */
-    public static GraphWalker<ParsingExpression> inPlace = (pe, visitor) -> helper(
-        stream(pe.children()),
-        c -> new ChildSlot(pe, c.i++));
+    public static GraphWalker<ParsingExpression> inPlace = (slot, visitor) ->
+    {
+        ParsingExpression pe = slot.get();
+        return helper(
+            stream(pe.children()),
+            (c, x) -> new ChildSlot(pe, c.i++));
+    };
 
     // ---------------------------------------------------------------------------------------------
 
     /**
      * Walks the whole graph. Attempts to set the value of a slot result in an exception.
      */
-    public static GraphWalker<ParsingExpression> readOnly = (pe, visitor) -> helper(
-        stream(pe.children()),
-        c -> new ReadOnlyChildSlot(pe, c.i++));
+    public static GraphWalker<ParsingExpression> readOnly = (slot, visitor) ->
+    {
+        ParsingExpression pe = slot.get();
+        return helper(
+            stream(pe.children()),
+            (c, x) -> new ReadOnlyChildSlot(pe, c.i++));
+    };
 
     // ---------------------------------------------------------------------------------------------
 
@@ -46,9 +54,13 @@ public class Walks
      */
     public static GraphWalker<ParsingExpression> inPlaceFirsts(Grammar grammar)
     {
-        return (pe, visitor) -> helper(
-            stream(pe.firsts(grammar)),
-            c -> new ChildSlot(pe, c.i++));
+        return (slot, visitor) ->
+        {
+            ParsingExpression pe = slot.get();
+            return helper(
+                stream(pe.firsts(grammar)),
+                (c, x) -> new ChildSlot(pe, c.i++));
+        };
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -65,10 +77,10 @@ public class Walks
 
     static Array<Slot<ParsingExpression>> helper(
         Stream<ParsingExpression> stream,
-        Function<Counter, Slot<ParsingExpression>> f)
+        BiFunction<Counter, ParsingExpression, Slot<ParsingExpression>> f)
     {
         Counter c = new Counter();
-        return Array.<Slot<ParsingExpression>>fromUnsafe(stream.map(x -> f.apply(c)).toArray());
+        return Array.<Slot<ParsingExpression>>fromUnsafe(stream.map(x -> f.apply(c, x)).toArray());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

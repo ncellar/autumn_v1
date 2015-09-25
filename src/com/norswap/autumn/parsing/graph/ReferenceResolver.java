@@ -2,7 +2,11 @@ package com.norswap.autumn.parsing.graph;
 
 import com.norswap.autumn.parsing.expressions.Reference;
 import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.util.Array;
+import com.norswap.util.Pair;
+import com.norswap.util.Two;
 import com.norswap.util.graph_visit.GraphVisitor;
+import com.norswap.util.graph_visit.GraphWalker;
 import com.norswap.util.graph_visit.NodeState;
 import com.norswap.util.slot.Slot;
 
@@ -38,7 +42,7 @@ public class ReferenceResolver extends GraphVisitor<ParsingExpression>
     /**
      * Maps names (e.g. rule names) to the expression they designate.
      */
-    public Map<String, ParsingExpression> named = new HashMap<>();
+    public Map<String, Slot<ParsingExpression>> named = new HashMap<>();
 
     // ---------------------------------------------------------------------------------------------
 
@@ -51,26 +55,29 @@ public class ReferenceResolver extends GraphVisitor<ParsingExpression>
 
     public ReferenceResolver()
     {
-        super(Walks.inPlace);
+        super(Walks.copyOnWriteWalk());
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public ReferenceResolver(GraphWalker<ParsingExpression> walker)
+    {
+        super(walker);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void before(ParsingExpression pe)
-    {
-        if (pe.name != null)
-        {
-            named.put(pe.name, pe);
-        }
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
     public void afterChild(ParsingExpression pe, Slot<ParsingExpression> slot, NodeState state)
     {
-        if (slot.get() instanceof Reference)
+        ParsingExpression child = slot.get();
+
+        if (child.name != null)
+        {
+            named.put(child.name, slot);
+        }
+
+        if (child instanceof Reference)
         {
             references.add(slot);
         }
@@ -81,10 +88,7 @@ public class ReferenceResolver extends GraphVisitor<ParsingExpression>
     @Override
     public void afterRoot(Slot<ParsingExpression> slot, NodeState state)
     {
-        if (slot.get() instanceof Reference)
-        {
-            references.add(slot);
-        }
+        afterChild(null, slot, state);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -93,17 +97,18 @@ public class ReferenceResolver extends GraphVisitor<ParsingExpression>
     public void conclude()
     {
         HashSet<String> unresolved = new HashSet<>();
+        Array<Two<Slot<ParsingExpression>>> pairs = new Array<>(references.size());
 
         for (Slot<ParsingExpression> slot: references)
         {
-            ParsingExpression target = slot.get();
+            Slot<ParsingExpression> target = slot;
             String name;
             int i = 0;
 
             // References can be chained!
 
             do {
-                name = ((Reference)target).target;
+                name = ((Reference) target.get()).target;
                 target = named.get(name);
 
                 if (++i > REFERENCE_CHAIN_LIMIT)
@@ -111,15 +116,18 @@ public class ReferenceResolver extends GraphVisitor<ParsingExpression>
                     panic();
                 }
             }
-            while (target != null && target instanceof Reference);
+            while (target != null && target.get() instanceof Reference);
 
-            if (target == null)
+            if (slot == null)
             {
                 unresolved.add(name);
             }
             else
             {
-                slot.set(target);
+                ParsingExpression pe = target.get();
+                slot.set(pe);
+                pe.name = name;
+                pairs.add(new Two<>(slot, target));
             }
         }
 
@@ -127,6 +135,11 @@ public class ReferenceResolver extends GraphVisitor<ParsingExpression>
         {
             throw new RuntimeException(
                 "There were unresolved references in the grammar: " + unresolved);
+        }
+
+        for (Two<Slot<ParsingExpression>> pair: pairs)
+        {
+            pair.a.set(pair.b.get());
         }
     }
 

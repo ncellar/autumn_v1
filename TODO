@@ -2,9 +2,15 @@
 TODO
 
 DEBUGGER
-    - nuke debug package
-    - remove walks side-effects on grammar?
+    - copyOnWrite walk does not work with reference resolver or left detection detector
+    - copyOnWrite uses clone, but then setChild can unfortunately write both
+
+    ==> use copier always? more economical anyways...
+
+    - reference resolutions and names
     - Whitespace class: resolve references
+    - remove walks side-effects on grammar?
+
     - allow options in grammar files, namely for root and whitespace spec
     - must invoke parser with parseinput & config options
     - tags ordering issue (stmtexpression in example)

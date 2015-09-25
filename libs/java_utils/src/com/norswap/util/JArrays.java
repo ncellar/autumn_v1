@@ -60,9 +60,10 @@ public final class JArrays
             size += array.length;
         }
 
+        @SuppressWarnings("unchecked")
         T[] out = arrays.length == 0
-            ? Caster.cast(new Object[0])
-            : Caster.cast(java.lang.reflect.Array.newInstance(arrays[0].getClass().getComponentType(), size));
+            ? (T[]) new Object[0]
+            : (T[]) java.lang.reflect.Array.newInstance(arrays[0].getClass().getComponentType(), size);
 
         int i = 0;
         for (T[] array : arrays)
@@ -94,8 +95,8 @@ public final class JArrays
      */
     public static <T> T[] setRange(T[] dst, int i1, T[] src, int i2, int size)
     {
-        assert dst.length <= i1 + size;
-        assert src.length <= i2 + size;
+        assert dst.length >= i1 + size;
+        assert src.length >= i2 + size;
 
         for (int i = 0 ; i < size ; ++i) {
             dst[i1 + i] = src[i2 + i];

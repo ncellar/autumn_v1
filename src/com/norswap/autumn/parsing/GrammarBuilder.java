@@ -3,6 +3,7 @@ package com.norswap.autumn.parsing;
 import com.norswap.autumn.parsing.graph.LeftRecursionDetector;
 import com.norswap.autumn.parsing.graph.ReferenceResolver;
 import com.norswap.autumn.parsing.graph.Replacer;
+import com.norswap.autumn.parsing.graph.Walks;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -87,7 +88,18 @@ public final class GrammarBuilder
 
         if (referenceResolution)
         {
-            out = out.transform(new ReferenceResolver());
+            if (rules != null)
+            {
+                out = out.transform(new ReferenceResolver(Walks.inPlace));
+
+            }
+            else
+            {
+                System.err.println(out.root.toStringFull());
+                out = out.transform(new ReferenceResolver());
+                System.err.println("================");
+                System.err.println(out.root.toStringFull());
+            }
         }
 
         if (leftRecursionElimination)

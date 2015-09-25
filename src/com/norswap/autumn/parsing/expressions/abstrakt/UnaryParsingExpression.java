@@ -34,7 +34,7 @@ public abstract class UnaryParsingExpression extends ParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public Nullability nullability(Grammar grammar)
+    public Nullability nullability()
     {
         return operand != null
             ? Nullability.single(this, operand)

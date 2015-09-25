@@ -266,9 +266,9 @@ public final class ExpressionCluster extends ParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public Nullability nullability(Grammar grammar)
+    public Nullability nullability()
     {
-        return Nullability.any(this, firsts(grammar));
+        return Nullability.any(this, firsts(null));
     }
 
     // ---------------------------------------------------------------------------------------------

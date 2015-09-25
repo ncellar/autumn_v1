@@ -119,15 +119,16 @@ public class Printer extends GraphVisitor<ParsingExpression>
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void after(ParsingExpression pe, List<Slot<ParsingExpression>> children, NodeState state)
+    public void after(Slot<ParsingExpression> slot, List<Slot<ParsingExpression>> children, NodeState state)
     {
         // PEF_UNARY_INVISIBLE is set
-        if ((pe.flags & PEF_UNARY_INVISIBLE) != 0)
+        if ((slot.get().flags & PEF_UNARY_INVISIBLE) != 0)
         {
             stack.pop();
             indices.pop();
-            -- depth;
         }
+
+        -- depth;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -137,7 +138,7 @@ public class Printer extends GraphVisitor<ParsingExpression>
         String name = pe.name;
 
         return name != null
-            ? name
+            ? name + " - " + String.format("%X", pe.hashCode())
             : String.format("%X", pe.hashCode());
     }
 

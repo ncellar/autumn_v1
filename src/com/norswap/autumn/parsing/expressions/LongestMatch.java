@@ -68,7 +68,7 @@ public final class LongestMatch extends NaryParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public Nullability nullability(Grammar grammar)
+    public Nullability nullability()
     {
         return Nullability.any(this, operands);
     }

@@ -79,7 +79,7 @@ public abstract class GraphVisitor<Node>
      * Possible values for {@code state}: {@code FIRST_VISIT}, {@code FIRST_VISIT_CYCLIC}, {@code
      * FIRST_VISIT_CUTOFF}.
      */
-    public void after(Node node, List<Slot<Node>> children, NodeState state) {}
+    public void after(Slot<Node> slot, List<Slot<Node>> children, NodeState state) {}
 
     // ---------------------------------------------------------------------------------------------
 
@@ -124,7 +124,7 @@ public abstract class GraphVisitor<Node>
     public final Slot<Node> partialVisit(Node node)
     {
         Slot<Node> slot = new SelfSlot<>(node);
-        afterRoot(slot, walk(node));
+        afterRoot(slot, walk(slot));
         return slot;
     }
 
@@ -137,7 +137,8 @@ public abstract class GraphVisitor<Node>
         int i = 0;
         for (Node node: nodes)
         {
-            afterRoot(new ListSlot<>(container, i++).set(node), walk(node));
+            Slot<Node> slot = new ListSlot<>(container, i++).set(node);
+            afterRoot(slot, walk(slot));
         }
 
         return container;
@@ -145,8 +146,10 @@ public abstract class GraphVisitor<Node>
 
     // ---------------------------------------------------------------------------------------------
 
-    private NodeState walk(Node node)
+    private NodeState walk(Slot<Node> slot)
     {
+        Node node = slot.get();
+
         switch (states.getOrDefault(node, FIRST_VISIT))
         {
             case FIRST_VISIT:
@@ -172,13 +175,13 @@ public abstract class GraphVisitor<Node>
 
         before(node);
 
-        List<Slot<Node>> children = children(node);
+        List<Slot<Node>> children = children(slot);
 
         boolean cyclic = false;
 
         for (Slot<Node> child: children)
         {
-            NodeState childState = walk(child.get());
+            NodeState childState = walk(child);
             cyclic = cyclic || childState == FIRST_VISIT_CYCLIC || childState == FIRST_VISIT_CUTOFF;
             afterChild(node, child, childState);
         }
@@ -190,7 +193,7 @@ public abstract class GraphVisitor<Node>
             out = cyclic ? FIRST_VISIT_CYCLIC : FIRST_VISIT;
         }
 
-        after(node, children, out);
+        after(slot, children, out);
         states.put(node, VISITED);
 
         return out;
@@ -210,7 +213,7 @@ public abstract class GraphVisitor<Node>
     // ---------------------------------------------------------------------------------------------
 
     @SuppressWarnings("unchecked")
-    private List<Slot<Node>> children(Node node)
+    private List<Slot<Node>> children(Slot<Node> slot)
     {
         if (cutoff)
         {
@@ -218,7 +221,7 @@ public abstract class GraphVisitor<Node>
             return Collections.EMPTY_LIST;
         }
 
-        return walker.children(node, this);
+        return walker.children(slot, this);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

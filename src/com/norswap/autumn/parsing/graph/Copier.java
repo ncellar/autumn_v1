@@ -29,12 +29,12 @@ public final class Copier extends GraphVisitor<ParsingExpression>
     {
         @Override
         public List<Slot<ParsingExpression>>
-        children(ParsingExpression pe, GraphVisitor<ParsingExpression> visitor)
+        children(Slot<ParsingExpression> slot, GraphVisitor<ParsingExpression> visitor)
         {
             Copier copier = (Copier) visitor;
             ParsingExpression copy = copier.copyStack.peek();
             Counter c = new Counter();
-            Object[] slots = JArrays.map(pe.children(), x -> new ChildSlot(copy, c.i++));
+            Object[] slots = JArrays.map(slot.get().children(), x -> new ChildSlot(copy, c.i++));
             return Array.<Slot<ParsingExpression>>fromUnsafe(slots);
         }
     }

@@ -1,5 +1,6 @@
 package com.norswap.autumn.parsing;
 
+import com.norswap.autumn.parsing.graph.CopyOnWriteWalker;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.graph.Copier;
 import com.norswap.autumn.parsing.graph.Nullability;
@@ -147,7 +148,7 @@ public abstract class ParsingExpression implements DeepCopy
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // PROPERTIES
 
-    public Nullability nullability(Grammar grammar)
+    public Nullability nullability()
     {
         return Nullability.no(this);
     }
@@ -180,13 +181,18 @@ public abstract class ParsingExpression implements DeepCopy
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Do not use; use {@link #deepCopy()} or {@link com.norswap.autumn.parsing.graph.CopyOnWriteWalker}
-     * instead.
+     * Do not use; use {@link #deepCopy()} or {@link CopyOnWriteWalker} instead.
      */
     @Override
     public final ParsingExpression clone()
     {
-        return Caster.cast(Exceptions.swallow(() -> super.clone()));
+        try {
+            return (ParsingExpression) super.clone();
+        }
+        catch (CloneNotSupportedException e)
+        {
+            throw new Error(e); // shouldn't happen
+        }
     }
 
     // ---------------------------------------------------------------------------------------------

@@ -74,8 +74,10 @@ public class LeftRecursionDetector extends GraphVisitor<ParsingExpression>
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void after(ParsingExpression pe, List<Slot<ParsingExpression>> children, NodeState state)
+    public void after(Slot<ParsingExpression> slot, List<Slot<ParsingExpression>> children, NodeState state)
     {
+        ParsingExpression pe = slot.get();
+
         if (pe instanceof LeftRecursive)
         {
             leftRecursiveStackPositions.pop();

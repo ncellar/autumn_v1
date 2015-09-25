@@ -32,7 +32,7 @@ public final class Grammar
     /**
      * The rules contained within the grammar. These usually have a name, and usually include the
      * root (and sometimes the whitespace); but those are not absolute requirements. This is never
-     * null but can be empty.
+     * null but can be empty. The iteration order must be consistent.
      * <p>
      * For grammar created from grammar files, these are all the rules defined within the grammar
      * file (so there won't be a rule for the whitespace if the default whitespace specification is
@@ -51,6 +51,9 @@ public final class Grammar
      */
     public final boolean processLeadingWhitespace;
 
+    /**
+     * TODO
+     */
     public final @Immutable Map<String, String> options;
 
     private Map<String, ParsingExpression> rulesByName;
@@ -59,14 +62,6 @@ public final class Grammar
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * See the documentation of getters.
-     *
-     * {@code rules} is the set of rules in the grammar (including the root), can be null if
-     * only the root is to be considered. Its iteration order must be predictable and unchanging.
-     *
-     * TODO
-     */
     Grammar(
         ParsingExpression root,
         Collection<ParsingExpression> rules,
@@ -209,8 +204,8 @@ public final class Grammar
 
     public void computeNullability()
     {
-        nullabilityCalculator = new NullabilityCalculator(this);
-        transform(nullabilityCalculator);
+        nullabilityCalculator = new NullabilityCalculator();
+        compute(nullabilityCalculator);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

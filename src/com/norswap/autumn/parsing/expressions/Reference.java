@@ -5,24 +5,19 @@ import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.graph.Nullability;
-import com.norswap.util.Array;
-
 
 /**
- * A reference to another expression. A reference is a temporary operator that is meant to be
- * pruned from the expression graph via a resolution process.
- *
+ * A reference to another expression. A reference is a temporary operator that is meant to be pruned
+ * from the expression graph via a resolution process.
+ * <p>
  * A reference holds the name of its target, which is the an expression with that name ({@link
- * ParsingExpression#name()}).
+ * ParsingExpression#name}).
  */
 public final class Reference extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public String target;
-
-    /** See {@link com.norswap.autumn.parsing.IncrementalReferenceResolver}. */
-    public Array<ParsingExpression> nestedReferences;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -44,7 +39,7 @@ public final class Reference extends ParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public Nullability nullability(Grammar grammar)
+    public Nullability nullability()
     {
         throw new UnsupportedOperationException(
             "Trying to get the nullability of: " + target);

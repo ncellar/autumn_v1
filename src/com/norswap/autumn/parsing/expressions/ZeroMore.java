@@ -1,6 +1,5 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.state.ParseStateSnapshot;
@@ -59,7 +58,7 @@ public final class ZeroMore extends UnaryParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public Nullability nullability(Grammar grammar)
+    public Nullability nullability()
     {
         return Nullability.yes(this);
     }

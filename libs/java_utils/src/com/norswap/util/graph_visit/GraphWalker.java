@@ -14,5 +14,5 @@ import java.util.List;
 @FunctionalInterface
 public interface GraphWalker<Node>
 {
-    List<Slot<Node>> children(Node node, GraphVisitor<Node> visitor);
+    List<Slot<Node>> children(Slot<Node> node, GraphVisitor<Node> visitor);
 }

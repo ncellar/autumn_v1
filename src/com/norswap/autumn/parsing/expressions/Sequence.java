@@ -66,7 +66,7 @@ public final class Sequence extends NaryParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public Nullability nullability(Grammar grammar)
+    public Nullability nullability()
     {
         return Nullability.all(this, operands);
     }

@@ -41,14 +41,11 @@ public class NullabilityCalculator extends GraphVisitor<ParsingExpression>
 
     private MultiMap<ParsingExpression, ParsingExpression> dependants = new MultiMap<>();
 
-    private Grammar grammar;
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public NullabilityCalculator(Grammar grammar)
+    public NullabilityCalculator()
     {
         super(Walks.readOnly);
-        this.grammar = grammar;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -67,15 +64,15 @@ public class NullabilityCalculator extends GraphVisitor<ParsingExpression>
     @Override
     public void before(ParsingExpression pe)
     {
-        nullabilities.put(pe, pe.nullability(grammar));
+        nullabilities.put(pe, pe.nullability());
     }
 
     // -----------------------------------------------------------------------------------------
 
     @Override
-    public void after(ParsingExpression pe, List<Slot<ParsingExpression>> children, NodeState state)
+    public void after(Slot<ParsingExpression> slot, List<Slot<ParsingExpression>> children, NodeState state)
     {
-        Nullability n = nullabilities.get(pe);
+        Nullability n = nullabilities.get(slot.get());
 
         if (n.resolved) {
             return;

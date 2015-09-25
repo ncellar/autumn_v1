@@ -5,10 +5,10 @@ import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.expressions.abstrakt.UnaryParsingExpression;
 import com.norswap.util.Array;
+import com.norswap.util.JArrays;
 import com.norswap.util.annotations.NonNull;
 
 import java.util.Arrays;
-import java.util.stream.Stream;
 
 public final class Filter extends UnaryParsingExpression
 {
@@ -72,7 +72,7 @@ public final class Filter extends UnaryParsingExpression
             .map(x -> x.name != null ? x.name : x.hashCode())
             .toArray());
 
-        return "allowed: " + allowedIDs + ", forbidden: " + forbidden.length;
+        return "allowed: " + allowedIDs + ", forbidden: " + forbiddenIDs;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -80,10 +80,7 @@ public final class Filter extends UnaryParsingExpression
     @Override
     public ParsingExpression[] children()
     {
-        return Stream.concat(
-            Stream.of(operand),
-            Stream.concat(Arrays.stream(allowed), Arrays.stream(forbidden)))
-            .toArray(ParsingExpression[]::new);
+        return JArrays.concat(new ParsingExpression[]{operand}, allowed, forbidden);
     }
 
     // ---------------------------------------------------------------------------------------------
