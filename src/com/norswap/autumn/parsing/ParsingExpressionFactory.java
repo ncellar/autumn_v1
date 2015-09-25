@@ -8,7 +8,7 @@ import com.norswap.util.annotations.NonNull;
 
 import java.util.Arrays;
 
-import static com.norswap.autumn.parsing.Registry.*; // PEF_*
+import static com.norswap.autumn.parsing.ParsingExpressionFlags.*; // PEF_*
 
 public final class ParsingExpressionFactory
 {
@@ -577,15 +577,6 @@ public final class ParsingExpressionFactory
     public static ParsingExpression named$(String name, ParsingExpression pe)
     {
         pe.name = name;
-        return pe;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public static ParsingExpression recursive$(String name, ParsingExpression pe)
-    {
-        pe.name = name;
-        new IncrementalReferenceResolver(pe).walk(pe);
         return pe;
     }
 

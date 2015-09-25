@@ -1,7 +1,7 @@
 package com.norswap.autumn.parsing.support;
 
-import com.norswap.autumn.Autumn;
 import com.norswap.autumn.parsing.Grammar;
+import com.norswap.autumn.parsing.GrammarBuilder;
 import com.norswap.autumn.parsing.tree.ParseTree;
 import com.norswap.autumn.parsing.Whitespace;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster.Group;
@@ -36,7 +36,7 @@ public final class GrammarCompiler
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static Grammar compile(ParseTree tree)
+    public static GrammarBuilder compile(ParseTree tree)
     {
         Array<ParsingExpression> exprs = new GrammarCompiler().run(tree);
 
@@ -46,8 +46,9 @@ public final class GrammarCompiler
 
         // TODO enable setting whitespace & root from grammar file
 
-        return Autumn.grammarFromExpression(
-            exprs.get(0), exprs, whitespace, true, true);
+        return Grammar.fromRoot(exprs.get(0))
+            .rules(exprs)
+            .whitespace(whitespace);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

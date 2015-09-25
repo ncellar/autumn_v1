@@ -39,7 +39,7 @@ public final class Debugger
         Source source;
 
         try {
-            grammar = Autumn.grammarFromFile(args[0]);
+            grammar = Grammar.fromSource(Source.fromFile(args[0]).build()).build();
         }
         catch (IOException e)
         {
@@ -80,8 +80,8 @@ public final class Debugger
     public void start()
     {
         // TODO fibers
-        WindowModel window = new WindowModel(new ExecutionLocation(grammar.root()));
-        parse(window, grammar.root());
+        WindowModel window = new WindowModel(new ExecutionLocation(grammar.root));
+        parse(window, grammar.root);
     }
 
     // ---------------------------------------------------------------------------------------------

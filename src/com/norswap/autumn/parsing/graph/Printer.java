@@ -1,6 +1,5 @@
 package com.norswap.autumn.parsing.graph;
 
-import com.norswap.autumn.parsing.Registry;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.util.Array;
 import com.norswap.util.Strings;
@@ -10,6 +9,8 @@ import com.norswap.util.slot.Slot;
 
 import java.util.List;
 import java.util.function.Consumer;
+
+import static com.norswap.autumn.parsing.ParsingExpressionFlags.PEF_UNARY_INVISIBLE;
 
 /**
  * Prints a parsing expression as a tree.
@@ -51,7 +52,7 @@ public class Printer extends GraphVisitor<ParsingExpression>
     public void before(ParsingExpression pe)
     {
         // PEF_UNARY_INVISIBLE is set
-        if ((pe.flags & Registry.PEF_UNARY_INVISIBLE) != 0)
+        if ((pe.flags & PEF_UNARY_INVISIBLE) != 0)
         {
             return;
         }
@@ -121,7 +122,7 @@ public class Printer extends GraphVisitor<ParsingExpression>
     public void after(ParsingExpression pe, List<Slot<ParsingExpression>> children, NodeState state)
     {
         // PEF_UNARY_INVISIBLE is set
-        if ((pe.flags & Registry.PEF_UNARY_INVISIBLE) != 0)
+        if ((pe.flags & PEF_UNARY_INVISIBLE) != 0)
         {
             stack.pop();
             indices.pop();

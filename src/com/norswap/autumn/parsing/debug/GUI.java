@@ -1,6 +1,7 @@
 package com.norswap.autumn.parsing.debug;
 
 import com.norswap.autumn.Autumn;
+import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.graph.Walks;
@@ -29,8 +30,10 @@ public class GUI extends Application
     {
         String grammarFile = "src/com/norswap/autumn/test/grammars/Java8.autumn";
 
-        DEBUGGER.grammar = Autumn.grammarFromFile(grammarFile)
-            .walk(GraphTransformer.from(GUI::transform, Walks.inPlace));
+        DEBUGGER.grammar =
+            Grammar.fromSource(Source.fromFile(grammarFile).build())
+            .build()
+            .transform(GraphTransformer.from(GUI::transform, Walks.inPlace));
 
         DEBUGGER.source = Source.fromFile("src/com/norswap/autumn/parsing/Parser.java").build();
         launch(args);

@@ -110,7 +110,7 @@ public final class FeatureTests
 
     public void testLeftRecursive()
     {
-        pe = recursive$("expr", choice(
+        pe = named$("expr", choice(
             leftRecursive(reference("expr"), literal("*")),
             num.deepCopy()));
 
@@ -123,7 +123,7 @@ public final class FeatureTests
 
     public void testLeftAssociative()
     {
-        pe = recursive$("expr", choice(
+        pe = named$("expr", choice(
             leftAssociative(reference("expr"), literal("+"), reference("expr")),
             leftAssociative(reference("expr"), literal("*"), reference("expr")),
             num.deepCopy()));
@@ -163,11 +163,11 @@ public final class FeatureTests
 
     public void testRightAssociativity()
     {
-        ParsingExpression expr1 = recursive$("expr", choice(
+        ParsingExpression expr1 = named$("expr", choice(
             leftRecursive(plus.deepCopy()),
             num.deepCopy()));
 
-        ParsingExpression expr2 = recursive$("expr", leftRecursive(choice(
+        ParsingExpression expr2 = named$("expr", leftRecursive(choice(
             plus.deepCopy(),
             num.deepCopy())));
 
@@ -203,7 +203,7 @@ public final class FeatureTests
     {
         // NOTE(norswap): it also works if leftAssociative is nested inside the capture
 
-        pe = recursive$("expr", choice(
+        pe = named$("expr", choice(
             leftAssociative(plus.deepCopy()),
             num.deepCopy()));
 
@@ -224,7 +224,7 @@ public final class FeatureTests
     {
         // NOTE(norswap): it also works if leftAssociative is nested inside the capture
 
-        pe = recursive$("expr", choice(
+        pe = named$("expr", choice(
             precedence(1, leftAssociative(plus.deepCopy())),
             precedence(2, leftAssociative(mult.deepCopy())),
             precedence(3, leftAssociative(exp.deepCopy())),
@@ -255,7 +255,7 @@ public final class FeatureTests
 
     public void testExpression()
     {
-        pe = recursive$("expr", cluster(
+        pe = named$("expr", cluster(
             groupLeftAssoc(1,
                 plus.deepCopy(),
                 minus.deepCopy()),
@@ -290,7 +290,7 @@ public final class FeatureTests
     {
         // NOTE(norswap): Same as testExpression() but + and - are now right-associative.
 
-        pe = recursive$("expr", cluster(
+        pe = named$("expr", cluster(
             groupLeftRec(1,
                 plus.deepCopy(),
                 minus.deepCopy()),
@@ -325,7 +325,7 @@ public final class FeatureTests
     {
         // NOTE(norswap): Same as testExpression() but * and / are now right-associative.
 
-        pe = recursive$("expr", cluster(
+        pe = named$("expr", cluster(
             groupLeftAssoc(1,
                 plus.deepCopy(),
                 minus.deepCopy()),

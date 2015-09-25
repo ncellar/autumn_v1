@@ -1,6 +1,5 @@
 package com.norswap.autumn.parsing.graph;
 
-import com.norswap.autumn.parsing.ParsingExpressionFactory;
 import com.norswap.autumn.parsing.expressions.Reference;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.util.graph_visit.GraphVisitor;
@@ -22,9 +21,6 @@ import java.util.Set;
  * <p>
  * If there are unresolved references, an exception is thrown (but if caught, the above still
  * applies).
- * <p>
- * This is the preferred way to resolve references. If performance is critical, look into {@link
- * ParsingExpressionFactory#recursive$}.
  */
 public class ReferenceResolver extends GraphVisitor<ParsingExpression>
 {

@@ -2,8 +2,12 @@
 TODO
 
 DEBUGGER
-    - move the rest of Registry out?
+    - nuke debug package
+    - remove walks side-effects on grammar?
+    - Whitespace class: resolve references
+    - allow options in grammar files, namely for root and whitespace spec
     - must invoke parser with parseinput & config options
+    - tags ordering issue (stmtexpression in example)
 
 GUMPTION
     - insert $ in Java8 (rule-level only) (-> 544)
@@ -20,10 +24,6 @@ w5: manual
 
 TODO FURTHER SMALL
 
-- Whitespace class: resolve references
-
-- allow options in grammar files, namely for root and whitespace spec
-
 - well formedness check (ford: WF -- can't loop without consuming)
 
 - scoped memoization
@@ -35,8 +35,6 @@ TODO FURTHER SMALL
     - memoization window around position
     - error handling: an error over a token can become "unexpected X"
     - advantage: handles reserved identifiers
-
-- tidy Autumn
 
 - syntax for custom operators ($name?)
 
@@ -53,11 +51,15 @@ TODO FURTHER BIG
 
 - grammar composition & parameterization
 
+- rule analysis
+
 TODO MUCH LATER
 
 - make dumb expression faster via a backtracking DPDA
 
 - think about how a parser could be retooled to parse html
   (which is lax in syntax) -> need to define bounding boxes
+
+- applications: semi-parsing, JIT
 
 --------------------------------------------------------------------------------

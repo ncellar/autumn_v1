@@ -3,9 +3,8 @@ package com.norswap.autumn.test.parsing;
 import com.norswap.autumn.Autumn;
 import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParseResult;
-import com.norswap.autumn.parsing.graph.Walks;
+import com.norswap.autumn.parsing.source.Source;
 import com.norswap.util.Glob;
-import com.norswap.util.graph_visit.GraphTransformer;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -21,7 +20,7 @@ public final class JavaGrammarTest
 
     public static void main(String[] args) throws IOException
     {
-        Grammar grammar = Autumn.grammarFromFile(grammarFile);
+        Grammar grammar = Grammar.fromSource(Source.fromFile(grammarFile).build()).build();
 
         for (Path path: Glob.glob("**/*.java", Paths.get("../guava")))
         {

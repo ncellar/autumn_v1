@@ -3,18 +3,16 @@ package com.norswap.autumn.parsing;
 import com.norswap.util.FlagFactory;
 
 /**
- * The registry manages flags and handle spaces for the parser.
- *
- * It registers the standard flags and handles; and allows the user to register his own flags
- * and handles via its factories.
- *
+ * Defines standard flags to be used in the {@link ParsingExpression#flags} field and allows users
+ * to register flags for their own uses.
+ * <p>
  * This is not synchronized, so take care if concurrent access is required.
  */
-public final class Registry
+public final class ParsingExpressionFlags
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static final FlagFactory ParsingExpressionFlagsFactory = new FlagFactory();
+    private static final FlagFactory factory = new FlagFactory();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -22,33 +20,37 @@ public final class Registry
      * (For {@code Capture} only) Indicates a capture should be performed.
      */
     public static final int PEF_CAPTURE
-        = ParsingExpressionFlagsFactory.next();
+        = factory.next();
 
     /**
      * (For {@code Capture} only) Indicates the matched text should be captured.
      */
     public static final int PEF_CAPTURE_TEXT
-        = ParsingExpressionFlagsFactory.next();
+        = factory.next();
 
     /**
      * (For {@code Capture} only) Indicates that captures should be added to a group corresponding
      * to their accessor.
      */
     public static final int PEF_CAPTURE_GROUPED
-        = ParsingExpressionFlagsFactory.next();
-
-    /**
-     * Indicates that all recursions in the sub-expressions of this expression have been resolved.
-     */
-    public static final int PEF_RESOLVED
-        = ParsingExpressionFlagsFactory.next();
+        = factory.next();
 
     /**
      * Indicates that the parsing expression shouldn't be printed. The parsing expression
      * sporting this flag should only have a single child expression.
      */
     public static final int PEF_UNARY_INVISIBLE
-        = ParsingExpressionFlagsFactory.next();
+        = factory.next();
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Returns a flag mask (a 1 shifted by a certain offset) that will be reserved to the caller.
+     */
+    int register()
+    {
+        return factory.next();
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

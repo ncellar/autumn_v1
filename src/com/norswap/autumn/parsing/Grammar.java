@@ -2,32 +2,56 @@ package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.Autumn;
 import com.norswap.autumn.parsing.graph.NullabilityCalculator;
+import com.norswap.autumn.parsing.source.Source;
+import com.norswap.autumn.parsing.support.GrammarCompiler;
+import com.norswap.autumn.parsing.support.GrammarGrammar;
+import com.norswap.util.annotations.Immutable;
 import com.norswap.util.graph_visit.GraphVisitor;
 import com.norswap.util.slot.Slot;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 /**
- * A user-facing representation of the grammar, which is the union of a parsing
- * expression and some options.
- *
+ * A user-facing representation of the grammar, which is the union of a parsing expression and some
+ * options.
+ * <p>
  * Convenient factory methods are available in class {@link Autumn}.
  */
 public final class Grammar
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private ParsingExpression root;
+    /**
+     * The parsing expression that defines the grammar.
+     */
+    public final ParsingExpression root;
 
-    private ParsingExpression whitespace;
+    /**
+     * The rules contained within the grammar. These usually have a name, and usually include the
+     * root (and sometimes the whitespace); but those are not absolute requirements. This is never
+     * null but can be empty.
+     * <p>
+     * For grammar created from grammar files, these are all the rules defined within the grammar
+     * file (so there won't be a rule for the whitespace if the default whitespace specification is
+     * used).
+     */
+    public final @Immutable Collection<ParsingExpression> rules;
 
-    private boolean processLeadingWhitespace;
+    /**
+     * The parsing expression to use as whitespace (used for whitespace expressions, and after
+     * token expressions).
+     */
+    public final ParsingExpression whitespace;
 
-    private Collection<ParsingExpression> rules;
+    /**
+     * Whether leading whitespace should be skipped when parsing.
+     */
+    public final boolean processLeadingWhitespace;
+
+    public final @Immutable Map<String, String> options;
 
     private Map<String, ParsingExpression> rulesByName;
 
@@ -40,64 +64,45 @@ public final class Grammar
      *
      * {@code rules} is the set of rules in the grammar (including the root), can be null if
      * only the root is to be considered. Its iteration order must be predictable and unchanging.
+     *
+     * TODO
      */
-    public Grammar(
+    Grammar(
         ParsingExpression root,
         Collection<ParsingExpression> rules,
         ParsingExpression whitespace,
-        boolean processLeadingWhitespace)
+        boolean processLeadingWhitespace,
+        Map<String, String> options)
     {
         this.root = root;
-        this.rules = rules == null ? Collections.emptyList() : rules;
+        this.rules = rules;
         this.whitespace = whitespace;
         this.processLeadingWhitespace = processLeadingWhitespace;
+        this.options = options;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * The parsing expression that defines the grammar.
-     */
-    public ParsingExpression root()
+    // TODO EXCEPTIONS
+    public static GrammarBuilder fromSource(Source source)
     {
-        return root;
+        ParseResult result = Parser.parse(GrammarGrammar.grammar, source);
+
+        if (!result.matched)
+        {
+            throw new ParseException(result.error);
+        }
+        else
+        {
+            return GrammarCompiler.compile(result.tree);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    /**
-     * The parsing expression to use as whitespace (used for whitespace expressions, and after
-     * token expressions).
-     */
-    public ParsingExpression whitespace()
+    public static GrammarBuilder fromRoot(ParsingExpression root)
     {
-        return whitespace;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Whether leading whitespace should be skipped when parsing.
-     */
-    public boolean processLeadingWhitespace()
-    {
-        return processLeadingWhitespace;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * The rules contained within the grammar. These usually have a name, and usually include the
-     * root (and sometimes the whitespace); but those are not absolute requirements. This is never
-     * null be can be empty.
-     *
-     * For grammar created from grammar files, these are all the rules defined within the grammar
-     * file (so there won't be a rule for the whitespace if the default whitespace specification is
-     * used).
-     */
-    public Collection<ParsingExpression> rules()
-    {
-        return rules;
+        return new GrammarBuilder(root);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -107,11 +112,6 @@ public final class Grammar
      */
     public ParsingExpression getRule(String name)
     {
-        if (rules == null)
-        {
-            return null;
-        }
-
         if (rulesByName == null)
         {
             rulesByName = new HashMap<>();
@@ -132,7 +132,7 @@ public final class Grammar
 
     // ---------------------------------------------------------------------------------------------
 
-    public Grammar walk(GraphVisitor<ParsingExpression> visitor)
+    public Grammar transform(GraphVisitor<ParsingExpression> visitor)
     {
         Slot<ParsingExpression> root2 = visitor.partialVisit(root);
         Collection<ParsingExpression> rules2 = visitor.partialVisit(rules);
@@ -160,21 +160,29 @@ public final class Grammar
         ParsingExpression root3 = root2.get();
         ParsingExpression whitespace3 = whitespace2.get();
 
-        if (rulesChanged)
+        Grammar out = new Grammar(root3, rules2, whitespace3, processLeadingWhitespace, options);
+
+        if (!rulesChanged)
         {
-            rulesByName = null;
+            out.rulesByName = rulesByName;
         }
 
-        if (rulesChanged || root != root3 || whitespace != whitespace3)
+        if (!rulesChanged && root == root3 && whitespace == whitespace3)
         {
-            nullabilityCalculator = null;
+            out.nullabilityCalculator = nullabilityCalculator;
         }
 
-        root = root3;
-        rules = rules2;
-        whitespace = whitespace3;
+        return out;
+    }
 
-        return this;
+    // ---------------------------------------------------------------------------------------------
+
+    public void compute(GraphVisitor<ParsingExpression> visitor)
+    {
+        visitor.partialVisit(root);
+        visitor.partialVisit(rules);
+        visitor.partialVisit(whitespace);
+        visitor.conclude();
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -202,7 +210,7 @@ public final class Grammar
     public void computeNullability()
     {
         nullabilityCalculator = new NullabilityCalculator(this);
-        walk(nullabilityCalculator);
+        transform(nullabilityCalculator);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

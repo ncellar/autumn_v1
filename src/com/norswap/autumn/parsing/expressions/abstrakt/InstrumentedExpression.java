@@ -1,14 +1,15 @@
 package com.norswap.autumn.parsing.expressions.abstrakt;
 
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.Registry;
+
+import static com.norswap.autumn.parsing.ParsingExpressionFlags.PEF_UNARY_INVISIBLE;
 
 public abstract class InstrumentedExpression extends UnaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     {
-        flags |= Registry.PEF_UNARY_INVISIBLE;
+        flags |= PEF_UNARY_INVISIBLE;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -24,8 +24,9 @@ public final class AutumnBench
     public static void main(String[] args) throws IOException
     {
         Instant startParse = Instant.now();
-        Grammar grammar = Autumn.grammarFromSource(
-            Source.fromFile(grammarFile).columnStart(1).build());
+        Grammar grammar = Grammar.fromSource(
+            Source.fromFile(grammarFile).columnStart(1).build())
+            .build();
 
         // inspect grammar
         //new Printer(System.err::print, false, false).visit(grammar.root());

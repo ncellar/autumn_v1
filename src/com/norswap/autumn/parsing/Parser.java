@@ -35,14 +35,14 @@ public final class Parser
 
     public static ParseResult parse(Grammar grammar, Source source)
     {
-        return new Parser(grammar, source, ParserConfiguration.build()).parse(grammar.root());
+        return new Parser(grammar, source, ParserConfiguration.build()).parse(grammar.root);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public static ParseResult parse(Grammar grammar, Source source, ParserConfiguration config)
     {
-        return new Parser(grammar, source, config).parse(grammar.root());
+        return new Parser(grammar, source, config).parse(grammar.root);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -56,8 +56,8 @@ public final class Parser
         this.customStates = config.customStates();
         this.errorState = config.errorState();
         this.memoHandler = config.memoHandler();
-        this.whitespace = grammar.whitespace();
-        this.processLeadingWhitespace = grammar.processLeadingWhitespace();
+        this.whitespace = grammar.whitespace;
+        this.processLeadingWhitespace = grammar.processLeadingWhitespace;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

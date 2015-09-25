@@ -8,7 +8,7 @@ import com.norswap.autumn.parsing.tree.BuildParseTree;
 import com.norswap.util.Array;
 import com.norswap.util.annotations.NonNull;
 
-import static com.norswap.autumn.parsing.Registry.*; // PEF_*
+import static com.norswap.autumn.parsing.ParsingExpressionFlags.*; // PEF_*
 
 /**
  * Invokes its operand on the input, succeeding if the operand does, with the same end position.
