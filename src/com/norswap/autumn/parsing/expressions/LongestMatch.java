@@ -41,7 +41,7 @@ public final class LongestMatch extends NaryParsingExpression
 
         if (state.failed())
         {
-            parser.fail(this, state);
+            state.fail(this);
         }
     }
 

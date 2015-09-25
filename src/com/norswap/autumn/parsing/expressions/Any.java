@@ -24,7 +24,7 @@ public final class Any extends ParsingExpression
         }
         else
         {
-            parser.fail(this, state);
+            state.fail(this);
         }
     }
 

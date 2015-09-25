@@ -14,6 +14,8 @@ public final class GrammarGrammar
 
     public static ParsingExpression
 
+    // TOKENS
+
     and           = token("&"),
     bang          = token("!"),
     equal         = token("="),
@@ -43,71 +45,120 @@ public final class GrammarGrammar
     percent       = token("%"),
     hat           = token("^"),
 
+    // NAMES AND LITERALS
+
     digit         = charRange('0', '9'),
-    hexDigit      = choice(digit, charRange('a', 'f'), charRange('A', 'F')),
-    letter        = choice(charRange('a', 'z'), charRange('A', 'Z')),
-    nameChar      = choice(letter, digit, literal("_")),
+
+    hexDigit      = choice(
+                        digit,
+                        charRange('a', 'f'),
+                        charRange('A', 'F')),
+
+    letter        = choice(
+                        charRange('a', 'z'),
+                        charRange('A', 'Z')),
+
+    nameChar      = choice(
+                        letter,
+                        digit,
+                        literal("_")),
 
     num           = token(oneMore(digit)),
 
-    exprLit       = token(literal("expr"), not(nameChar)),
-    dropLit       = token(literal("drop"), not(nameChar)),
-    left_assoc    = token(literal("left_assoc"), not(nameChar)),
-    left_recur    = token(literal("left_recur"), not(nameChar)),
+    exprLit       = keyword("expr"),
 
-    reserved      = choice(exprLit, dropLit, left_assoc, left_recur),
+    dropLit       = keyword("drop"),
 
-    escape = named$("escape", choice(
-        sequence(literal("\\u"), hexDigit, hexDigit, hexDigit, hexDigit),
-        sequence(literal("\\"), charSet("tn")),
-        sequence(not(literal("\\u")), literal("\\"), any()))),
+    left_assoc    = keyword("left_assoc"),
 
-    character = named$("character", choice(escape, notCharSet("\n\\"))),
+    left_recur    = keyword("left_recur"),
 
-    range = named$("range", token(
-        literal("["),
-        captureText("first", character),
-        literal("-"),
-        captureText("last", character),
-        literal("]"))),
+    reserved      = choice(
+                        exprLit,
+                        dropLit,
+                        left_assoc,
+                        left_recur),
 
-    charSet = named$("charSet", token(
-        literal("["),
-        captureText("charSet", oneMore(not(literal("]")), character)),
-        literal("]"))),
+    escape      = named$("escape", choice(
+                    sequence(
+                        literal("\\u"),
+                        hexDigit,
+                        hexDigit,
+                        hexDigit,
+                        hexDigit),
+                    sequence(
+                        literal("\\"),
+                        charSet("tn")),
+                    sequence(
+                        not(literal("\\u")),
+                        literal("\\"),
+                        any()))),
 
-    notCharSet = named$("notCharSet", token(
-        literal("^["),
-        captureText("notCharSet", oneMore(not(literal("]"), character))),
-        literal("]"))),
+    character   = named$("character", choice(
+                    escape,
+                    notCharSet("\n\\"))),
 
-    stringLit = named$("stringLit", token(
-        literal("\""),
-        captureText("literal", zeroMore(not(literal("\"")), character)),
-        literal("\""))),
+    name        = named$("name", token(choice(
+                    sequence(
+                        not(reserved),
+                        letter,
+                        zeroMore(nameChar)),
+                    sequence(
+                        literal("'"),
+                        aloUntil(any(), literal("'")))))),
 
-    name = named$("name", token(choice(
-        sequence(not(reserved), letter, zeroMore(nameChar)),
-        sequence(literal("'"), aloUntil(any(), literal("'")))))),
+    nameOrDollar = choice(
+                    captureText("name", name),
+                    capture("dollar", dollar)),
 
-    nameOrDollar = choice(captureText("name", name), capture("dollar", dollar)),
+    // PARSING EXPRESSIONS
 
-    reference = sequence(
-        captureText("name", name),
-        optional(token("allow"),
-            lBrace, aloSeparated(captureTextGrouped("allowed", name), comma), rBrace),
-        optional(token("forbid"),
-            lBrace, aloSeparated(captureTextGrouped("forbidden", name), comma), rBrace)),
+    range       = named$("range", token(
+                    literal("["),
+                    captureText("first", character),
+                    literal("-"),
+                    captureText("last", character),
+                    literal("]"))),
+
+    charSet     = named$("charSet", token(
+                    literal("["),
+                    captureText("charSet", oneMore(
+                        not(literal("]")),
+                        character)),
+                    literal("]"))),
+
+    notCharSet  = named$("notCharSet", token(
+                    literal("^["),
+                    captureText("notCharSet", oneMore(not(literal("]"), character))),
+                    literal("]"))),
+
+    stringLit   = named$("stringLit", token(
+                    literal("\""),
+                    captureText("literal", zeroMore(not(literal("\"")), character)),
+                    literal("\""))),
+
+    reference   = sequence(
+                    captureText("name", name),
+                    optional(
+                        token("allow"),
+                        lBrace,
+                        aloSeparated(captureTextGrouped("allowed", name), comma),
+                        rBrace),
+                    optional(
+                        token("forbid"),
+                        lBrace,
+                        aloSeparated(captureTextGrouped("forbidden", name), comma),
+                        rBrace)),
 
     captureSuffix = group$("captureSuffixes", capture(choice(
-        capture("capture",
-            sequence(token(literal(":"), optional(capture("captureText", literal("+")))))),
-        capture("accessor",
-            sequence(minus, nameOrDollar)),
-        capture("group",
-            sequence(hash, nameOrDollar)),
-        capture("tag",
-            sequence(tilda, nameOrDollar))))),
+                    capture("capture",
+                        token(literal(":"), optional(capture("captureText", literal("+"))))),
+                    capture("accessor",
+                        sequence(minus, nameOrDollar)),
+                    capture("group",
+                        sequence(hash, nameOrDollar)),
+                    capture("tag",
+                        sequence(tilda, nameOrDollar))))),
 
     expr = reference("expr"),
 
@@ -128,7 +179,9 @@ public final class GrammarGrammar
                 capture("aloUntil", sequence(expr, plusPlus, expr)),
                 capture("separated", sequence(expr, comma, expr)),
                 capture("aloSeparated", sequence(expr, commaPlus, expr)),
-                capture("capture", sequence(choice(expr, capture("marker", dot)), oneMore(captureSuffix)))),
+                capture("capture", sequence(
+                    choice(expr, capture("marker", dot)),
+                    oneMore(captureSuffix)))),
 
             group(++i, // prefix
                 capture("and", sequence(and, expr)),
@@ -161,6 +214,8 @@ public final class GrammarGrammar
                 capture("left_recur", left_recur),
                 captureText("name", name))),
 
+        // TOP LEVEL
+
         exprCluster = named$("cluster", capture("cluster", sequence(
             exprLit,
             oneMore(captureGrouped("alts", sequence(
@@ -178,6 +233,13 @@ public final class GrammarGrammar
             semi)),
 
         root = named$("grammar", oneMore(captureGrouped("rules", rule)));
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private static ParsingExpression keyword(String string)
+    {
+        return token(literal(string), not(nameChar));
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

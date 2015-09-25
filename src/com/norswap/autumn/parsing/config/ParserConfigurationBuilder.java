@@ -1,5 +1,7 @@
 package com.norswap.autumn.parsing.config;
 
+import com.norswap.autumn.parsing.DefaultErrorState;
+import com.norswap.autumn.parsing.ErrorState;
 import com.norswap.autumn.parsing.Extension;
 import com.norswap.autumn.parsing.state.CustomState;
 import com.norswap.util.Array;
@@ -13,33 +15,27 @@ public final class ParserConfigurationBuilder
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private Supplier<? extends ErrorHandler> errorHandler;
-    private Supplier<? extends MemoHandler> memoHandler;
+    // Underscore to not conflict with function names in {@link} javadoc tags.
 
-    private Array<Supplier<? extends Object>> scoped;
-    private Array<Supplier<? extends CustomState>> customStates;
+    private Supplier<? extends ErrorState> _errorState;
+    private Supplier<? extends MemoHandler> _memoHandler;
+
+    private Array<Supplier<?>> _scoped;
+    private Array<Supplier<? extends CustomState>> _customStates;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public ParserConfigurationBuilder errorHandler(ErrorHandler handler)
+    public ParserConfigurationBuilder errorState(Supplier<? extends ErrorState> supplier)
     {
-        this.errorHandler = () -> handler;
+        this._errorState = supplier;
         return this;
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public ParserConfigurationBuilder errorHandler(Supplier<? extends ErrorHandler> handlerSupplier)
+    public ParserConfigurationBuilder memoStrategy(Supplier<? extends MemoHandler> supplier)
     {
-        this.errorHandler = handlerSupplier;
-        return this;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public ParserConfigurationBuilder memoStrategy(Supplier<? extends MemoHandler> handlerSupplier)
-    {
-        this.memoHandler = handlerSupplier;
+        this._memoHandler = supplier;
         return this;
     }
 
@@ -63,11 +59,11 @@ public final class ParserConfigurationBuilder
      * Registers a scoped object with the configuration. Returns the scoped index.
      * This method should only be called from {@link Extension#register}.
      */
-    public int scoped(Supplier<? extends Object> supplier)
+    public int scoped(Supplier<?> supplier)
     {
-        if (scoped == null) scoped = new Array<>();
-        scoped.add(supplier);
-        return scoped.size() - 1;
+        if (_scoped == null) _scoped = new Array<>();
+        _scoped.add(supplier);
+        return _scoped.size() - 1;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -78,9 +74,9 @@ public final class ParserConfigurationBuilder
      */
     public int customState(Supplier<? extends CustomState> supplier)
     {
-        if (customStates == null) customStates = new Array<>();
-        customStates.add(supplier);
-        return customStates.size() - 1;
+        if (_customStates == null) _customStates = new Array<>();
+        _customStates.add(supplier);
+        return _customStates.size() - 1;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -90,41 +86,41 @@ public final class ParserConfigurationBuilder
         return new ParserConfiguration()
         {
             @Override
-            public ErrorHandler errorHandler()
+            public ErrorState errorState()
             {
-                return errorHandler != null
-                    ? errorHandler.get()
-                    : new DefaultErrorHandler();
+                return _errorState != null
+                    ? _errorState.get()
+                    : new DefaultErrorState();
             }
 
             @Override
             public MemoHandler memoHandler()
             {
-                return memoHandler != null
-                    ? memoHandler.get()
+                return _memoHandler != null
+                    ? _memoHandler.get()
                     : new DefaultMemoHandler();
             }
 
             @Override
             public Object[] scoped()
             {
-                if (scoped == null)
+                if (_scoped == null)
                 {
                     return new Object[0];
                 }
 
-                return scoped.mapToArray(x -> x.get());
+                return _scoped.mapToArray(x -> x.get());
             }
 
             @Override
             public CustomState[] customStates()
             {
-                if (customStates == null)
+                if (_customStates == null)
                 {
                     return new CustomState[0];
                 }
 
-                return customStates.mapToArray(x -> x.get(), CustomState[]::new);
+                return _customStates.mapToArray(x -> x.get(), CustomState[]::new);
             }
         };
     }

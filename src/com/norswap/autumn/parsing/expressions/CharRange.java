@@ -31,7 +31,7 @@ public final class CharRange extends ParsingExpression
         }
         else
         {
-            parser.fail(this, state);
+            state.fail(this);
         }
     }
 

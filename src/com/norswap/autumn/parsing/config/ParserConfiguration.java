@@ -1,5 +1,6 @@
 package com.norswap.autumn.parsing.config;
 
+import com.norswap.autumn.parsing.ErrorState;
 import com.norswap.autumn.parsing.state.CustomState;
 
 /**
@@ -24,7 +25,7 @@ public interface ParserConfiguration
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ErrorHandler errorHandler();
+    ErrorState errorState();
 
     MemoHandler memoHandler();
 

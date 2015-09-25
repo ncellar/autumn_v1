@@ -19,7 +19,7 @@ public final class ParseInputs
     public final int start;
     public final int blackStart;
     public final int precedence;
-    public final int flags;
+    public final boolean recordErrors;
     public final @Nullable Array<Seed> seeds;
     public final Array<LeftRecursive> blocked;
     public final Array<PrecedenceEntry> minPrecedence;
@@ -32,7 +32,7 @@ public final class ParseInputs
         int start,
         int blackStart,
         int precedence,
-        int flags,
+        boolean recordErrors,
         Array<Seed> seeds,
         Array<LeftRecursive> blocked,
         Array<PrecedenceEntry> minPrecedence,
@@ -42,7 +42,7 @@ public final class ParseInputs
         this.start = start;
         this.blackStart = blackStart;
         this.precedence = precedence;
-        this.flags = flags;
+        this.recordErrors = recordErrors;
         this.seeds = seeds;
         this.blocked = blocked;
         this.minPrecedence = minPrecedence;

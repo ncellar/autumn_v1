@@ -46,7 +46,7 @@ public final class Dumb extends UnaryParsingExpression
         }
         else
         {
-            parser.fail(this, state);
+            state.fail(this);
         }
     }
 

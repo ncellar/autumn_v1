@@ -40,7 +40,7 @@ public final class Literal extends ParsingExpression
         }
         else
         {
-            parser.fail(this, state);
+            state.fail(this);
         }
     }
 

@@ -43,8 +43,6 @@ public final class LeftRecursive extends UnaryParsingExpression
             state.blocked.push(this);
         }
 
-        int oldFlags = state.flags;
-
         // Keep parsing the operand, as long as long as the seed keeps growing.
 
         while (true)
@@ -67,13 +65,12 @@ public final class LeftRecursive extends UnaryParsingExpression
             }
         }
 
-        state.flags = oldFlags;
         state.merge(changes);
         Seed.pop(state);
 
         if (state.failed())
         {
-            parser.fail(this, state);
+            state.fail(this);
         }
 
         if (leftAssociative)

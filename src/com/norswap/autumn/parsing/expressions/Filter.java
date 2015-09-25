@@ -55,7 +55,7 @@ public final class Filter extends UnaryParsingExpression
         if (!success)
         {
             state.discard();
-            parser.fail(this, state);
+            state.fail(this);
         }
     }
 

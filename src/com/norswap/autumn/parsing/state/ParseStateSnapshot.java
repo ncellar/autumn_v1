@@ -16,7 +16,6 @@ public final class ParseStateSnapshot
     public final int end;
     public final int blackEnd;
     public final int treeChildrenCount;
-    public final int flags;
     public final @Nullable Array<Seed> seeds;
     public final Snapshot[] customSnapshots;
 
@@ -28,7 +27,6 @@ public final class ParseStateSnapshot
         int end,
         int blackEnd,
         int treeChildrenCount,
-        int flags,
         Array<Seed> seeds,
         Snapshot[] customSnapshots)
     {
@@ -37,7 +35,6 @@ public final class ParseStateSnapshot
         this.end = end;
         this.blackEnd = blackEnd;
         this.treeChildrenCount = treeChildrenCount;
-        this.flags = flags;
         this.seeds = seeds;
         this.customSnapshots = customSnapshots;
     }

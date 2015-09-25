@@ -37,7 +37,7 @@ public final class Sequence extends NaryParsingExpression
             else
             {
                 state.restore(snapshot);
-                parser.fail(this, state);
+                state.fail(this);
                 return;
             }
         }

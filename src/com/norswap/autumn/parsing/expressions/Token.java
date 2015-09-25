@@ -15,7 +15,7 @@ public final class Token extends UnaryParsingExpression
 
         if (state.failed())
         {
-            parser.fail(this, state);
+            state.fail(this);
             return;
         }
 

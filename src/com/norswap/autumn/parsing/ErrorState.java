@@ -1,16 +1,28 @@
 package com.norswap.autumn.parsing;
 
-import com.norswap.autumn.parsing.state.CustomState;
+import com.norswap.autumn.parsing.source.Source;
+import com.norswap.autumn.parsing.state.ParseState;
 
 /**
- * Represent an error output that tracks parsing errors. This parse output is submitted to the same
- * regimen as other parse outputs, but will often act quite different: for instance instead of
- * discarding the output when with {@link #reset} you might wish to save it instead!
- * <p>
- * It's totally possible to save the errors that occur under a successful expression.
+ * See {@link ParseState}, section "Error Handling".
  * <p>
  * The default strategy is implemented by {@link DefaultErrorState}.
  */
-public interface ErrorState extends CustomState
+public interface ErrorState
 {
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    void requestErrorRecordPoint();
+
+    void dismissErrorRecordPoint();
+
+    Object changes();
+
+    void merge(Object changes);
+
+    void handleError(ParsingExpression pe, ParseState state);
+
+    ErrorReport report(Source source);
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 }

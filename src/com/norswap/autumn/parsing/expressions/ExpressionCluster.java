@@ -91,8 +91,6 @@ public final class ExpressionCluster extends ParsingExpression
         Seed.push(state, this, changes);
         int changesPrecedence = 0;
 
-        final int oldFlags = state.flags;
-
         // Acquire the current precedence for the cluster.
 
         PrecedenceEntry entry = state.minPrecedence.peekOrNull();
@@ -178,7 +176,6 @@ public final class ExpressionCluster extends ParsingExpression
             } while (group.leftRecursive);
         }
 
-        state.flags = oldFlags;
         state.merge(changes);
         Seed.pop(state);
 
@@ -195,7 +192,7 @@ public final class ExpressionCluster extends ParsingExpression
 
         if (state.failed() && report)
         {
-            parser.fail(this, state);
+            state.fail(this);
         }
     }
 

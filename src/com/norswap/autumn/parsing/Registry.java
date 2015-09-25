@@ -16,18 +16,7 @@ public final class Registry
 
     public static final FlagFactory ParsingExpressionFlagsFactory = new FlagFactory();
 
-    public static final FlagFactory ParseStateFlagsFactory = new FlagFactory();
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // PARSING EXPRESSION FLAGS (PEF)
-
-    /**
-     * Indicates that errors occuring while matching this expression should be recorded for the
-     * sake of error reporting. Note that some expressions (such as captures or memos)
-     * voluntarily bypass error recording.
-     */
-    public static final int PEF_ERROR_RECORDING
-        = ParsingExpressionFlagsFactory.next();
 
     /**
      * (For {@code Capture} only) Indicates a capture should be performed.
@@ -60,16 +49,6 @@ public final class Registry
      */
     public static final int PEF_UNARY_INVISIBLE
         = ParsingExpressionFlagsFactory.next();
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // PARSE STATE FLAGS (PSF)
-
-    /**
-     * Indicates that we shouldn't record errors when sub-expressions of the expression
-     * associated with this parse state fail to parse.
-     */
-    public static final int PSF_DONT_RECORD_ERRORS
-        = ParseStateFlagsFactory.next();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

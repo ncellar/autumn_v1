@@ -28,14 +28,12 @@ public final class Precedence extends UnaryParsingExpression
         }
         else
         {
-            int oldFlags = state.flags;
             int oldPrecedence = state.precedence;
             state.precedence = precedence;
 
             operand.parse(parser, state);
 
             state.precedence = oldPrecedence;
-            state.flags = oldFlags;
         }
     }
 

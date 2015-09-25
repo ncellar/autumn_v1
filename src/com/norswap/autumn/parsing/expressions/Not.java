@@ -20,22 +20,20 @@ public final class Not extends UnaryParsingExpression
     @Override
     public void parse(Parser parser, ParseState state)
     {
-        int oldFlags = state.flags;
-
-        state.forbidErrorRecording();
+        state.recordErrors = false;
 
         operand.parse(parser, state);
 
         if (state.succeeded())
         {
-            parser.fail(this, state);
+            state.fail(this);
         }
         else
         {
             state.discard();
         }
 
-        state.flags = oldFlags;
+        state.recordErrors = true;
     }
 
     // ---------------------------------------------------------------------------------------------

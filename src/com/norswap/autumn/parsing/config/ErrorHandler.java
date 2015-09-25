@@ -1,6 +1,6 @@
 package com.norswap.autumn.parsing.config;
 
-import com.norswap.autumn.parsing.ParseError;
+import com.norswap.autumn.parsing.ErrorReport;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.ParsingExpression;
@@ -22,5 +22,5 @@ public interface ErrorHandler
      * Return error information about the parse.
      * The source object can be used to translate the input positions.
      */
-    ParseError error(Source source);
+    ErrorReport error(Source source);
 }

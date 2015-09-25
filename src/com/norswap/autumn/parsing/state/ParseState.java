@@ -1,23 +1,25 @@
 package com.norswap.autumn.parsing.state;
 
+import com.norswap.autumn.parsing.DefaultErrorState;
 import com.norswap.autumn.parsing.ErrorState;
 import com.norswap.autumn.parsing.Extension;
+import com.norswap.autumn.parsing.ParseResult;
 import com.norswap.autumn.parsing.config.DefaultMemoHandler;
 import com.norswap.autumn.parsing.config.ParserConfigurationBuilder;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster.PrecedenceEntry;
 import com.norswap.autumn.parsing.expressions.Filter;
 import com.norswap.autumn.parsing.expressions.LeftRecursive;
+import com.norswap.autumn.parsing.expressions.Not;
 import com.norswap.autumn.parsing.expressions.Precedence;
 import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.state.CustomState.Changes;
 import com.norswap.autumn.parsing.state.CustomState.Snapshot;
 import com.norswap.autumn.parsing.tree.BuildParseTree;
 import com.norswap.util.Array;
 import com.norswap.util.JArrays;
 import com.norswap.util.annotations.Nullable;
-
-import static com.norswap.autumn.parsing.Registry.*; // PSF_*
 
 /**
  * An instance of this class is passed to every parsing expression invocation {@link
@@ -109,11 +111,61 @@ import static com.norswap.autumn.parsing.Registry.*; // PSF_*
  * part of an Autumn extension ({@link Extension}), and can be registered by calling {@link
  * ParserConfigurationBuilder#customState} from {@link Extension#register}.
  * <p>
- * <strong>Misc</strong>
+ * <strong>Manipulating End Positions</strong>
  * <p>
  * In addition to the afrementioned methods, the class also has a few methods to manipulate and
  * query the {@link #end} and {@link #blackEnd} positions: {@link #advance}, {@link #fail}, {@link
  * #succeeded} and {@link #failed}.
+ * <p>
+ * <strong>Error Handling</strong>
+ * <p>
+ * In this section, we discuss errors, i.e. the failure of a parsing expression to match any input.
+ * When the parse fails, it is desirable to display information about the errors that occurred
+ * during the parse to the user. Most of these errors are benign, they merely cause an alternative
+ * to be tried. It is the role of an {@link ErrorState} instance to take stock of the errors as they
+ * occur and retain some information about them to be displayed to the user if necessary.
+ * <p>
+ * The default implementation of {@link ErrorState} is {@link DefaultErrorState}. Its strategy is to
+ * keep track of the errors occuring at the farthest error position. Users can supply their own
+ * error handling strategy using {@link ParserConfigurationBuilder#errorState}.
+ * <p>
+ * While errors are part of the parse state, they escape the "commit paradigm". Since uncommitted
+ * changes are usually discarded when an expression fails, we would end up losing all the error
+ * information under the commit paradigm. Instead, we consider that changes to the error state
+ * cannot be undone.
+ * <p>
+ * There are two special consideration to take into account. First, it might be desirable to inhibit
+ * error recording (e.g. for {@link Not} expressions). The {@link #recordErrors} field fulfills this
+ * role.
+ * <p>
+ * Second, we sometimes need to get the error information for a subset of the whole parse and to
+ * include it in a {@link ParseChanges} object (e.g. for memoization). To solve this, a parsing
+ * expression can request an "error record point". All errors occuring after an error record point
+ * has been requested will contribute to the information associated to the error record point, as
+ * well as to the error information associated to all error record points requested before it. For
+ * instance, the default error handling strategy keeps, for each error record point, the errors
+ * occuring at the farthest error position *after* the record point has been requested.
+ * <p>
+ * You can request an error record point with {@link ErrorState#requestErrorRecordPoint} and when
+ * you're done, discard it with {@link ErrorState#dismissErrorRecordPoint}. The lifetime of error
+ * record points must be properly scoped: a call to {@link ErrorState#dismissErrorRecordPoint} will
+ * dismiss the last requested record point.
+ * <p>
+ * The changes corresponding to the last error record point are returned by {@link
+ * ErrorState#changes}. Merging such changes is done via {@link ErrorState#merge}. In practice,
+ * Autumn's core functionality never sets error record point, nor do they call the two previous
+ * methods. But the possibly might be useful for extensions.
+ * <p>
+ * At the end of the parse (whether it succeeded or not), the parser will call {@link
+ * ErrorState#report(Source)} to generate an error report for the user. The passed source can be
+ * used to obtain (line, column) file positions from file offsets.
+ * <p>
+ * <strong>Parse Result</strong>
+ * <p>
+ * At the end of the parse, the parser will gather the results of the parse in a {@link ParseResult}
+ * object. This includes whether the root expression of the grammar matched some input, whether it
+ * matched the whole input, the parse tree generated, and an error report. Additionally, each custom
+ * parse state can also supply custom results via the {@link CustomState#result} methods.
  */
 public final class ParseState
 {
@@ -148,10 +200,9 @@ public final class ParseState
     public int precedence;
 
     /**
-     * Holds a set of flags that can serve as additional parse inputs.
-     * TODO remove
+     * Indicates whether parse errors should be recorded.
      */
-    public int flags;
+    public boolean recordErrors;
 
     /**
      * Holds a set of mapping between parsing expressions ({@link ExpressionCluster} and {@link
@@ -210,11 +261,13 @@ public final class ParseState
     {
         this.end = 0;
         this.blackEnd = 0;
+        this.precedence = 0;
         this.tree = new BuildParseTree();
         this.customStates = customStates;
         this.errors = errorState;
         this.blocked = new Array<>();
         this.minPrecedence = new Array<>();
+        this.recordErrors = true;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -257,6 +310,27 @@ public final class ParseState
     public boolean failed()
     {
         return end == -1;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Signals that {@code pe} failed, and sets the end position to indicate that no match could be found.
+     * <p>
+     * This state should not contain any committed changes compared to when {@code pe} was invoked.
+     * <p>
+     * In some cases, an expression may elect not to report a failure, in which case it must call
+     * {@link ParseState#fail} directly instead (e.g. left-recursion for blocked recursive calls).
+     */
+    public void fail(ParsingExpression pe)
+    {
+        this.end = -1;
+        this.blackEnd = -1;
+
+        if (recordErrors)
+        {
+            errors.handleError(pe, this);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -315,7 +389,6 @@ public final class ParseState
             tree.addAll(changes.children);
         }
 
-        // TODO whataboutfailure?
         if (changes.customChanges != null)
         for (int i = 0; i < customStates.length; ++i)
         {
@@ -333,7 +406,6 @@ public final class ParseState
             end,
             blackEnd,
             treeChildrenCount,
-            flags,
             seeds,
             JArrays.map(customStates, Snapshot[]::new, CustomState::snapshot));
     }
@@ -347,7 +419,6 @@ public final class ParseState
         end                 = snapshot.end;
         blackEnd            = snapshot.blackEnd;
         treeChildrenCount   = snapshot.treeChildrenCount;
-        flags               = snapshot.flags;
         seeds               = snapshot.seeds;
 
         tree.truncate(treeChildrenCount);
@@ -365,7 +436,6 @@ public final class ParseState
         start               = snapshot.start;
         blackStart          = snapshot.blackStart;
         treeChildrenCount   = snapshot.treeChildrenCount;
-        flags               = snapshot.flags; // needed?
         seeds               = snapshot.seeds;
 
         for (int i = 0; i < customStates.length; ++i)
@@ -383,7 +453,7 @@ public final class ParseState
             start,
             blackStart,
             precedence,
-            flags,
+            recordErrors,
             seeds.clone(),
             blocked.clone(),
             minPrecedence.clone(),
@@ -395,7 +465,7 @@ public final class ParseState
     @Override
     public String toString()
     {
-        return String.format("(%X) [%d/%d - %d/%d[ tree(%d/%d) flags(%s)",
+        return String.format("(%X) [%d/%d - %d/%d[ tree(%d/%d)%s",
             hashCode(),
             start,
             blackStart,
@@ -403,23 +473,7 @@ public final class ParseState
             blackEnd,
             treeChildrenCount,
             tree.childrenCount(),
-            Integer.toString(flags, 2));
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // FLAGS
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public void forbidErrorRecording()
-    {
-        flags |= PSF_DONT_RECORD_ERRORS;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public boolean isErrorRecordingForbidden()
-    {
-        return (flags & PSF_DONT_RECORD_ERRORS) != 0;
+            recordErrors ? "" : "no_errors");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

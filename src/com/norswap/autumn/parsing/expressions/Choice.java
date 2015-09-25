@@ -35,7 +35,7 @@ public final class Choice extends NaryParsingExpression
             }
         }
 
-        parser.fail(this, state);
+        state.fail(this);
     }
 
     // ---------------------------------------------------------------------------------------------

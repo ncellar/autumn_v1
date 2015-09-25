@@ -574,14 +574,6 @@ public final class ParsingExpressionFactory
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static ParsingExpression errorRecording$(String name, ParsingExpression pe)
-    {
-        pe.flags |= Registry.PEF_ERROR_RECORDING;
-        return pe;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
     public static ParsingExpression named$(String name, ParsingExpression pe)
     {
         pe.name = name;

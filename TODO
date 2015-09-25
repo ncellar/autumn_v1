@@ -2,13 +2,8 @@
 TODO
 
 DEBUGGER
-    - error handler is sort of like error merge strategy, do it like that instead?
-    - move fail
+    - move the rest of Registry out?
     - must invoke parser with parseinput & config options
-    - scope Registry to parser
-
-REWORK
-    - syntax for custom operators ($name?)
 
 GUMPTION
     - insert $ in Java8 (rule-level only) (-> 544)
@@ -25,24 +20,27 @@ w5: manual
 
 TODO FURTHER SMALL
 
+- Whitespace class: resolve references
+
 - allow options in grammar files, namely for root and whitespace spec
 
 - well formedness check (ford: WF -- can't loop without consuming)
 
-- better way to exclude reserved identifiers or warn about them
-
 - scoped memoization
+    - MemoScope
+    - ScopedMemo
+
+- tokenizers
+    - token PE linked to a tokenizer + type
+    - memoization window around position
+    - error handling: an error over a token can become "unexpected X"
+    - advantage: handles reserved identifiers
 
 - tidy Autumn
 
+- syntax for custom operators ($name?)
+
 TODO FURTHER BIG
-
-- better error handling
-    - "unexpected X" via rounding up token definitions
-
-- better memo handling
-    - memoize tokens?
-    - discard children memo when parent finishes
 
 - better support for layering with smart tree-building that automatically rewrites trees
   (see D5)
@@ -59,7 +57,7 @@ TODO MUCH LATER
 
 - make dumb expression faster via a backtracking DPDA
 
-- think about how a parser could be retooled to parser html
+- think about how a parser could be retooled to parse html
   (which is lax in syntax) -> need to define bounding boxes
 
 --------------------------------------------------------------------------------

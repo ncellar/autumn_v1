@@ -27,7 +27,7 @@ public final class OneMore extends UnaryParsingExpression
         if (state.failed())
         {
             state.restore(snapshot);
-            parser.fail(this, state);
+            state.fail(this);
             return;
         }
         else

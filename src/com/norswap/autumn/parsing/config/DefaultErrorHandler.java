@@ -1,13 +1,11 @@
 package com.norswap.autumn.parsing.config;
 
-import com.norswap.autumn.parsing.ParseError;
+import com.norswap.autumn.parsing.ErrorReport;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.expressions.Token;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.util.Array;
-
-import static com.norswap.autumn.parsing.Registry.PEF_ERROR_RECORDING;
 
 /**
  * The default error handling strategy consist of keeping only the error(s) occuring at the farthest
@@ -30,8 +28,8 @@ public final class DefaultErrorHandler implements ErrorHandler
     @Override
     public void handle(ParsingExpression pe, ParseState state)
     {
-        // error recording not set, and not a token instance
-        if (((pe.flags & PEF_ERROR_RECORDING) == 0) && !(pe instanceof Token))
+        // only record errors for tokens
+        if (!(pe instanceof Token))
         {
             return;
         }
@@ -51,7 +49,7 @@ public final class DefaultErrorHandler implements ErrorHandler
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public ParseError error(Source source)
+    public ErrorReport error(Source source)
     {
         StringBuilder b = new StringBuilder();
 

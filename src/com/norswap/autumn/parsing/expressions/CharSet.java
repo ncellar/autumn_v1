@@ -34,7 +34,7 @@ public final class CharSet extends ParsingExpression
             }
         }
 
-        parser.fail(this, state);
+        state.fail(this);
     }
 
     // ---------------------------------------------------------------------------------------------

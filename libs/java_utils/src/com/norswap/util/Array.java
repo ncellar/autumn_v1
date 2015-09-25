@@ -750,9 +750,10 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
+    @SuppressWarnings("unchecked")
     public T peek()
     {
-        return Caster.cast(array[next - 1]);
+        return (T) array[next - 1];
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -767,6 +768,31 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
     public T peekOr(T t)
     {
         return next == 0 ? t : peek();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @SuppressWarnings("unchecked")
+    public T popush(T t)
+    {
+        T out = (T) array[next - 1];
+        array[next - 1] = t;
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @SuppressWarnings("unchecked")
+    public T last()
+    {
+        return (T) array[next - 1];
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void setLast(T t)
+    {
+        array[next - 1] = t;
     }
 
     // ---------------------------------------------------------------------------------------------

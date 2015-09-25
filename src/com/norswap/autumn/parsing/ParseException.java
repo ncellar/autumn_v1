@@ -5,9 +5,9 @@ package com.norswap.autumn.parsing;
  */
 public final class ParseException extends RuntimeException
 {
-    public final ParseError error;
+    public final ErrorReport error;
 
-    public ParseException(ParseError error)
+    public ParseException(ErrorReport error)
     {
         this.error = error;
     }
