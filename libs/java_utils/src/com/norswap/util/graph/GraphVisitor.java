@@ -1,4 +1,4 @@
-package com.norswap.util.graph2;
+package com.norswap.util.graph;
 
 import com.norswap.util.Array;
 import com.norswap.util.Counter;
@@ -6,7 +6,7 @@ import com.norswap.util.Counter;
 import java.util.Collection;
 import java.util.HashMap;
 
-import static com.norswap.util.graph2.NodeState.*;
+import static com.norswap.util.graph.NodeState.*;
 
 /**
  * A graph visit defines a visit of a graph made of nodes with type {@code Node}.

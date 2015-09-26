@@ -1,9 +1,9 @@
 package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.parsing.state.ParseState;
-import com.norswap.autumn.parsing.graph2.Copier;
+import com.norswap.autumn.parsing.graph.Copier;
 import com.norswap.autumn.parsing.graph.Nullability;
-import com.norswap.autumn.parsing.graph2.Printer;
+import com.norswap.autumn.parsing.graph.Printer;
 import com.norswap.util.DeepCopy;
 
 import java.util.function.Predicate;

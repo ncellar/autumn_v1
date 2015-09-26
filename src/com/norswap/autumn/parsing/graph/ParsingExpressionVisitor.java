@@ -1,8 +1,8 @@
-package com.norswap.autumn.parsing.graph2;
+package com.norswap.autumn.parsing.graph;
 
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.util.Array;
-import com.norswap.util.graph2.GraphVisitor;
+import com.norswap.util.graph.GraphVisitor;
 
 public abstract class ParsingExpressionVisitor extends GraphVisitor<ParsingExpression>
 {

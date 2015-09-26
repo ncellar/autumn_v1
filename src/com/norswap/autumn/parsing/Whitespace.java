@@ -1,8 +1,6 @@
 package com.norswap.autumn.parsing;
 
-import com.norswap.autumn.parsing.graph.LeftRecursionDetector;
 import com.norswap.autumn.parsing.graph.ReferenceResolver;
-import com.norswap.autumn.parsing.graph.Replacer;
 
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
 
@@ -11,8 +9,8 @@ import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
  * default whitespace expression ({@link #DEFAULT()}).
  * <p>
  * The parsing expression returned by the methods of this class are unique (i.e. they can be freely
- * modified), and do not need to be further processed: references are resolved, left-recursion is
- * eliminated.
+ * modified), and do not need to be further processed: references are resolved, no left-recursion
+ * is present.
  */
 public final class Whitespace
 {
@@ -102,10 +100,7 @@ public final class Whitespace
     public static ParsingExpression blockComment()
     {
         ParsingExpression out = blockComment.deepCopy();
-
-        // TODO left-recur detection
-//        out = new ReferenceResolver().visit(out);
-//        out = new Replacer(null).visit(out);
+        out = new ReferenceResolver().visit(out);
 
         return out;
     }

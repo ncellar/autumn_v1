@@ -2,8 +2,7 @@
 TODO
 
 DEBUGGER
-    - Whitespace class: resolve references
-
+    - comment on new graph classes
     - allow options in grammar files, namely for root and whitespace spec
     - must invoke parser with parseinput & config options
     - tags ordering issue (stmtexpression in example)

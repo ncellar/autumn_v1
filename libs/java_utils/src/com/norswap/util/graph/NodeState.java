@@ -1,4 +1,4 @@
-package com.norswap.util.graph2;
+package com.norswap.util.graph;
 
 public enum NodeState
 {

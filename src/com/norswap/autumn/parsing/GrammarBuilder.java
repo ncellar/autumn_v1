@@ -1,11 +1,11 @@
 package com.norswap.autumn.parsing;
 
-import com.norswap.autumn.parsing.graph2.LeftRecursionHandler;
-import com.norswap.autumn.parsing.graph2.NullabilityCalculator;
-import com.norswap.autumn.parsing.graph2.ReferenceResolver;
+import com.norswap.autumn.parsing.graph.LeftRecursionHandler;
+import com.norswap.autumn.parsing.graph.NullabilityCalculator;
+import com.norswap.autumn.parsing.graph.ReferenceResolver;
 import com.norswap.util.Array;
-import com.norswap.util.graph2.GraphVisitor;
-import com.norswap.util.graph2.Slot;
+import com.norswap.util.graph.GraphVisitor;
+import com.norswap.util.graph.Slot;
 
 import java.util.Collection;
 import java.util.Collections;

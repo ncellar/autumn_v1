@@ -5,7 +5,7 @@ import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.support.GrammarCompiler;
 import com.norswap.autumn.parsing.support.GrammarGrammar;
 import com.norswap.util.annotations.Immutable;
-import com.norswap.util.graph2.GraphVisitor;
+import com.norswap.util.graph.GraphVisitor;
 
 import java.util.Collection;
 import java.util.HashMap;
