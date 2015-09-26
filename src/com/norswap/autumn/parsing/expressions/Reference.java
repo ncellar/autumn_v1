@@ -1,10 +1,11 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.graph.Nullability;
+
+import java.util.function.Predicate;
 
 /**
  * A reference to another expression. A reference is a temporary operator that is meant to be pruned
@@ -48,7 +49,7 @@ public final class Reference extends ParsingExpression
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public ParsingExpression[] firsts(Grammar grammar)
+    public ParsingExpression[] firsts(Predicate<ParsingExpression> nullability)
     {
         throw new UnsupportedOperationException(
             "Trying to get the FIRST set of: " + target);

@@ -1,13 +1,11 @@
-package com.norswap.autumn.parsing.graph;
+package com.norswap.autumn.parsing.graph2;
 
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.util.Array;
 import com.norswap.util.Strings;
-import com.norswap.util.graph_visit.GraphVisitor;
-import com.norswap.util.graph_visit.NodeState;
-import com.norswap.util.slot.Slot;
+import com.norswap.util.graph2.NodeState;
+import com.norswap.util.graph2.Slot;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 import static com.norswap.autumn.parsing.ParsingExpressionFlags.PEF_UNARY_INVISIBLE;
@@ -24,7 +22,7 @@ import static com.norswap.autumn.parsing.ParsingExpressionFlags.PEF_UNARY_INVISI
  *   won't stop at the root expression itself, but that its direct children (at least) will be
  *   printed as well. Has no effect if cutoffAtNames is false.
  */
-public class Printer extends GraphVisitor<ParsingExpression>
+public class Printer extends ParsingExpressionVisitor
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -40,7 +38,6 @@ public class Printer extends GraphVisitor<ParsingExpression>
 
     public Printer(Consumer<String> sink, boolean cutoffAtNames, boolean cutoffAtOwnName)
     {
-        super(Walks.readOnly);
         this.sink = sink;
         this.cutoffAtNames = cutoffAtNames;
         this.cutoffAtOwnName = cutoffAtOwnName;
@@ -49,8 +46,10 @@ public class Printer extends GraphVisitor<ParsingExpression>
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void before(ParsingExpression pe)
+    public void before(Slot<ParsingExpression> slot)
     {
+        ParsingExpression pe = slot.initial;
+
         // PEF_UNARY_INVISIBLE is set
         if ((pe.flags & PEF_UNARY_INVISIBLE) != 0)
         {
@@ -90,13 +89,13 @@ public class Printer extends GraphVisitor<ParsingExpression>
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void afterChild(ParsingExpression parent, Slot<ParsingExpression> slot, NodeState state)
+    public void afterChild(Slot<ParsingExpression> parent, Slot<ParsingExpression> child, NodeState state)
     {
         switch (state)
         {
             case CUTOFF:
                 sink.accept(Strings.times(depth, "-|"));
-                sink.accept("recursive (" + slot.get().name + ")");
+                sink.accept("recursive (" + child.initial.name + ")");
                 appendChildData();
                 sink.accept("\n");
                 break;
@@ -104,7 +103,7 @@ public class Printer extends GraphVisitor<ParsingExpression>
             case VISITED:
                 sink.accept(Strings.times(depth, "-|"));
                 sink.accept("visited (");
-                sink.accept(nameOrHashCode(slot.get()) + ")");
+                sink.accept(nameOrHashCode(child.initial) + ")");
                 appendChildData();
                 sink.accept("\n");
                 break;
@@ -119,8 +118,10 @@ public class Printer extends GraphVisitor<ParsingExpression>
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void after(ParsingExpression pe, List<Slot<ParsingExpression>> children, NodeState state)
+    public void after(Slot<ParsingExpression> slot, Array<Slot<ParsingExpression>> children)
     {
+        ParsingExpression pe = slot.initial;
+
         // PEF_UNARY_INVISIBLE is set
         if ((pe.flags & PEF_UNARY_INVISIBLE) != 0)
         {

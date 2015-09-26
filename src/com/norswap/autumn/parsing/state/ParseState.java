@@ -223,9 +223,7 @@ public final class ParseState
     public int treeChildrenCount;
 
     /**
-     * The error information that result after attempting to parse the expression. Note that
-     * we may record errors even when the expression succeeds.
-     * TODO improve
+     * See {@link ParseState}, section "Error Handling".
      */
     public ErrorState errors;
 

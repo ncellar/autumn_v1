@@ -118,7 +118,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
 
     /**
      * Creates an array containing a single item. Useful because passing a single array argument to
-     * {@link #Array(Object[])} is ambiguous.
+     * {@link #Array(Object[])} is ambiguous; or to create an array containing a single integer.
      */
     @SuppressWarnings("unchecked")
     public static <T> Array<T> fromItem(T item)
@@ -129,13 +129,22 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Creates an array containing the items contained withing the array. Useful because passing a
+     * Creates an array containing the items contained within the array. Useful because passing a
      * single array argument to {@link #Array(Object[])} is ambiguous.
      */
     @SuppressWarnings("unchecked")
     public static <T> Array<T> fromArray(T[] array)
     {
         return new Array<>((T[]) array);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static <T> Array<T> from(Iterable<? extends T> iterable)
+    {
+        Array<T> out = new Array<>();
+        out.addAll(iterable);
+        return out;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -231,6 +240,41 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         for (Array<? extends T> array: arrays)
         {
             out.addAll(array);
+        }
+
+        return out;
+    }
+
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Maps the function f over the given java array and return an array of the results.
+     */
+    public static <T, U> Array<T> map(U[] array, Function<U, T> f)
+    {
+        Array<T> out = new Array<>(array.length);
+
+        for (U u: array)
+        {
+            out.add(f.apply(u));
+        }
+
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Maps the function f over the given iterable and return an array of the results.
+     */
+    public static <T, U> Array<T> map(Iterable<U> iterable, Function<U, T> f)
+    {
+        Array<T> out = new Array<>();
+
+        for (U u: iterable)
+        {
+            out.add(f.apply(u));
         }
 
         return out;
@@ -1046,6 +1090,27 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
 
         return false;
     }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Like {@link #addAll(Collection)}, but for iterables.
+     * <p>
+     * If {@code iterable} is null, it will be treated as empty.
+     */
+    public boolean addAll(Iterable<? extends T> iterable)
+    {
+        int size = next;
+
+        if (iterable != null)
+        {
+            iterable.forEach(this::add);
+        }
+
+        return size != next;
+    }
+
+    // ---------------------------------------------------------------------------------------------
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // OBJECT OVERRIDES

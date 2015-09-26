@@ -1,12 +1,15 @@
 package com.norswap.autumn.parsing;
 
-import com.norswap.autumn.parsing.graph.LeftRecursionDetector;
-import com.norswap.autumn.parsing.graph.ReferenceResolver;
-import com.norswap.autumn.parsing.graph.Replacer;
-import com.norswap.autumn.parsing.graph.Walks;
+import com.norswap.autumn.parsing.graph2.LeftRecursionHandler;
+import com.norswap.autumn.parsing.graph2.NullabilityCalculator;
+import com.norswap.autumn.parsing.graph2.ReferenceResolver;
+import com.norswap.util.Array;
+import com.norswap.util.graph2.GraphVisitor;
+import com.norswap.util.graph2.Slot;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -16,7 +19,7 @@ public final class GrammarBuilder
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private final ParsingExpression root;
+    private ParsingExpression root;
 
     private Collection<ParsingExpression> rules;
 
@@ -35,6 +38,19 @@ public final class GrammarBuilder
     GrammarBuilder(ParsingExpression root)
     {
         this.root = root;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    GrammarBuilder(Grammar grammar)
+    {
+        this.root = grammar.root;
+        this.rules = grammar.rules;
+        this.whitespace = grammar.whitespace;
+        this.processLeadingWhitespace = grammar.processLeadingWhitespace;
+        this.options = grammar.options;
+        this.leftRecursionElimination = false;
+        this.referenceResolution = false;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -63,55 +79,98 @@ public final class GrammarBuilder
 
     // ---------------------------------------------------------------------------------------------
 
-    public void leftRecursionElimination(boolean leftRecursionElimination)
+    public GrammarBuilder leftRecursionElimination(boolean leftRecursionElimination)
     {
         this.leftRecursionElimination = leftRecursionElimination;
+        return this;
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public void referenceResolution(boolean referenceResolution)
+    public GrammarBuilder referenceResolution(boolean referenceResolution)
     {
         this.referenceResolution = referenceResolution;
+        return this;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public GrammarBuilder options(Map<String, String> options)
+    {
+        this.options = options;
+        return this;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public GrammarBuilder addOption(String key, String value)
+    {
+        if (this.options == null)
+        {
+            this.options = new HashMap<>();
+        }
+
+        this.options.put(key, value);
+        return this;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public Grammar build()
     {
-        Grammar out = new Grammar(
-            root,
-            rules != null ? rules : Collections.emptyList(),
-            whitespace != null ? whitespace : Whitespace.DEFAULT(),
-            processLeadingWhitespace,
-            options != null ? options : Collections.emptyMap());
+        rules = rules != null
+            ? rules
+            : Collections.emptyList();
+
+        whitespace = whitespace != null
+            ? whitespace
+            : Whitespace.DEFAULT();
+
+        options = options != null
+            ? options
+            : Collections.emptyMap();
 
         if (referenceResolution)
         {
-            if (rules != null)
-            {
-                out = out.transform(new ReferenceResolver(Walks.inPlace));
-
-            }
-            else
-            {
-                System.err.println(out.root.toStringFull());
-                out = out.transform(new ReferenceResolver());
-                System.err.println("================");
-                System.err.println(out.root.toStringFull());
-            }
+            transform(new ReferenceResolver());
         }
 
         if (leftRecursionElimination)
         {
-            out.computeNullability();
+            NullabilityCalculator calc = new NullabilityCalculator();
+            compute(calc);
 
-            LeftRecursionDetector detector = new LeftRecursionDetector(out);
-            out.transform(detector);
-            out = out.transform(new Replacer(detector.leftRecursives));
+            LeftRecursionHandler detector = new LeftRecursionHandler(true, calc);
+            transform(detector);
         }
 
-        return out;
+        return new Grammar(root, rules, whitespace, processLeadingWhitespace, options);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public GrammarBuilder transform(GraphVisitor<ParsingExpression> visitor)
+    {
+        Slot<ParsingExpression> root2 = visitor.partialVisit(root);
+        Array<Slot<ParsingExpression>> rules2 = visitor.partialVisit(rules);
+        Slot<ParsingExpression> whitespace2 = visitor.partialVisit(whitespace);
+        visitor.conclude();
+
+        root = root2.latest();
+        whitespace = whitespace2.latest();
+        rules = rules2.map(Slot::latest);
+        return this;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public GrammarBuilder compute(GraphVisitor<ParsingExpression> visitor)
+    {
+        visitor.partialVisit(root);
+        visitor.partialVisit(rules);
+        visitor.partialVisit(whitespace);
+        visitor.conclude();
+        return this;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

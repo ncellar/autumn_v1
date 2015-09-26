@@ -1,11 +1,12 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.expressions.abstrakt.NaryParsingExpression;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.graph.Nullability;
+
+import java.util.function.Predicate;
 
 /**
  * Invokes all its operands at its initial input position, until one succeeds.
@@ -59,7 +60,7 @@ public final class Choice extends NaryParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public ParsingExpression[] firsts(Grammar grammar)
+    public ParsingExpression[] firsts(Predicate<ParsingExpression> nullability)
     {
         return operands;
     }

@@ -3,10 +3,8 @@ package com.norswap.autumn.parsing.graph;
 import com.norswap.autumn.parsing.expressions.Reference;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.util.Array;
-import com.norswap.util.Pair;
 import com.norswap.util.Two;
 import com.norswap.util.graph_visit.GraphVisitor;
-import com.norswap.util.graph_visit.GraphWalker;
 import com.norswap.util.graph_visit.NodeState;
 import com.norswap.util.slot.Slot;
 
@@ -55,14 +53,7 @@ public class ReferenceResolver extends GraphVisitor<ParsingExpression>
 
     public ReferenceResolver()
     {
-        super(Walks.copyOnWriteWalk());
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public ReferenceResolver(GraphWalker<ParsingExpression> walker)
-    {
-        super(walker);
+        super(Walks.inPlace);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -118,7 +109,7 @@ public class ReferenceResolver extends GraphVisitor<ParsingExpression>
             }
             while (target != null && target.get() instanceof Reference);
 
-            if (slot == null)
+            if (target == null)
             {
                 unresolved.add(name);
             }

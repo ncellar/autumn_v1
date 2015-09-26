@@ -1,16 +1,15 @@
 package com.norswap.autumn.parsing.graph;
 
-import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.util.Array;
+import com.norswap.util.JArrays;
 import com.norswap.util.graph_visit.GraphWalker;
 import com.norswap.util.Counter;
 import com.norswap.util.slot.Slot;
 
 import java.util.function.BiFunction;
-import java.util.stream.Stream;
+import java.util.function.Predicate;
 
-import static java.util.Arrays.stream;
 
 /**
  * This class is a repository of walks over graphs along with modification modes (in-place, copy,
@@ -23,11 +22,10 @@ public class Walks
     /**
      * Walks the whole graph, modification are done in-place.
      */
-    public static GraphWalker<ParsingExpression> inPlace = (slot, visitor) ->
+    public static GraphWalker<ParsingExpression> inPlace = (pe, visitor) ->
     {
-        ParsingExpression pe = slot.get();
         return helper(
-            stream(pe.children()),
+            pe.children(),
             (c, x) -> new ChildSlot(pe, c.i++));
     };
 
@@ -36,11 +34,10 @@ public class Walks
     /**
      * Walks the whole graph. Attempts to set the value of a slot result in an exception.
      */
-    public static GraphWalker<ParsingExpression> readOnly = (slot, visitor) ->
+    public static GraphWalker<ParsingExpression> readOnly = (pe, visitor) ->
     {
-        ParsingExpression pe = slot.get();
         return helper(
-            stream(pe.children()),
+            pe.children(),
             (c, x) -> new ReadOnlyChildSlot(pe, c.i++));
     };
 
@@ -52,35 +49,25 @@ public class Walks
      * can be invoked at the same input position as the parent, because no input has been consumed
      * yet.
      */
-    public static GraphWalker<ParsingExpression> inPlaceFirsts(Grammar grammar)
+    public static GraphWalker<ParsingExpression> inPlaceFirsts(Predicate<ParsingExpression> nullability)
     {
-        return (slot, visitor) ->
+        return (pe, visitor) ->
         {
-            ParsingExpression pe = slot.get();
             return helper(
-                stream(pe.firsts(grammar)),
+                pe.firsts(nullability),
                 (c, x) -> new ChildSlot(pe, c.i++));
         };
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * See {@link CopyOnWriteWalker}.
-     */
-    public static GraphWalker<ParsingExpression> copyOnWriteWalk()
-    {
-        return new CopyOnWriteWalker();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     static Array<Slot<ParsingExpression>> helper(
-        Stream<ParsingExpression> stream,
+        ParsingExpression[] children,
         BiFunction<Counter, ParsingExpression, Slot<ParsingExpression>> f)
     {
         Counter c = new Counter();
-        return Array.<Slot<ParsingExpression>>fromUnsafe(stream.map(x -> f.apply(c, x)).toArray());
+        return Array.<Slot<ParsingExpression>>fromUnsafe(
+            JArrays.map(children, x -> f.apply(c, x)));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

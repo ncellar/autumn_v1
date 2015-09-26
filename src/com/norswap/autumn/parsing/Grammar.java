@@ -1,17 +1,14 @@
 package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.Autumn;
-import com.norswap.autumn.parsing.graph.NullabilityCalculator;
 import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.support.GrammarCompiler;
 import com.norswap.autumn.parsing.support.GrammarGrammar;
 import com.norswap.util.annotations.Immutable;
-import com.norswap.util.graph_visit.GraphVisitor;
-import com.norswap.util.slot.Slot;
+import com.norswap.util.graph2.GraphVisitor;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -57,8 +54,6 @@ public final class Grammar
     public final @Immutable Map<String, String> options;
 
     private Map<String, ParsingExpression> rulesByName;
-
-    private NullabilityCalculator nullabilityCalculator;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -129,45 +124,7 @@ public final class Grammar
 
     public Grammar transform(GraphVisitor<ParsingExpression> visitor)
     {
-        Slot<ParsingExpression> root2 = visitor.partialVisit(root);
-        Collection<ParsingExpression> rules2 = visitor.partialVisit(rules);
-        Slot<ParsingExpression> whitespace2 = visitor.partialVisit(whitespace);
-
-        visitor.conclude();
-
-        boolean rulesChanged = false;
-        Iterator<ParsingExpression> it1 = rules.iterator();
-        Iterator<ParsingExpression> it2 = rules2.iterator();
-
-        while (it1.hasNext())
-        {
-            ParsingExpression oldRule = it1.next();
-            ParsingExpression newRule = it2.next();
-
-            if (oldRule != newRule)
-            {
-                rulesChanged = true;
-                newRule.name = oldRule.name;
-                oldRule.name = null;
-            }
-        }
-
-        ParsingExpression root3 = root2.get();
-        ParsingExpression whitespace3 = whitespace2.get();
-
-        Grammar out = new Grammar(root3, rules2, whitespace3, processLeadingWhitespace, options);
-
-        if (!rulesChanged)
-        {
-            out.rulesByName = rulesByName;
-        }
-
-        if (!rulesChanged && root == root3 && whitespace == whitespace3)
-        {
-            out.nullabilityCalculator = nullabilityCalculator;
-        }
-
-        return out;
+        return new GrammarBuilder(this).transform(visitor).build();
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -178,34 +135,6 @@ public final class Grammar
         visitor.partialVisit(rules);
         visitor.partialVisit(whitespace);
         visitor.conclude();
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public boolean isNullable(ParsingExpression pe)
-    {
-        if (nullabilityCalculator == null)
-        {
-            throw new IllegalStateException(
-                "Must call Grammar#computeNullability() before using Grammar#IsNullable.");
-        }
-
-        return nullabilityCalculator.isNullable(pe);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public boolean nullabilityComputed()
-    {
-        return nullabilityCalculator != null;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public void computeNullability()
-    {
-        nullabilityCalculator = new NullabilityCalculator();
-        compute(nullabilityCalculator);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

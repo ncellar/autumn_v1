@@ -1,13 +1,12 @@
 package com.norswap.autumn.parsing;
 
-import com.norswap.autumn.parsing.graph.CopyOnWriteWalker;
 import com.norswap.autumn.parsing.state.ParseState;
-import com.norswap.autumn.parsing.graph.Copier;
+import com.norswap.autumn.parsing.graph2.Copier;
 import com.norswap.autumn.parsing.graph.Nullability;
-import com.norswap.autumn.parsing.graph.Printer;
-import com.norswap.util.Caster;
+import com.norswap.autumn.parsing.graph2.Printer;
 import com.norswap.util.DeepCopy;
-import com.norswap.util.Exceptions;
+
+import java.util.function.Predicate;
 
 /**
  * A parsing expression is matched to the source text by recursively invoking the {@link #parse}
@@ -155,7 +154,7 @@ public abstract class ParsingExpression implements DeepCopy
 
     // ---------------------------------------------------------------------------------------------
 
-    public ParsingExpression[] firsts(Grammar grammar)
+    public ParsingExpression[] firsts(Predicate<ParsingExpression> nullability)
     {
         return new ParsingExpression[0];
     }
@@ -181,7 +180,7 @@ public abstract class ParsingExpression implements DeepCopy
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Do not use; use {@link #deepCopy()} or {@link CopyOnWriteWalker} instead.
+     * Do not use; use {@link #deepCopy()} instead.
      */
     @Override
     public final ParsingExpression clone()

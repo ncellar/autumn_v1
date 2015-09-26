@@ -2,20 +2,14 @@
 TODO
 
 DEBUGGER
-    - copyOnWrite walk does not work with reference resolver or left detection detector
-    - copyOnWrite uses clone, but then setChild can unfortunately write both
-
-    ==> use copier always? more economical anyways...
-
-    - reference resolutions and names
     - Whitespace class: resolve references
-    - remove walks side-effects on grammar?
 
     - allow options in grammar files, namely for root and whitespace spec
     - must invoke parser with parseinput & config options
     - tags ordering issue (stmtexpression in example)
 
 GUMPTION
+    - use Array instead of [] for first and children in PE
     - insert $ in Java8 (rule-level only) (-> 544)
 
 TODO PLANNING
@@ -49,15 +43,11 @@ TODO FURTHER BIG
 - better support for layering with smart tree-building that automatically rewrites trees
   (see D5)
 
-- trees: topological sort
-
 - mini type system for captures? automatic AST classes generation?
 
 - think about building in validation rules
 
 - grammar composition & parameterization
-
-- rule analysis
 
 TODO MUCH LATER
 

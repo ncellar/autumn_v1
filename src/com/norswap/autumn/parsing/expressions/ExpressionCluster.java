@@ -1,6 +1,5 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.state.ParseChanges;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.Parser;
@@ -11,6 +10,7 @@ import com.norswap.autumn.parsing.graph.Nullability;
 import com.norswap.util.DeepCopy;
 
 import java.util.Arrays;
+import java.util.function.Predicate;
 
 public final class ExpressionCluster extends ParsingExpression
 {
@@ -274,7 +274,7 @@ public final class ExpressionCluster extends ParsingExpression
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public ParsingExpression[] firsts(Grammar grammar)
+    public ParsingExpression[] firsts(Predicate<ParsingExpression> nullability)
     {
         return Arrays.stream(groups)
             .filter(g -> !g.leftRecursive)

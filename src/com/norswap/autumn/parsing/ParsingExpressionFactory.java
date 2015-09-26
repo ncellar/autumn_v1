@@ -345,6 +345,7 @@ public final class ParsingExpressionFactory
     {
         LeftRecursive result = new LeftRecursive();
         result.operand = operand;
+        result.name = operand.name;
         return result;
     }
 

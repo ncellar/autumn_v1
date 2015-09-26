@@ -1,6 +1,5 @@
 package com.norswap.autumn.parsing.expressions;
 
-import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.state.ParseStateSnapshot;
 import com.norswap.autumn.parsing.expressions.abstrakt.NaryParsingExpression;
 import com.norswap.autumn.parsing.state.ParseState;
@@ -8,6 +7,8 @@ import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.graph.Nullability;
 import com.norswap.util.Array;
+
+import java.util.function.Predicate;
 
 /**
  * Invokes all its operands sequentially over the input, until one fails. Each operand is
@@ -74,7 +75,7 @@ public final class Sequence extends NaryParsingExpression
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public ParsingExpression[] firsts(Grammar grammar)
+    public ParsingExpression[] firsts(Predicate<ParsingExpression> nullability)
     {
         ParsingExpression pe;
         int i = 0;
@@ -84,7 +85,7 @@ public final class Sequence extends NaryParsingExpression
             pe = operands[i++];
             array.add(pe);
         }
-        while (i < operands.length && grammar.isNullable(pe));
+        while (i < operands.length && nullability.test(pe));
 
         return array.toArray(ParsingExpression[]::new);
     }

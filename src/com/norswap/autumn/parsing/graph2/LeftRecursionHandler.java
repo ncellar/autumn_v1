@@ -1,15 +1,14 @@
-package com.norswap.autumn.parsing.graph;
+package com.norswap.autumn.parsing.graph2;
 
+import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster;
 import com.norswap.autumn.parsing.expressions.LeftRecursive;
-import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.util.Array;
-import com.norswap.util.graph_visit.GraphVisitor;
-import com.norswap.util.graph_visit.NodeState;
-import com.norswap.util.slot.Slot;
+import com.norswap.util.graph2.GraphVisitor;
+import com.norswap.util.graph2.NodeState;
+import com.norswap.util.graph2.Slot;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.function.Predicate;
 
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.leftRecursive;
@@ -32,13 +31,19 @@ import static com.norswap.autumn.parsing.ParsingExpressionFactory.leftRecursive;
  * encountered LeftRecursive node, it means that the cycle goes through the LeftRecursive node and
  * is thus already broken; so we do not record it.
  */
-public class LeftRecursionDetector extends GraphVisitor<ParsingExpression>
+public final class LeftRecursionHandler extends GraphVisitor<ParsingExpression>
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public LeftRecursionDetector(Predicate<ParsingExpression> nullability)
+    private boolean replace;
+    private Predicate<ParsingExpression> nullability;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public LeftRecursionHandler(boolean replace, Predicate<ParsingExpression> nullability)
     {
-        super(Walks.inPlaceFirsts(nullability));
+        this.replace = replace;
+        this.nullability = nullability;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -47,15 +52,17 @@ public class LeftRecursionDetector extends GraphVisitor<ParsingExpression>
 
     private HashMap<ParsingExpression, Integer> stackPositions = new HashMap<>();
 
-    private Array<Integer> leftRecursiveStackPositions = new Array<>();
+    private Array<Integer> leftRecursiveStackPositions = Array.fromItem(-1);
 
     public HashMap<ParsingExpression, ParsingExpression> leftRecursives = new HashMap<>();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void before(ParsingExpression pe)
+    public void before(Slot<ParsingExpression> slot)
     {
+        ParsingExpression pe = slot.initial;
+
         if (pe instanceof LeftRecursive || pe instanceof ExpressionCluster)
         {
             leftRecursiveStackPositions.push(stackDepth);
@@ -68,8 +75,10 @@ public class LeftRecursionDetector extends GraphVisitor<ParsingExpression>
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void after(ParsingExpression pe, List<Slot<ParsingExpression>> children, NodeState state)
+    public void after(Slot<ParsingExpression> slot, Array<Slot<ParsingExpression>> children)
     {
+        ParsingExpression pe = slot.initial;
+
         if (pe instanceof LeftRecursive)
         {
             leftRecursiveStackPositions.pop();
@@ -82,17 +91,17 @@ public class LeftRecursionDetector extends GraphVisitor<ParsingExpression>
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void afterChild(ParsingExpression pe, Slot<ParsingExpression> slot, NodeState state)
+    public void afterChild(Slot<ParsingExpression> parent, Slot<ParsingExpression> child, NodeState state)
     {
         if (state == NodeState.CUTOFF)
         {
-            ParsingExpression child;
-            Integer leftPos = leftRecursiveStackPositions.peekOr(-1);
+            ParsingExpression pe = child.initial;
 
-            if (stackPositions.get(child = slot.get()) > leftPos)
+            if (stackPositions.get(pe) > leftRecursiveStackPositions.peek())
             {
-                LeftRecursive lr = leftRecursive(child);
-                leftRecursives.put(child, leftRecursive(child));
+                child.assigned = leftRecursive(pe);
+                // TODO
+                //leftRecursives.put(pe, leftRecursive(pe));
             }
         }
     }
@@ -102,8 +111,33 @@ public class LeftRecursionDetector extends GraphVisitor<ParsingExpression>
     @Override
     public void conclude()
     {
+        super.conclude();
         stackPositions = null;
         leftRecursiveStackPositions = null;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    protected Iterable<ParsingExpression> children(ParsingExpression pe)
+    {
+        return Array.fromArray(pe.firsts(nullability));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    protected void applyChanges(Array<Slot<ParsingExpression>> modified)
+    {
+        for (Slot<ParsingExpression> slot: modified)
+        {
+            leftRecursives.put(slot.initial, slot.assigned);
+
+            if (replace && slot.parent != null)
+            {
+                slot.parent.setChild(slot.index, slot.assigned);
+            }
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

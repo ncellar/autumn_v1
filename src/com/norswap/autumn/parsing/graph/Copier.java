@@ -9,17 +9,12 @@ import com.norswap.util.graph_visit.GraphWalker;
 import com.norswap.util.graph_visit.NodeState;
 import com.norswap.util.slot.Slot;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Performs a complete deep copy of a parsing expression.
- * <p>
- * In case you want to perform a transformation on the copy, an alternative is to use a {@link
- * CopyOnWriteWalker}. Contrary to a visitor using the copy on write walker, this visitor guarantees
- * there won't be any shared parsing expression between the original graph and the copy.
  */
 public final class Copier extends GraphVisitor<ParsingExpression>
 {
@@ -29,12 +24,12 @@ public final class Copier extends GraphVisitor<ParsingExpression>
     {
         @Override
         public List<Slot<ParsingExpression>>
-        children(Slot<ParsingExpression> slot, GraphVisitor<ParsingExpression> visitor)
+        children(ParsingExpression pe, GraphVisitor<ParsingExpression> visitor)
         {
             Copier copier = (Copier) visitor;
             ParsingExpression copy = copier.copyStack.peek();
             Counter c = new Counter();
-            Object[] slots = JArrays.map(slot.get().children(), x -> new ChildSlot(copy, c.i++));
+            Object[] slots = JArrays.map(pe.children(), x -> new ChildSlot(copy, c.i++));
             return Array.<Slot<ParsingExpression>>fromUnsafe(slots);
         }
     }

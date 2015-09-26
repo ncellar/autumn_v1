@@ -128,7 +128,7 @@ Literal ~ literal
     / BooleanLiteral    :+~booleanLiteral
     / CharLiteral       :+~charLiteral
     / StringLiteral     :+~stringLiteral
-    / NullLiteral       :+~nullLiteral ;
+    / NullLiteral       :~nullLiteral ;
 
 IntegerLiteral
     ^%= ( HexNumeral
