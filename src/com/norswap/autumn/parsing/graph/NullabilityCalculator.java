@@ -10,9 +10,9 @@ import java.util.HashMap;
 import java.util.function.Predicate;
 
 /**
- * Determines which rules in a parsing expression graph are nullable.
- * <p>
- * Nullable parsing expressions are those that can succeed while matching no input.
+ * Determines which rules in a parsing expression graph are nullable. Nullable parsing expressions
+ * are those that can succeed while matching no input. The nullability of an expression can be
+ * determined after the visitor has run by calling the {@link #test} method.
  * <p>
  * To help determine this, each type of parsing expression implements the {@link
  * ParsingExpression#nullability} method which returns a {@link Nullability} object.

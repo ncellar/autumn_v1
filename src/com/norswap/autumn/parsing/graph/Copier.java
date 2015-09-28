@@ -36,7 +36,7 @@ public final class Copier extends ParsingExpressionVisitor
             case FIRST_VISIT:
                 parent.assigned.setChild(child.index, child.assigned);
                 // avoid retaining the child as a change
-                //child.assigned = null;
+                child.assigned = null;
                 break;
             case CUTOFF:
             case VISITED:

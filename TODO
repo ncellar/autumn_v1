@@ -2,10 +2,8 @@
 TODO
 
 DEBUGGER
-    - comment on new graph classes
-    - allow options in grammar files, namely for root and whitespace spec
-    - must invoke parser with parseinput & config options
     - tags ordering issue (stmtexpression in example)
+    - must invoke parser with parseinput & config options
 
 GUMPTION
     - use Array instead of [] for first and children in PE
@@ -22,6 +20,8 @@ w4: presentation
 w5: manual
 
 TODO FURTHER SMALL
+
+- allow options in grammar files, namely for root and whitespace spec
 
 - well formedness check (ford: WF -- can't loop without consuming)
 

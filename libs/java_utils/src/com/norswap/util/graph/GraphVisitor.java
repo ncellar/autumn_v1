@@ -15,9 +15,10 @@ import static com.norswap.util.graph.NodeState.*;
  * #before}, {@link #afterChild}, {@link #after}, {@link #afterRoot} and {@link #conclude}.
  * <p>
  * Instead of passing the nodes directly, we pass a {@link Slot} object. These make available the
- * original value of the node, and to indicate that we wish to replace the node with another. These
- * changes will not be effected until the end of the walk, and their semantics is determined by the
- * particular GraphVisitor instance.
+ * original value of the node ({@link Slot#initial}), and make it possible to indicate that we wish
+ * to replace the node with another (by assigning the {@link Slot#assigned} slot. These changes will
+ * not be effected until the end of the walk, and their semantics is determined by the
+ * implementation of the {@link #applyChanges} method.
  * <p>
  * The visit is started by calling {@link #visit(Node)} (single root) or {@link #visit(Collection)}
  * (multiple roots). It is also possible to perform incremental visits by repeatedly calling the
@@ -50,7 +51,7 @@ public abstract class GraphVisitor<Node>
 
     /**
      * Called after attempting to visit each child of {@code parent} (after calling {@link #after}
-     * with the child itself).
+     * with the child itself, if that hasn't been done already).
      */
     public void afterChild(Slot<Node> parent, Slot<Node> child, NodeState state) {}
 
@@ -202,10 +203,18 @@ public abstract class GraphVisitor<Node>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Returns the children of the passed node to visit.
+     */
     protected abstract Iterable<Node> children(Node node);
 
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * Given an array of slots which have been assigned, perform these assignments. For root slots,
+     * no further changes is usually necessary (since the client will possess a reference to those
+     * slot, he can query them directly).
+     */
     protected void applyChanges(Array<Slot<Node>> modified) {}
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

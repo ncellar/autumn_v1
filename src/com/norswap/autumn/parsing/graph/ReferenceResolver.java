@@ -9,6 +9,15 @@ import com.norswap.util.graph.Slot;
 import java.util.HashMap;
 import java.util.HashSet;
 
+/**
+ * Resolves all resolvable references underneath the visited expression graph. Resolvable references
+ * are those for which a target with the specified name exist within the expression graph.
+ * <p>
+ * As a result of the resolution process, all {@link Reference} nodes that have been resolved are
+ * pruned from the expression tree and replaced with edge towards the expression they referenced,
+ * hence making the tree a graph. ALl unresolved reference targets are  put into {@link
+ * #unresolved}.
+ */
 public final class ReferenceResolver extends ParsingExpressionVisitor
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -22,7 +31,7 @@ public final class ReferenceResolver extends ParsingExpressionVisitor
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public HashMap<String, ParsingExpression> named = new HashMap<>();
+    private HashMap<String, ParsingExpression> named = new HashMap<>();
 
     private HashSet<Slot<ParsingExpression>> references = new HashSet<>();
 
@@ -65,6 +74,16 @@ public final class ReferenceResolver extends ParsingExpressionVisitor
         {
             references.add(child);
         }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void conclude()
+    {
+        super.conclude();
+        named = null;
+        references = null;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

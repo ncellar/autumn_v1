@@ -1,5 +1,8 @@
 package com.norswap.util.graph;
 
+/**
+ * Parameter to {@link GraphVisitor#afterRoot}.
+ */
 public enum NodeState
 {
     /**

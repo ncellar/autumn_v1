@@ -3,7 +3,7 @@ package com.norswap.util.graph;
 import com.norswap.util.annotations.Nullable;
 
 /**
- * A slot is an assignable location for a graph node.
+ * A slot is an assignable location for a graph node. See {@link GraphVisitor}.
  */
 public class Slot<Node>
 {
@@ -53,6 +53,10 @@ public class Slot<Node>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Return the last assigned value to this slot, or the initial value if no values were assigned,
+     * or the assigned value was cleared.
+     */
     public Node latest()
     {
         return assigned != null ? assigned : initial;

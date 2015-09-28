@@ -19,6 +19,11 @@ import static com.norswap.autumn.parsing.ParsingExpressionFactory.leftRecursive;
  * to break the cycle. The selected node will be mapped to a new {@link LeftRecursive} inside {@link
  * #leftRecursives}.
  * <p>
+ * Optionally (if the {@code replace} parameter of the constructor is true), this will also replace
+ * all detected nodes by their LeftRecursive replacement, in-place. Note that currently if the
+ * replaced node is named, the name is not transferred to the LeftRecursive replacement. But since
+ * the original node is a child of the replacement, the name still appears in the graph.
+ * <p>
  * The node selected to break a cycle is the first node pertaining to the cycle encountered in a
  * top-down left-to-right walk of the graph.
  * <p>
@@ -100,8 +105,6 @@ public final class LeftRecursionHandler extends GraphVisitor<ParsingExpression>
             if (stackPositions.get(pe) > leftRecursiveStackPositions.peek())
             {
                 child.assigned = leftRecursive(pe);
-                // TODO
-                //leftRecursives.put(pe, leftRecursive(pe));
             }
         }
     }
