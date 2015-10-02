@@ -1,24 +1,24 @@
 package com.norswap.autumn.parsing.debugger;
 
-import com.norswap.autumn.parsing.Parser;
+import com.norswap.autumn.parsing.ParseResult;
+import com.norswap.autumn.parsing.state.ParseInputs;
 
 /**
  *
  */
-public final class Debugger
+public class Invocation
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public final Parser parser;
-
-    public final DebuggerStore store;
+    public final ParseInputs inputs;
+    public final ParseResult result;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public Debugger(Parser parser, DebuggerStore store)
+    public Invocation(ParseInputs inputs, ParseResult result)
     {
-        this.parser = parser;
-        this.store = store;
+        this.inputs = inputs;
+        this.result = result;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

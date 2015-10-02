@@ -1,10 +1,9 @@
 package com.norswap.autumn.parsing.tree;
 
 import com.norswap.util.Array;
-import com.norswap.util.annotations.NonNull;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 
 /**
  * A parse tree as built by captures.
@@ -90,12 +89,12 @@ public final class BuildParseTree
 
     public ParseTree build()
     {
-        return build(null, new HashSet<>());
+        return build(null, new Array<>());
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    private ParseTree build(String accessor, Set<String> tagSet)
+    private ParseTree build(String accessor, Array<String> tagSet)
     {
         if (accessor != null && this.accessor != null)
         {
@@ -113,7 +112,10 @@ public final class BuildParseTree
 
         return wrappee != null
             ? wrappee.build(accessor, tagSet)
-            : new ParseTree(accessor, value, tagSet,
+            : new ParseTree(
+                accessor,
+                value,
+                tagSet == null ? Collections.emptySet() : new LinkedHashSet<>(tagSet),
                 children == null ? Array.empty() : children.map(BuildParseTree::build));
     }
 

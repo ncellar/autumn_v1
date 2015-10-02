@@ -93,7 +93,7 @@ public final class ExpressionCluster extends ParsingExpression
 
         // Acquire the current precedence for the cluster.
 
-        PrecedenceEntry entry = state.minPrecedence.peekOrNull();
+        PrecedenceEntry entry = state.minPrecedence.peek();
         final int minPrecedence;
 
         if (entry == null || entry.cluster != this)

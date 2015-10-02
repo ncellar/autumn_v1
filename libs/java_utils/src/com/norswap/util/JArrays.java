@@ -2,6 +2,7 @@ package com.norswap.util;
 
 
 import java.util.Arrays;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
@@ -109,21 +110,10 @@ public final class JArrays
 
     /**
      * Applies the function f to all elements of {@code src}, placing the results in the
-     * corresponding slot of a new array, which is then returned. Because of type erasure, the
-     * returned array has type {@code Object[]}.
-     */
-    public static <T> Object[] map(T[] src, Function<? super T, ? extends Object> f)
-    {
-        return map(src, new Object[src.length], f);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Applies the function f to all elements of {@code src}, placing the results in the
      * corresponding slot of {@code dst}, which is then returned.
      */
-    public static <T, U> U[] map(T[] src, U[] dst, Function<? super T, ? extends U> f)
+    public static <T, U> U[]
+    map(T[] src, U[] dst, Function<? super T, ? extends U> f)
     {
         assert dst.length >= src.length;
 
@@ -139,11 +129,74 @@ public final class JArrays
 
     /**
      * Applies the function f to all elements of {@code src}, placing the results in the
-     * corresponding slot of new array created using {@code arrayGen}, which is then returned.
+     * corresponding slot of a new array, which is then returned. Because of type erasure, the
+     * returned array has type {@code Object[]}.
      */
-    public static <T, U> U[] map(T[] src, IntFunction<U[]> arrayGen, Function<? super T, ? extends U> f)
+    public static <T> Object[]
+    map(T[] src, Function<? super T, ? extends Object> f)
+    {
+        return map(src, new Object[src.length], f);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Applies the function f to all elements of {@code src}, placing the results in the
+     * corresponding slot of a new array created using {@code arrayGen}, which is then returned.
+     */
+    public static <T, U> U[]
+    map(T[] src, IntFunction<U[]> arrayGen, Function<? super T, ? extends U> f)
     {
         return map(src, arrayGen.apply(src.length), f);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Applies the function f to all pairs of elements (src1[i], src2[i]) for all {@code 0 <= i <
+     * min(src1.length, src2.length)}, placing the results in the corresponding slot of {@code dst},
+     * which is then returned.
+     */
+    public static <T, U, R> R[]
+    bimap(T[] src1, U[] src2, R[] dst, BiFunction<? super T, ? super U, ? extends R> f)
+    {
+        int min = Math.min(src1.length, src2.length);
+
+        assert dst.length >= min;
+
+        for (int i = 0; i < min; ++i)
+        {
+            dst[i] = f.apply(src1[i], src2[i]);
+        }
+
+        return dst;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Applies the function f to all pairs of elements (src1[i], src2[i]) for all {@code 0 <= i <
+     * min(src1.length, src2.length)}, placing the results in the corresponding slot of a new array,
+     * which is then returned. Because of type erasure, the returned array has type {@code
+     * Object[]}.
+     */
+    public static <T, U> Object[]
+    bimap(T[] src1, U[] src2, BiFunction<? super T, ? super U, ?> f)
+    {
+        return bimap(src1, src2, new Object[Math.min(src1.length, src2.length)], f);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Applies the function f to all pairs of elements (src1[i], src2[i]) for all {@code 0 <= i <
+     * min(src1.length, src2.length)}, placing the results in the corresponding slot of a new array
+     * created using {@code arrayGen}, which is then returned.
+     */
+    public static <T, U, R> R[]
+    bimap(T[] src1, U[] src2, IntFunction<R[]> arrayGen, BiFunction<? super T, ? super U, ? extends R> f)
+    {
+        return bimap(src1, src2, arrayGen.apply(Math.min(src1.length, src2.length)), f);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

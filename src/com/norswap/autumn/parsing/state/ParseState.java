@@ -1,10 +1,9 @@
 package com.norswap.autumn.parsing.state;
 
-import com.norswap.autumn.parsing.DefaultErrorState;
-import com.norswap.autumn.parsing.ErrorState;
 import com.norswap.autumn.parsing.Extension;
 import com.norswap.autumn.parsing.ParseResult;
 import com.norswap.autumn.parsing.config.DefaultMemoHandler;
+import com.norswap.autumn.parsing.config.MemoHandler;
 import com.norswap.autumn.parsing.config.ParserConfigurationBuilder;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster.PrecedenceEntry;
@@ -14,12 +13,17 @@ import com.norswap.autumn.parsing.expressions.Not;
 import com.norswap.autumn.parsing.expressions.Precedence;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.source.Source;
-import com.norswap.autumn.parsing.state.CustomState.Changes;
+import com.norswap.autumn.parsing.state.CustomState.Inputs;
 import com.norswap.autumn.parsing.state.CustomState.Snapshot;
+import com.norswap.autumn.parsing.state.errors.DefaultErrorState;
+import com.norswap.autumn.parsing.state.errors.ErrorState;
 import com.norswap.autumn.parsing.tree.BuildParseTree;
 import com.norswap.util.Array;
+import com.norswap.util.Caster;
 import com.norswap.util.JArrays;
 import com.norswap.util.annotations.Nullable;
+
+import static com.norswap.util.Caster.cast;
 
 /**
  * An instance of this class is passed to every parsing expression invocation {@link
@@ -225,7 +229,12 @@ public final class ParseState
     /**
      * See {@link ParseState}, section "Error Handling".
      */
-    public ErrorState errors;
+    public final ErrorState errors;
+
+    /**
+     * TODO
+     */
+    public final MemoHandler memo;
 
     /**
      * The current cluster alternate; set by {@link ExpressionCluster} and read by {@link Filter}.
@@ -248,24 +257,39 @@ public final class ParseState
     /**
      * A set of additional user-defined parse states.
      */
-    public CustomState[] customStates;
+    public final CustomState[] customStates;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Creates the parse state to be passed to the root parsing expression.
+     * Creates the parse state, given the initial inputs, error state and custom states factories.
      */
-    public ParseState(ErrorState errorState, CustomState[] customStates)
+    public ParseState(
+        ParseInputs inputs,
+        ErrorState errorState,
+        MemoHandler memoHandler,
+        Array<CustomStateFactory> customFactories)
     {
         this.end = 0;
         this.blackEnd = 0;
-        this.precedence = 0;
         this.tree = new BuildParseTree();
-        this.customStates = customStates;
+
+        this.memo = memoHandler;
         this.errors = errorState;
-        this.blocked = new Array<>();
-        this.minPrecedence = new Array<>();
-        this.recordErrors = true;
+
+        this.start = inputs.start;
+        this.blackStart = inputs.blackStart;
+        this.precedence = inputs.precedence;
+        this.recordErrors = inputs.recordErrors;
+        this.seeds = inputs.seeds != null ? inputs.seeds.clone() : null;
+        this.blocked = inputs.blocked.clone();
+        this.minPrecedence = inputs.minPrecedence.clone();
+
+        this.customStates = new CustomState[customFactories.size()];
+        for (int i = 0; i < customStates.length; ++i)
+        {
+            customStates[i] = customFactories.get(i).build(Caster.cast(inputs.customInputs[i]));
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -372,7 +396,7 @@ public final class ParseState
             end,
             blackEnd,
             tree.children.copyFromIndex(treeChildrenCount),
-            JArrays.map(customStates, Changes[]::new, CustomState::extract));
+            JArrays.map(customStates, CustomChanges[]::new, CustomState::extract));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -455,7 +479,7 @@ public final class ParseState
             seeds.clone(),
             blocked.clone(),
             minPrecedence.clone(),
-            JArrays.map(customStates, CustomState::inputs));
+            JArrays.map(customStates, Inputs[]::new, CustomState::inputs));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

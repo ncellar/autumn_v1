@@ -1,9 +1,9 @@
 package com.norswap.autumn.parsing.config;
 
-import com.norswap.autumn.parsing.DefaultErrorState;
-import com.norswap.autumn.parsing.ErrorState;
+import com.norswap.autumn.parsing.state.CustomStateFactory;
+import com.norswap.autumn.parsing.state.errors.DefaultErrorState;
+import com.norswap.autumn.parsing.state.errors.ErrorState;
 import com.norswap.autumn.parsing.Extension;
-import com.norswap.autumn.parsing.state.CustomState;
 import com.norswap.util.Array;
 
 import java.util.function.Supplier;
@@ -20,8 +20,7 @@ public final class ParserConfigurationBuilder
     private Supplier<? extends ErrorState> _errorState;
     private Supplier<? extends MemoHandler> _memoHandler;
 
-    private Array<Supplier<?>> _scoped;
-    private Array<Supplier<? extends CustomState>> _customStates;
+    private Array<CustomStateFactory> _customStates;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -56,26 +55,13 @@ public final class ParserConfigurationBuilder
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Registers a scoped object with the configuration. Returns the scoped index.
-     * This method should only be called from {@link Extension#register}.
-     */
-    public int scoped(Supplier<?> supplier)
-    {
-        if (_scoped == null) _scoped = new Array<>();
-        _scoped.add(supplier);
-        return _scoped.size() - 1;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
      * Registers a custom state with the configuration. Returns the custom state index.
      * This method should only be called from {@link Extension#register}.
      */
-    public int customState(Supplier<? extends CustomState> supplier)
+    public int customState(CustomStateFactory factory)
     {
         if (_customStates == null) _customStates = new Array<>();
-        _customStates.add(supplier);
+        _customStates.add(factory);
         return _customStates.size() - 1;
     }
 
@@ -102,25 +88,11 @@ public final class ParserConfigurationBuilder
             }
 
             @Override
-            public Object[] scoped()
+            public Array<CustomStateFactory> customStateFactories()
             {
-                if (_scoped == null)
-                {
-                    return new Object[0];
-                }
-
-                return _scoped.mapToArray(x -> x.get());
-            }
-
-            @Override
-            public CustomState[] customStates()
-            {
-                if (_customStates == null)
-                {
-                    return new CustomState[0];
-                }
-
-                return _customStates.mapToArray(x -> x.get(), CustomState[]::new);
+                return _customStates == null
+                    ? new Array<>()
+                    : _customStates;
             }
         };
     }

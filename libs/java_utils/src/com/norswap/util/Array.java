@@ -6,27 +6,31 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Queue;
 import java.util.RandomAccess;
-import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
-import java.util.stream.IntStream;
 
 /**
  * An enriched version of {@link java.util.ArrayList}.
  * <p>
  * TODO
  * <ul>
- *     <li>Finish implementing map view</li>
+ *     <li>Other Collection *All methods variants.</li>
+ *     <li>List "indexed addAll" variants.</li>
  *     <li>Implement deepcopy</li>
- *     <li>Implement sublist</li>
- *     <li>Implement Deque</li>
+ *     <li>Extract kernel read/write interfaces</li>
  *     <li>Read only subset</li>
+ *     <li>Implement sublist</li>
+ *     <li>Simplify some JArray overloads using a method to retrieve the store + strong guarantees?</li>
  * </ul>
  */
-public final class Array<T> implements List<T>, RandomAccess, Cloneable
+public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneable
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -140,6 +144,9 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * Creates a new array containing all the items iterated over by the passed iterable.
+     */
     public static <T> Array<T> from(Iterable<? extends T> iterable)
     {
         Array<T> out = new Array<>();
@@ -280,6 +287,41 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         return out;
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Applies the function f to all pairs of elements (src1[i], src2[i]) for all {@code 0 <= i <
+     * min(src1.size(), src2.size())}, placing the results in the corresponding slot of {@code dst},
+     * which is then returned.
+     */
+    public static <T, U, R> Array<R>
+    bimap(Array<T> src1, Array<U> src2, Array<R> dst, BiFunction<? super T, ? super U, ? extends R> f)
+    {
+        int min = Math.min(src1.size(), src2.size());
+
+        assert dst.size() >= min;
+
+        for (int i = 0; i < min; ++i)
+        {
+            dst.set(i, f.apply(src1.get(i), src2.get(i)));
+        }
+
+        return dst;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Applies the function f to all pairs of elements (src1[i], src2[i]) for all {@code 0 <= i <
+     * min(src1.size(), src2.size())}, placing the results in the corresponding slot of a new array,
+     * which is then returned.
+     */
+    public static <T, U, R> Array<R>
+    bimap(Array<T> src1, Array<U> src2, BiFunction<? super T, ? super U, ? extends R> f)
+    {
+        return bimap(src1, src2, new Array<>(Math.min(src1.size(), src2.size())), f);
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // COPY METHODS
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -389,7 +431,7 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // COLLECTION OVERRIDES
+    // COLLECTION IMPLEMENTATION
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
@@ -409,9 +451,10 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
     // ---------------------------------------------------------------------------------------------
 
     @Override
+    @SuppressWarnings("unchecked")
     public boolean contains(Object t)
     {
-        return indexOf(Caster.cast(t)) >= 0;
+        return indexOf(t) >= 0;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -557,13 +600,57 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // LIST OVERRIDES
+    // ADD_ALL VARIANTS
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Like {@link #addAll(Collection)}, but optimized for arrays.
+     * <p>
+     * If {@code iterable} is null, it will be treated as empty.
+     */
+    public boolean addAll(Array<? extends T> array)
+    {
+        int dstPos = next;
+        int size = array == null ? 0 : array.size();
+
+        if (size == 0)
+        {
+            return false;
+        }
+
+        ensureSize(next + size);
+        copy(array, 0, dstPos, size);
+        return true;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Like {@link #addAll(Collection)}, but for iterables.
+     * <p>
+     * If {@code iterable} is null, it will be treated as empty.
+     */
+    public boolean addAll(Iterable<? extends T> iterable)
+    {
+        int size = next;
+
+        if (iterable != null)
+        {
+            iterable.forEach(this::add);
+        }
+
+        return size != next;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // LIST IMPLEMENTATION
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
+    @SuppressWarnings("unchecked")
     public T get(int index)
     {
-        return Caster.cast(array[index]);
+        return (T) array[index];
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -662,30 +749,6 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
         throw new UnsupportedOperationException("Array doesn't support sublist for now");
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public int capacity()
-    {
-        return array.length;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public boolean addAll(Array<? extends T> array)
-    {
-        int dstPos = next;
-        int size = array == null ? 0 : array.size();
-
-        if (size == 0)
-        {
-            return false;
-        }
-
-        ensureSize(next + size);
-        copy(array, 0, dstPos, size);
-        return true;
-    }
-
     // ---------------------------------------------------------------------------------------------
 
     /**
@@ -720,8 +783,114 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    // QUEUE IMPLEMENTATION
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public boolean offer(T t)
+    {
+        return add(t);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public T remove()
+    {
+        if (next == 0)
+        {
+            throw new NoSuchElementException();
+        }
+
+        T out = (T) array[next - 1];
+        array[--next] = null;
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public T poll()
+    {
+        return next == 0 ? null : remove();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public T peek()
+    {
+        return next == 0 ? null : (T) array[next - 1];
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public T element()
+    {
+        if (next == 0)
+        {
+            throw new NoSuchElementException();
+        }
+
+        return (T) array[next - 1];
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // QUEUE-RELATED ALIASES / METHODS
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Alias for {@link #offer}.
+     */
+    public void push(T t)
+    {
+        add(t);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Alias for {@link #remove}.
+     */
+    public T pop()
+    {
+        return remove();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Like {@link #poll} but returns {@code t} whenever it would return null.
+     */
+    public T popOr(T t)
+    {
+        return next == 0 ? t : pop();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Like {@link #peek} but returns {@code t} whenever it would return null.
+     */
+    public T peekOr(T t)
+    {
+        return next == 0 ? t : peek();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     // NEW OPERATIONS
     ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public int capacity()
+    {
+        return array.length;
+    }
+
+    // ---------------------------------------------------------------------------------------------
 
     public void ensureSize(int size)
     {
@@ -766,62 +935,27 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
-    public void push(T t)
-    {
-        add(t);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public T pop()
-    {
-        return Caster.cast(array[--next]);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public T popOrNull()
-    {
-        return next == 0 ? null : pop();
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public T popOr(T t)
-    {
-        return next == 0 ? t : pop();
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @SuppressWarnings("unchecked")
-    public T peek()
-    {
-        return (T) array[next - 1];
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public T peekOrNull()
-    {
-        return next == 0 ? null : peek();
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public T peekOr(T t)
-    {
-        return next == 0 ? t : peek();
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
     @SuppressWarnings("unchecked")
     public T popush(T t)
     {
         T out = (T) array[next - 1];
         array[next - 1] = t;
         return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @SuppressWarnings("unchecked")
+    public T first()
+    {
+        return (T) array[0];
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void setFirst(T t)
+    {
+        array[0] = t;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -1094,23 +1228,20 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Like {@link #addAll(Collection)}, but for iterables.
-     * <p>
-     * If {@code iterable} is null, it will be treated as empty.
+     * Like {@link #forEach(Consumer)} but the action takes the index as addition argument.
      */
-    public boolean addAll(Iterable<? extends T> iterable)
+    @SuppressWarnings("unchecked")
+    public void forEach(BiConsumer<? super T, Integer> action)
     {
-        int size = next;
-
-        if (iterable != null)
+        for (int i = 0; i < next; ++i)
         {
-            iterable.forEach(this::add);
+            action.accept((T) array[i], i);
         }
-
-        return size != next;
     }
 
     // ---------------------------------------------------------------------------------------------
+
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // OBJECT OVERRIDES
@@ -1340,503 +1471,6 @@ public final class Array<T> implements List<T>, RandomAccess, Cloneable
             Array.this.add(index, t);
             // ++index; // remove this from superclass to satisfy method contract
             direction = 0;
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // MAP VIEW
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * A map view of the array. The map does not support null values: null values are used to
-     * indicate the absence of values for indices in the [0, size[ range.
-     */
-    private class MapView implements Map<Integer, T>
-    {
-        ////////////////////////////////////////////////////////////////////////////////////////////
-
-        {
-            this.size = (int) Array.this.stream().filter(x -> x != null).count();
-        }
-
-        ////////////////////////////////////////////////////////////////////////////////////////////
-
-        private int size;
-
-        ////////////////////////////////////////////////////////////////////////////////////////////
-
-        @Override
-        public int size()
-        {
-            return size;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean isEmpty()
-        {
-            return size == 0;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean containsKey(Object key)
-        {
-            int i = (int) key;
-            return 0 <= i && i < next && array[i] != null;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean containsValue(Object value)
-        {
-            return Array.this.contains(value);
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public T get(Object key)
-        {
-            int i = (int) key;
-            return Array.this.get(i);
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public T put(Integer key, T value)
-        {
-            T prev = Array.this.put(key, value);
-            if (prev == null) ++size;
-            return prev;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public T remove(Object key)
-        {
-            T prev = Array.this.set((int) key, null);
-            if (prev != null) --size;
-            return prev;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public void putAll(Map<? extends Integer, ? extends T> m)
-        {
-            m.forEach(this::put);
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public void clear()
-        {
-            size = 0;
-            Array.this.truncate(0);
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        /**
-         * @inheritDoc
-         * <p>
-         * MapView precisions: removal will leave null elements in the place of removed elements.
-         */
-        @Override
-        public Set<Integer> keySet()
-        {
-            return new KeySetView();
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public Collection<T> values()
-        {
-            return Array.this;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public Set<Entry<Integer, T>> entrySet()
-        {
-            return new EntrySetView();
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public int hashCode()
-        {
-            return entrySet().hashCode();
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean equals(Object o)
-        {
-            if (this == o) return true;
-            if (!(o instanceof Map)) return false;
-
-            Map that = (Map<?, ?>) o;
-
-            if (size() != that.size()) return false;
-            return entrySet().equals(that.entrySet());
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // KEY SET VIEW
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    private class KeySetView implements Set<Integer>
-    {
-        ////////////////////////////////////////////////////////////////////////////////////////////
-
-        {
-            this.size = (int) Array.this.stream().filter(x -> x != null).count();
-        }
-
-        ////////////////////////////////////////////////////////////////////////////////////////////
-
-        private int size;
-
-        ////////////////////////////////////////////////////////////////////////////////////////////
-
-        @Override
-        public int size()
-        {
-            return size;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean isEmpty()
-        {
-            return size == 0;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean contains(Object o)
-        {
-            int i = (int) o;
-            return 0 <= i && i < next && array[i] != null;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public Iterator<Integer> iterator()
-        {
-            // TODO
-            return null;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public Object[] toArray()
-        {
-            return IntStream.range(0, next).filter(i -> array[i] != null).boxed().toArray();
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public <U> U[] toArray(U[] a)
-        {
-            return IntStream.range(0, next).filter(i -> array[i] != null).boxed()
-                .toArray(size -> JArrays.newInstance(a, size));
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean add(Integer integer)
-        {
-            throw new UnsupportedOperationException();
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean remove(Object o)
-        {
-            boolean out = contains(o);
-
-            if (out)
-            {
-                --size;
-                int i = (int) o;
-                array[i] = null;
-            }
-
-            return out;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean containsAll(Collection<?> c)
-        {
-            for (Object o: c)
-            {
-                if (!contains(o))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean addAll(Collection<? extends Integer> c)
-        {
-            throw new UnsupportedOperationException();
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean retainAll(Collection<?> c)
-        {
-            boolean modified = false;
-
-            for (int i = 0; i < next; ++i)
-            {
-                if (array[i] != null && !c.contains(i))
-                {
-                    --size;
-                    modified = true;
-                    array[i] = null;
-                }
-            }
-
-            return modified;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean removeAll(Collection<?> c)
-        {
-            boolean modified = false;
-
-            for (Object o: c)
-            {
-                if (contains(o))
-                {
-                    --size;
-                    modified = true;
-                    int i = (int) o;
-                    array[i] = null;
-                }
-            }
-
-            return modified;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public void clear()
-        {
-            size = 0;
-            Array.this.truncate(0);
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public int hashCode()
-        {
-            int hash = 0;
-
-            for (int i: this)
-            {
-                if (array[i] != null) hash += i;
-            }
-
-            return hash;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean equals(Object o)
-        {
-            if (this == o) return true;
-            if (!(o instanceof Set)) return false;
-
-            Set that = (Set<?>) o;
-
-            if (size() != that.size()) return false;
-            return containsAll(that);
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // ENTRY SET VIEW
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    private class EntrySetView implements Set<Map.Entry<Integer, T>>
-    {
-        ////////////////////////////////////////////////////////////////////////////////////////////
-
-        {
-            this.size = (int) Array.this.stream().filter(x -> x != null).count();
-        }
-
-        ////////////////////////////////////////////////////////////////////////////////////////////
-
-        private int size;
-
-        ////////////////////////////////////////////////////////////////////////////////////////////
-
-        @Override
-        public int size()
-        {
-            return size;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean isEmpty()
-        {
-            return size == 0;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public boolean contains(Object o)
-        {
-            Map.Entry<Integer, T> entry = (Map.Entry) o;
-            int i = entry.getKey();
-            return i >= 0 && i < next && array[i].equals(entry.getValue());
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public Iterator<Map.Entry<Integer, T>> iterator()
-        {
-            // TODO
-            return null;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public Object[] toArray()
-        {
-            // TODO
-            return new Object[0];
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public <T> T[] toArray(T[] a)
-        {
-            // TODO
-            return null;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean add(Map.Entry<Integer, T> entry)
-        {
-            throw new UnsupportedOperationException();
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean remove(Object o)
-        {
-            // TODO
-            return false;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean containsAll(Collection<?> c)
-        {
-            // TODO
-            return false;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean addAll(Collection<? extends Map.Entry<Integer, T>> c)
-        {
-            throw new UnsupportedOperationException();
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean retainAll(Collection<?> c)
-        {
-            // TODO
-            return false;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean removeAll(Collection<?> c)
-        {
-            // TODO
-            return false;
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public void clear()
-        {
-            size = 0;
-            Array.this.truncate(0);
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public int hashCode()
-        {
-            // TODO
-            return super.hashCode();
-        }
-
-        // -----------------------------------------------------------------------------------------
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            // TODO
-            return super.equals(obj);
         }
     }
 

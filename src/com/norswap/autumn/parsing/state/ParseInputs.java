@@ -3,6 +3,7 @@ package com.norswap.autumn.parsing.state;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster.PrecedenceEntry;
 import com.norswap.autumn.parsing.expressions.LeftRecursive;
 import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.state.CustomState.Inputs;
 import com.norswap.util.Array;
 import com.norswap.util.annotations.Nullable;
 
@@ -23,7 +24,7 @@ public final class ParseInputs
     public final @Nullable Array<Seed> seeds;
     public final Array<LeftRecursive> blocked;
     public final Array<PrecedenceEntry> minPrecedence;
-    public final Object[] customInputs;
+    public final Inputs[] customInputs;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -36,7 +37,7 @@ public final class ParseInputs
         Array<Seed> seeds,
         Array<LeftRecursive> blocked,
         Array<PrecedenceEntry> minPrecedence,
-        Object[] customInputs)
+        Inputs[] customInputs)
     {
         this.pe = pe;
         this.start = start;

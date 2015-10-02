@@ -64,9 +64,9 @@ public final class NullabilityCalculator
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void after(Slot<ParsingExpression> pe, Array<Slot<ParsingExpression>> children)
+    public void after(Slot<ParsingExpression> slot, Array<Slot<ParsingExpression>> children)
     {
-        Nullability n = nullabilities.get(pe.initial);
+        Nullability n = nullabilities.get(slot.initial);
 
         if (n.resolved) {
             return;

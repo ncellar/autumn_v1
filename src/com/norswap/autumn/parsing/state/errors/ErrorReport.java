@@ -1,4 +1,4 @@
-package com.norswap.autumn.parsing;
+package com.norswap.autumn.parsing.state.errors;
 
 /**
  * Encapsulate error information about the parse.

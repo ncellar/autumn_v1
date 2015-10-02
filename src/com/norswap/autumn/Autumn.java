@@ -75,7 +75,7 @@ public final class Autumn
 
     public static ParseResult parseSource(Grammar grammar, Source source, ParserConfiguration config)
     {
-        return Parser.parse(grammar, source, config);
+        return new Parser(grammar, source, config).parseRoot();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

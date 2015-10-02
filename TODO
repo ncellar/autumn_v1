@@ -2,8 +2,14 @@
 TODO
 
 DEBUGGER
-    - tags ordering issue (stmtexpression in example)
-    - must invoke parser with parseinput & config options
+    - allow capturing parse tree node origin
+    - bookmarks (shared, synchronized) and history (forked)
+
+    document
+        - memo handler in parse state
+
+    consider later:
+        - make location info class
 
 GUMPTION
     - use Array instead of [] for first and children in PE
@@ -24,6 +30,8 @@ TODO FURTHER SMALL
 - allow options in grammar files, namely for root and whitespace spec
 
 - well formedness check (ford: WF -- can't loop without consuming)
+
+- rename MemoHandler to MemoState
 
 - scoped memoization
     - MemoScope

@@ -12,7 +12,7 @@ public final class Memo extends UnaryParsingExpression
     @Override
     public void parse(Parser parser, ParseState state)
     {
-        ParseChanges changes = parser.memoHandler.get(this, state);
+        ParseChanges changes = state.memo.get(this, state);
 
         if (changes != null)
         {
@@ -21,7 +21,7 @@ public final class Memo extends UnaryParsingExpression
         }
 
         operand.parse(parser, state);
-        parser.memoHandler.memoize(operand, state, state.extract());
+        state.memo.memoize(operand, state, state.extract());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

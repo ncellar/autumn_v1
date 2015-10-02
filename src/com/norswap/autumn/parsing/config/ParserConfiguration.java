@@ -1,7 +1,8 @@
 package com.norswap.autumn.parsing.config;
 
-import com.norswap.autumn.parsing.ErrorState;
-import com.norswap.autumn.parsing.state.CustomState;
+import com.norswap.autumn.parsing.state.CustomStateFactory;
+import com.norswap.autumn.parsing.state.errors.ErrorState;
+import com.norswap.util.Array;
 
 /**
  * [Immutable] The parser configuration allows the user to configure operational details of the
@@ -29,9 +30,7 @@ public interface ParserConfiguration
 
     MemoHandler memoHandler();
 
-    Object[] scoped();
-
-    CustomState[] customStates();
+    Array<CustomStateFactory> customStateFactories();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

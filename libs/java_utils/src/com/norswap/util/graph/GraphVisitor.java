@@ -28,6 +28,9 @@ import static com.norswap.util.graph.NodeState.*;
  * Implementation of this class must override the {@link #children(Node))} method, which is
  * responsible to indicate what the children of the passed node are. You can play with this method
  * to change the behaviour of the walk (e.g. only walk over nodes of interest).
+ * <p>
+ * Visitors are meant to be single-use: they can maintain state within the instance. To perform
+ * another visit, create another instance.
  */
 public abstract class GraphVisitor<Node>
 {
@@ -61,7 +64,7 @@ public abstract class GraphVisitor<Node>
      * Called after we have attempted to visit all the children of the node. Guaranteed to be called
      * only once per node.
      */
-    public void after(Slot<Node> pe, Array<Slot<Node>> children) {}
+    public void after(Slot<Node> node, Array<Slot<Node>> children) {}
 
     // ---------------------------------------------------------------------------------------------
 

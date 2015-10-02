@@ -1,5 +1,7 @@
 package com.norswap.autumn.parsing;
 
+import com.norswap.autumn.parsing.state.errors.ErrorReport;
+
 /**
  * TODO
  */

@@ -22,7 +22,7 @@ import static com.norswap.autumn.parsing.ParsingExpressionFlags.PEF_UNARY_INVISI
  *   won't stop at the root expression itself, but that its direct children (at least) will be
  *   printed as well. Has no effect if cutoffAtNames is false.
  */
-public class Printer extends ParsingExpressionVisitor
+public final class Printer extends ParsingExpressionVisitor
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

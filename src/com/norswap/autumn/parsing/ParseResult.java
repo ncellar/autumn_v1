@@ -1,7 +1,17 @@
 package com.norswap.autumn.parsing;
 
+import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.state.CustomState.Result;
+import com.norswap.autumn.parsing.state.errors.ErrorChanges;
+import com.norswap.autumn.parsing.state.errors.ErrorReport;
+import com.norswap.autumn.parsing.state.ParseChanges;
+import com.norswap.autumn.parsing.state.ParseInputs;
+import com.norswap.autumn.parsing.tree.BuildParseTree;
 import com.norswap.autumn.parsing.tree.ParseTree;
+import com.norswap.util.Array;
+import com.norswap.util.JArrays;
+
+import java.util.Collections;
 
 /**
  * [Immutable] The user-facing result of a parse.
@@ -45,7 +55,7 @@ public final class ParseResult
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ParseResult(
+    public ParseResult(
         boolean matched,
         boolean succeeded,
         int endPosition,
@@ -59,6 +69,32 @@ public final class ParseResult
         this.tree = tree;
         this.error = error;
         this.customResults = customResults;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public ParseResult(Source source, ParseInputs inputs, ParseChanges changes, ErrorChanges errorChanges)
+    {
+        this.matched = inputs.start == 0 && changes.end == source.length();
+        this.succeeded = changes.succeeded();
+        this.endPosition = changes.end;
+
+        this.customResults = JArrays.bimap(
+            inputs.customInputs,
+            changes.customChanges,
+            Result[]::new,
+            (in, out) -> out.result(in));
+
+        Array<BuildParseTree> children = changes.children;
+
+        this.tree = children == null
+            ? new BuildParseTree().build()
+            : children.size() == 1
+                ? children.get(0).build()
+                : new ParseTree(
+                    null, null, Collections.emptySet(), children.map(BuildParseTree::build));
+
+        this.error = errorChanges.report(source);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

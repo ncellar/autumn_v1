@@ -1,6 +1,7 @@
 package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.Autumn;
+import com.norswap.autumn.parsing.config.ParserConfiguration;
 import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.support.GrammarCompiler;
 import com.norswap.autumn.parsing.support.GrammarGrammar;
@@ -76,7 +77,8 @@ public final class Grammar
     // TODO EXCEPTIONS
     public static GrammarBuilder fromSource(Source source)
     {
-        ParseResult result = Parser.parse(GrammarGrammar.grammar, source);
+        ParseResult result =
+            new Parser(GrammarGrammar.grammar, source, ParserConfiguration.build()).parseRoot();
 
         if (!result.matched)
         {

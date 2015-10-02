@@ -1,10 +1,15 @@
 package com.norswap.autumn.parsing.debugger;
 
 import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.state.ParseState;
+import com.norswap.util.Array;
 import com.norswap.util.JArrays;
 import com.norswap.util.JIntArrays;
 
-public final class ExecutionLocation
+/**
+ *
+ */
+public final class ExecutionLocation implements ExecutionLocator
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -34,6 +39,25 @@ public final class ExecutionLocation
     {
         this.exprs = exprs;
         this.invocationIndices = invocationIndices;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public Match match(
+        Object locatorState,
+        ParseState parseState,
+        Array<NodeInfo> spine,
+        int index,
+        ParsingExpression pe)
+    {
+        int depth = spine.size();
+
+        return exprs[depth] == pe && invocationIndices[depth] == index
+            ? exprs.length == depth + 1
+                ? Match.MATCH
+                : Match.PREFIX
+            : Match.NONE;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
