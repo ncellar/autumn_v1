@@ -1,15 +1,12 @@
 package com.norswap.autumn.parsing;
 
-import com.norswap.autumn.parsing.config.MemoHandler;
 import com.norswap.autumn.parsing.config.ParserConfiguration;
 import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.state.CustomState;
 import com.norswap.autumn.parsing.state.CustomState.Result;
 import com.norswap.autumn.parsing.state.CustomStateFactory;
-import com.norswap.autumn.parsing.state.errors.ErrorState;
 import com.norswap.autumn.parsing.state.ParseInputs;
 import com.norswap.autumn.parsing.state.ParseState;
-import com.norswap.autumn.parsing.tree.BuildParseTree;
 import com.norswap.util.Array;
 import com.norswap.util.JArrays;
 

@@ -23,8 +23,6 @@ import com.norswap.util.Caster;
 import com.norswap.util.JArrays;
 import com.norswap.util.annotations.Nullable;
 
-import static com.norswap.util.Caster.cast;
-
 /**
  * An instance of this class is passed to every parsing expression invocation {@link
  * ParsingExpression#parse}.

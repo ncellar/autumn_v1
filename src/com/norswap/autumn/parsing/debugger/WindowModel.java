@@ -1,6 +1,12 @@
 package com.norswap.autumn.parsing.debugger;
 
-import com.norswap.autumn.parsing.state.ParseInputs;
+import com.norswap.autumn.parsing.debugger.locators.AfterLocator;
+import com.norswap.autumn.parsing.debugger.locators.BeforeLocator;
+import com.norswap.autumn.parsing.debugger.locators.ErrorLocator;
+import com.norswap.autumn.parsing.debugger.locators.ExecutionLocator;
+import com.norswap.autumn.parsing.debugger.locators.NextLocator;
+import com.norswap.autumn.parsing.debugger.store.DebuggerStore;
+import com.norswap.autumn.parsing.state.errors.ErrorLocation;
 import com.norswap.util.Array;
 
 /**
@@ -15,6 +21,7 @@ public final class WindowModel
     public final Invocation invocation;
     public final Array<Invocation> childrenInvocation;
     public final Array<NodeInfo> spine;
+    public final Array<CaptureInfo> captures;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -23,13 +30,15 @@ public final class WindowModel
         ExecutionLocation location,
         Invocation invocation,
         Array<Invocation> childrenInvocation,
-        Array<NodeInfo> spine)
+        Array<NodeInfo> spine,
+        Array<CaptureInfo> captures)
     {
         this.debugger = debugger;
         this.location = location;
         this.invocation = invocation;
         this.childrenInvocation = childrenInvocation;
         this.spine = spine;
+        this.captures = captures;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -37,61 +46,46 @@ public final class WindowModel
     public WindowModel goUpTree(ExecutionLocator locator)
     {
         DebuggerStore store = debugger.store;
-        store.targetInvocation = null;
+        WindowModel out = null;
 
-        int i = spine.size() - 1;
-        while (store.targetInvocation == null && i >= 0)
+        for (int i = spine.size() - 1; out == null && i >= 0; -- i)
         {
-            store.setTarget(locator, spine.copyOfPrefix(i));
-            ParseInputs inputs = spine.get(i).inputs;
-            debugger.parser.parse(inputs);
-            -- i;
+            out = store.windowFor(locator, spine.copyOfPrefix(i), spine.get(i).inputs);
         }
 
-        if (store.targetInvocation == null)
-        {
+        if (out == null) {
             throw new DebuggerException("Couldn't find the specified parsing expression invocation.");
         }
 
-        return windowFromStore();
+        return out;
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public WindowModel stepOver()
     {
-        return goUpTree(NextLocator.builder()
-            .after(location)
-            .build());
+        return goUpTree(new AfterLocator(location, new NextLocator()));
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public WindowModel stepBack()
     {
-        return goUpTree(NextLocator.builder()
-            .before(location)
-            .build());
+        return goUpTree(new BeforeLocator(location, new NextLocator()));
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public WindowModel stepOver(int position)
     {
-        return goUpTree(NextLocator.builder()
-            .position(position)
-            .after(location)
-            .build());
+        return goUpTree(new AfterLocator(location, new NextLocator(position)));
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public WindowModel stepBack(int position)
     {
-        return goUpTree(NextLocator.builder()
-            .position(position)
-            .before(location)
-            .build());
+        return goUpTree(new BeforeLocator(location, new NextLocator(position)));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -100,25 +94,19 @@ public final class WindowModel
     {
         assert !childrenInvocation.isEmpty();
 
-        DebuggerStore store = debugger.store;
-        store.setTarget(NextLocator.builder().build(), spine.clone());
-        debugger.parser.parse(invocation.inputs);
-
-        return windowFromStore();
+        return debugger.store.windowFor(
+            new NextLocator(),
+            spine.clone(),
+            invocation.inputs);
     }
+    // ---------------------------------------------------------------------------------------------
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    WindowModel windowFromStore()
+    public WindowModel stepToError(ErrorLocation errorLocation)
     {
-        DebuggerStore store = debugger.store;
-
-        return new WindowModel(
-            debugger,
-            store.location(),
-            store.targetInvocation,
-            store.targetChildrenInvocation,
-            store.spine);
+        return debugger.store.windowFor(
+            new ErrorLocator(errorLocation),
+            spine.clone(),
+            invocation.inputs);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

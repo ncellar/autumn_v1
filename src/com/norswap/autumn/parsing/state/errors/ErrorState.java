@@ -4,6 +4,8 @@ import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.state.ParseState;
 
+import java.util.Collection;
+
 /**
  * See {@link ParseState}, section "Error Handling".
  * <p>

@@ -2,7 +2,13 @@
 TODO
 
 DEBUGGER
-    - allow capturing parse tree node origin
+    - rework package
+        - positioning in next and error locator
+            - invert locate
+                - check locators (done: after, before) |<-
+        - integrate own capture info
+        - register state tracking custom state
+        - why do I have a distinction between ExecutionLocation and spine?
     - bookmarks (shared, synchronized) and history (forked)
 
     document
@@ -10,6 +16,7 @@ DEBUGGER
 
     consider later:
         - make location info class
+        - document the "non-inspection" behaviour of beforeLocator
 
 GUMPTION
     - use Array instead of [] for first and children in PE
@@ -44,6 +51,8 @@ TODO FURTHER SMALL
     - advantage: handles reserved identifiers
 
 - syntax for custom operators ($name?)
+
+- repeating locators (which can locate multiple locations if invoked repeatedly)
 
 TODO FURTHER BIG
 

@@ -1,6 +1,7 @@
 package com.norswap.autumn.parsing.debugger;
 
 import com.norswap.autumn.parsing.Parser;
+import com.norswap.autumn.parsing.debugger.store.DebuggerStore;
 
 /**
  *

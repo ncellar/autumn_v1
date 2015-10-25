@@ -162,8 +162,6 @@ public abstract class ParsingExpression implements DeepCopy
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // COPYING
 
-    // ---------------------------------------------------------------------------------------------
-
     /**
      * Parsing expression must use this method to perform a deep copy of their own data in place.
      * They must not copy their extension objects, nor their children. They must, however, copy any
@@ -172,10 +170,7 @@ public abstract class ParsingExpression implements DeepCopy
      * <p>
      * This is used by {@link #deepCopy()} and called right after a parsing expression was cloned.
      */
-    public void copyOwnData()
-    {
-
-    }
+    public void copyOwnData() {}
 
     // ---------------------------------------------------------------------------------------------
 

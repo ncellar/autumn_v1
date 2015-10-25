@@ -21,13 +21,14 @@ import java.util.function.Predicate;
  * <p>
  * TODO
  * <ul>
- *     <li>Other Collection *All methods variants.</li>
+ *     <li>Robustify collection & list methods to accept null a maximum of the time?</li>
  *     <li>List "indexed addAll" variants.</li>
  *     <li>Implement deepcopy</li>
  *     <li>Extract kernel read/write interfaces</li>
  *     <li>Read only subset</li>
  *     <li>Implement sublist</li>
  *     <li>Simplify some JArray overloads using a method to retrieve the store + strong guarantees?</li>
+ *     <li>Methods to work with primitive arrays?</li>
  * </ul>
  */
 public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneable
@@ -533,14 +534,7 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
     @Override
     public boolean containsAll(Collection<?> c)
     {
-        for (Object o: c)
-        {
-            if (!contains(o)) {
-                return false;
-            }
-        }
-
-        return true;
+        return containsAll((Iterable<?>) c);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -551,16 +545,9 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
      * If {@code collection} is null, it will be treated as empty.
      */
     @Override
-    public boolean addAll(Collection<? extends T> collection)
+    public boolean addAll(Collection<? extends T> c)
     {
-        int size = next;
-
-        if (collection != null)
-        {
-            collection.forEach(this::add);
-        }
-
-        return size != next;
+        return addAll((Iterable<? extends T>) c);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -568,9 +555,7 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
     @Override
     public boolean removeAll(Collection<?> c)
     {
-        int size = next;
-        c.forEach(this::remove);
-        return size != next;
+        return removeAll((Iterable<?>) c);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -600,8 +585,60 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // ADD_ALL VARIANTS
+    // COLLECTION METHODS VARIANTS
     ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Like {@link #containsAll(Collection)}, but for iterables.
+     */
+    public boolean containsAll(Iterable<?> iterable)
+    {
+        for (Object t: iterable)
+        {
+            if (!contains(t)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Like {@link #removeAll(Collection)}, but for iterables.
+     */
+    public boolean removeAll(Iterable<?> iterable)
+    {
+        int size = next;
+        iterable.forEach(this::remove);
+        return size != next;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Like {@link #retainAll(Collection)}, but for iterables.
+     * <p>
+     * Note that the collection overload will be faster if the collection support
+     * sub-linear-time {@link Collection#contains}.
+     */
+    public boolean retainAll(Iterable<?> iterable)
+    {
+        int size = next;
+
+        for (Object o: iterable)
+        {
+            int i = indexOf(o);
+            if (i >= 0) {
+                remove(i);
+            }
+        }
+
+        return size != next;
+    }
+
+    // ---------------------------------------------------------------------------------------------
 
     /**
      * Like {@link #addAll(Collection)}, but optimized for arrays.
@@ -885,9 +922,23 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
     // NEW OPERATIONS
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Return the size of the java array currently backing this Array object. The Array can grow to
+     * include this many elements before a resize operation is necessary.
+     */
     public int capacity()
     {
         return array.length;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Return the java array currently backing this Array object.
+     */
+    public Object[] backingArray()
+    {
+        return array;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -1241,7 +1292,14 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
 
     // ---------------------------------------------------------------------------------------------
 
-
+    /**
+     * Swap the backing java array by one whose size is the number of elements held in the
+     * collection.
+     */
+    public void compact()
+    {
+        array = toArray();
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // OBJECT OVERRIDES
@@ -1322,6 +1380,21 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
     public Array<T> clone()
     {
         return new Array(array.clone(), next);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // OBJECT-RELATED METHODS
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Returns a clone of this array, where the size of the backing java array is the number of
+     * items in the collection.
+     */
+    public Array<T> compactClone()
+    {
+        Array<T> out = Array.fromUnsafe(new Object[next], next);
+        System.arraycopy(array, 0, out.array, 0, next);
+        return out;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

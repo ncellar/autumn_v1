@@ -1,38 +1,32 @@
-package com.norswap.autumn.parsing.debugger;
+package com.norswap.autumn.parsing.debugger.store;
 
-import com.norswap.autumn.parsing.ParsingExpression;
-import com.norswap.autumn.parsing.state.ParseInputs;
+import com.norswap.autumn.parsing.expressions.Capture;
 import com.norswap.util.annotations.Nullable;
 
-/**
- *
- */
-public final class NodeInfo
+public final class CaptureList
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public final ParsingExpression pe;
-
+    public final Capture capture;
     public final int index;
-
-    public final @Nullable ParseInputs inputs;
+    public final @Nullable CaptureList next;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public NodeInfo(ParsingExpression pe, int index)
+    CaptureList(Capture capture, int index)
     {
-        this.pe = pe;
+        this.capture = capture;
         this.index = index;
-        this.inputs = null;
+        this.next = null;
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public NodeInfo(ParsingExpression pe, int index, ParseInputs inputs)
+    CaptureList(Capture capture, int index, CaptureList next)
     {
-        this.pe = pe;
+        this.capture = capture;
         this.index = index;
-        this.inputs = inputs;
+        this.next = next;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
