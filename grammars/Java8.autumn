@@ -19,15 +19,17 @@ Root = CompilationUnit "\u001a"? !_;
 //  literals does not apply here.
 //-------------------------------------------------------------------------
 
+WhiteSpace
+    = [ \t\r\n\f]+ ;
+    
+MultiLineComment
+    = "/*" _ *+ "*/" ;
+    
+LineComment
+    = "//" _ *+ [\r\n] ;
+
 Spacing
-    = ( [ \t\r\n\f]+       // WhiteSpace
-      / "/*" _ *+ "*/"     // TraditionalComment
-      / "//" _ *+ [\r\n]   // EndOfLineComment
-      )* ;
-
-Identifier ^%= !Keyword Letter LetterOrDigit* ;
-
-QualIdent = Identifier ,+ '.';
+    = ( WhiteSpace / MultiLineComment / LineComment )* ;
 
 Letter = [a-z] / [A-Z] / [_$] ;
 
@@ -53,57 +55,63 @@ Keyword
 
       ) !LetterOrDigit ;
 
-ABSTRACT     ^%= "abstract"     !LetterOrDigit  ;
-ASSERT       ^%= "assert"       !LetterOrDigit  ;
-BOOLEAN      ^%= "boolean"      !LetterOrDigit  ;
-BREAK        ^%= "break"        !LetterOrDigit  ;
-BYTE         ^%= "byte"         !LetterOrDigit  ;
-CASE         ^%= "case"         !LetterOrDigit  ;
-CATCH        ^%= "catch"        !LetterOrDigit  ;
-CHAR         ^%= "char"         !LetterOrDigit  ;
-CLASS        ^%= "class"        !LetterOrDigit  ;
-CONTINUE     ^%= "continue"     !LetterOrDigit  ;
-DEFAULT      ^%= "default"      !LetterOrDigit  ;
-DOUBLE       ^%= "double"       !LetterOrDigit  ;
-DO           ^%= "do"           !LetterOrDigit  ;
-ELSE         ^%= "else"         !LetterOrDigit  ;
-ENUM         ^%= "enum"         !LetterOrDigit  ;
-EXTENDS      ^%= "extends"      !LetterOrDigit  ;
-FALSE        ^%= "false"        !LetterOrDigit  ;
-FINALLY      ^%= "finally"      !LetterOrDigit  ;
-FINAL        ^%= "final"        !LetterOrDigit  ;
-FLOAT        ^%= "float"        !LetterOrDigit  ;
-FOR          ^%= "for"          !LetterOrDigit  ;
-IF           ^%= "if"           !LetterOrDigit  ;
-IMPLEMENTS   ^%= "implements"   !LetterOrDigit  ;
-IMPORT       ^%= "import"       !LetterOrDigit  ;
-INTERFACE    ^%= "interface"    !LetterOrDigit  ;
-INT          ^%= "int"          !LetterOrDigit  ;
-INSTANCEOF   ^%= "instanceof"   !LetterOrDigit  ;
-LONG         ^%= "long"         !LetterOrDigit  ;
-NATIVE       ^%= "native"       !LetterOrDigit  ;
-NEW          ^%= "new"          !LetterOrDigit  ;
-NULL         ^%= "null"         !LetterOrDigit  ;
-PACKAGE      ^%= "package"      !LetterOrDigit  ;
-PRIVATE      ^%= "private"      !LetterOrDigit  ;
-PROTECTED    ^%= "protected"    !LetterOrDigit  ;
-PUBLIC       ^%= "public"       !LetterOrDigit  ;
-RETURN       ^%= "return"       !LetterOrDigit  ;
-SHORT        ^%= "short"        !LetterOrDigit  ;
-STATIC       ^%= "static"       !LetterOrDigit  ;
-STRICTFP     ^%= "strictfp"     !LetterOrDigit  ;
-SUPER        ^%= "super"        !LetterOrDigit  ;
-SWITCH       ^%= "switch"       !LetterOrDigit  ;
-SYNCHRONIZED ^%= "synchronized" !LetterOrDigit  ;
-THIS         ^%= "this"         !LetterOrDigit  ;
-THROWS       ^%= "throws"       !LetterOrDigit  ;
-THROW        ^%= "throw"        !LetterOrDigit  ;
-TRANSIENT    ^%= "transient"    !LetterOrDigit  ;
-TRUE         ^%= "true"         !LetterOrDigit  ;
-TRY          ^%= "try"          !LetterOrDigit  ;
-VOID         ^%= "void"         !LetterOrDigit  ;
-VOLATILE     ^%= "volatile"     !LetterOrDigit  ;
-WHILE        ^%= "while"        !LetterOrDigit  ;
+Identifier
+    ^%= !Keyword Letter LetterOrDigit* ;
+
+QualIdent
+    = Identifier ,+ '.';
+
+ABSTRACT     ^%= "abstract"     !LetterOrDigit ;
+ASSERT       ^%= "assert"       !LetterOrDigit ;
+BOOLEAN      ^%= "boolean"      !LetterOrDigit ;
+BREAK        ^%= "break"        !LetterOrDigit ;
+BYTE         ^%= "byte"         !LetterOrDigit ;
+CASE         ^%= "case"         !LetterOrDigit ;
+CATCH        ^%= "catch"        !LetterOrDigit ;
+CHAR         ^%= "char"         !LetterOrDigit ;
+CLASS        ^%= "class"        !LetterOrDigit ;
+CONTINUE     ^%= "continue"     !LetterOrDigit ;
+DEFAULT      ^%= "default"      !LetterOrDigit ;
+DOUBLE       ^%= "double"       !LetterOrDigit ;
+DO           ^%= "do"           !LetterOrDigit ;
+ELSE         ^%= "else"         !LetterOrDigit ;
+ENUM         ^%= "enum"         !LetterOrDigit ;
+EXTENDS      ^%= "extends"      !LetterOrDigit ;
+FALSE        ^%= "false"        !LetterOrDigit ;
+FINALLY      ^%= "finally"      !LetterOrDigit ;
+FINAL        ^%= "final"        !LetterOrDigit ;
+FLOAT        ^%= "float"        !LetterOrDigit ;
+FOR          ^%= "for"          !LetterOrDigit ;
+IF           ^%= "if"           !LetterOrDigit ;
+IMPLEMENTS   ^%= "implements"   !LetterOrDigit ;
+IMPORT       ^%= "import"       !LetterOrDigit ;
+INTERFACE    ^%= "interface"    !LetterOrDigit ;
+INT          ^%= "int"          !LetterOrDigit ;
+INSTANCEOF   ^%= "instanceof"   !LetterOrDigit ;
+LONG         ^%= "long"         !LetterOrDigit ;
+NATIVE       ^%= "native"       !LetterOrDigit ;
+NEW          ^%= "new"          !LetterOrDigit ;
+NULL         ^%= "null"         !LetterOrDigit ;
+PACKAGE      ^%= "package"      !LetterOrDigit ;
+PRIVATE      ^%= "private"      !LetterOrDigit ;
+PROTECTED    ^%= "protected"    !LetterOrDigit ;
+PUBLIC       ^%= "public"       !LetterOrDigit ;
+RETURN       ^%= "return"       !LetterOrDigit ;
+SHORT        ^%= "short"        !LetterOrDigit ;
+STATIC       ^%= "static"       !LetterOrDigit ;
+STRICTFP     ^%= "strictfp"     !LetterOrDigit ;
+SUPER        ^%= "super"        !LetterOrDigit ;
+SWITCH       ^%= "switch"       !LetterOrDigit ;
+SYNCHRONIZED ^%= "synchronized" !LetterOrDigit ;
+THIS         ^%= "this"         !LetterOrDigit ;
+THROWS       ^%= "throws"       !LetterOrDigit ;
+THROW        ^%= "throw"        !LetterOrDigit ;
+TRANSIENT    ^%= "transient"    !LetterOrDigit ;
+TRUE         ^%= "true"         !LetterOrDigit ;
+TRY          ^%= "try"          !LetterOrDigit ;
+VOID         ^%= "void"         !LetterOrDigit ;
+VOLATILE     ^%= "volatile"     !LetterOrDigit ;
+WHILE        ^%= "while"        !LetterOrDigit ;
 
 //=========================================================================
 //  Literals (JLS 3.10)
@@ -124,7 +132,7 @@ WHILE        ^%= "while"        !LetterOrDigit  ;
 
 Literal ~ literal
     = FloatLiteral      :+~floatLiteral
-    / IntegerLiteral    :+~integerLiteral    // May be a prefix of FloatLiteral
+    / IntegerLiteral    :+~integerLiteral // possible_prefix_of(FloatLiteral)
     / BooleanLiteral    :+~booleanLiteral
     / CharLiteral       :+~charLiteral
     / StringLiteral     :+~stringLiteral
@@ -133,8 +141,8 @@ Literal ~ literal
 IntegerLiteral
     ^%= ( HexNumeral
       / BinaryNumeral
-      / OctalNumeral            // May be a prefix of HexNumeral or BinaryNumeral
-      / DecimalNumeral          // May be a prefix of OctalNumeral
+      / OctalNumeral   // possible_prefix_of(BinaryNumeral)
+      / DecimalNumeral // possible_prefix_of(OctalNumeral)
       ) [lL]? ;
 
 DecimalNumeral
@@ -151,7 +159,7 @@ BinaryNumeral
 
 FloatLiteral
     ^%= HexadecimalFloatingPointLiteral
-      / DecimalFloatingPointLiteral ;   // May be a prefix of above
+      / DecimalFloatingPointLiteral ; // possible_prefix_of(previous)
 
 DecimalFloatingPointLiteral
     = Digits "." Digits?  Exponent? [fFdD]?
@@ -167,7 +175,7 @@ HexadecimalFloatingPointLiteral
 
 HexSignificand
     = ("0x" / "0X") HexDigits? "." HexDigits
-    / HexNumeral "."? ;                         // May be a prefix of above
+    / HexNumeral "."? ; // possible_prefix_of(previous)
 
 HexDigits
     = HexDigit ([_]*HexDigit)* ;
@@ -229,46 +237,47 @@ NullLiteral
 //  rule given in JLS 3.2.
 //-------------------------------------------------------------------------
 
-AND             %=   "&" ![=&]   ;
-ANDAND          %=   "&&"        ;
-ANDEQU          %=   "&="        ;
-ARROW           %=   "->"        ;
-BANG            %=   "!" ![=]    ;
-BSR             %=   ">>>" ![=]  ;
-BSREQU          %=   ">>>="      ;
-COLON           %=   ":" ![:]    ;
-DEC             %=   "--"        ;
-DIV             %=   "/" ![=]    ;
-DIVEQU          %=   "/="        ;
-EQU             %=   "=" ![=]    ;
-EQUAL           %=   "=="        ;
-GE              %=   ">="        ;
-GT              %=   ">" ![=>]   ;
-HAT             %=   "^" ![=]    ;
-HATEQU          %=   "^="        ;
-INC             %=   "++"        ;
-LE              %=   "<="        ;
+'++'            %=   "++"        ;
+'--'            %=   "--"        ;
+'->'            %=   "->"        ;
+'!'             %=   "!" ![=]    ;
+'~'             %=   "~"         ;
+'*'             %=   "*" ![=]    ;
+'/'             %=   "/" ![=]    ;
+'%'             %=   "%" ![=]    ;
+'+'             %=   "+" ![=+]   ;
+'-'             %=   "-" ![=\->] ;
+'>>'            %=   ">>" ![=>]  ;
+'>>>'           %=   ">>>" ![=]  ;
+'<<'            %=   "<<" ![=]   ;
+'>'             %=   ">" ![=>]   ;
+'>='            %=   ">="        ;
+'<='            %=   "<="        ;
+'<'             %=   "<" ![=<]   ;
+'!='            %=   "!="        ;
+'=='            %=   "=="        ;
+'&'             %=   "&" ![=&]   ;
+'^'             %=   "^" ![=]    ;
+'|'             %=   "|" ![=|]   ;
+'&&'            %=   "&&"        ;
+'||'            %=   "||"        ;
+'?'             %=   "?"         ;
+':'             %=   ":" ![:]    ;
+'='             %=   "=" ![=]    ;
+'+='            %=   "+="        ;
+'-='            %=   "-="        ;
+'*='            %=   "*="        ;
+'/='            %=   "/="        ;
+'%='            %=   "%="        ;
+'!='            %=   "!="        ;
+'&='            %=   "&="        ;
+'|='            %=   "|="        ;
+'^='            %=   "^="        ;
+'>>='           %=   ">>="       ;
+'>>>='          %=   ">>>="      ;
+'<<='           %=   "<<="       ;
 LPOINT          %=   "<"         ;
-LT              %=   "<" ![=<]   ;
-MINUS           %=   "-" ![=\->] ;
-MINUSEQU        %=   "-="        ;
-MOD             %=   "%" ![=]    ;
-MODEQU          %=   "%="        ;
-NOTEQUAL        %=   "!="        ;
-OR              %=   "|" ![=|]   ;
-OREQU           %=   "|="        ;
-OROR            %=   "||"        ;
-PLUS            %=   "+" ![=+]   ;
-PLUSEQU         %=   "+="        ;
-QUERY           %=   "?"         ;
 RPOINT          %=   ">"         ;
-SL              %=   "<<" ![=]   ;
-SLEQU           %=   "<<="       ;
-SR              %=   ">>" ![=>]  ;
-SREQU           %=   ">>="       ;
-STAR            %=   "*" ![=]    ;
-STAREQU         %=   "*="        ;
-TILDE           %=   "~"         ;
 
 //=========================================================================
 //  Types (JLS 4)
@@ -373,7 +382,7 @@ TypeParameter
     = Annotations Identifier:+-id TypeBound? ;
 
 TypeBound
-    = EXTENDS ClassType # boundTypes ,+ AND ;
+    = EXTENDS ClassType # boundTypes ,+ '&' ;
 
 TypeArguments
     = LPOINT TypeArgument # typeArgs ,+ ',' RPOINT ;
@@ -382,7 +391,7 @@ TypeArgument
     = Type / Wildcard ;
 
 Wildcard :~$
-    = Annotations QUERY WildcardBounds? ;
+    = Annotations '?' WildcardBounds? ;
 
 WildcardBounds
     = EXTENDS Type - extends
@@ -416,7 +425,7 @@ PackageDeclaration
     = Annotations PACKAGE QualIdent:+-id ';' ;
 
 ImportDeclaration
-    = IMPORT (STATIC :- static)? QualIdent:+-id ('.' STAR:-star)? ';' ;
+    = IMPORT (STATIC :- static)? QualIdent:+-id ('.' '*':-star)? ';' ;
 
 //=========================================================================
 //  Type Declarations (JLS 8.1 & 8.9 & 9.6)
@@ -692,7 +701,7 @@ VariableDeclaratorList :# declarators
     = VariableDeclarator ,+ ',' ;
 
 VariableDeclarator
-    = VariableDeclaratorId (EQU VariableInitializer)? ;
+    = VariableDeclaratorId ('=' VariableInitializer)? ;
 
 VariableDeclaratorId :~ declaratorID
     = Identifier:+-id Dims;
@@ -817,7 +826,7 @@ Annotation :~ annotation
     = '@' QualIdent:+-id ('('( ElementValuePair :# pairs ,+ ',' / ElementValue )? ')')? ;
 
 ElementValuePair
-    = Identifier:+-id EQU ElementValue ;
+    = Identifier:+-id '=' ElementValue ;
 
 ElementValue :~ value
     = Expression forbid { assign }
@@ -992,10 +1001,10 @@ Statement ~ statement
     / (THROW Expression ';')                                ~throw
     / (BREAK (Identifier :+- id)? ';')                      :~break
     / (CONTINUE (Identifier :+- id)? ';')                   :~continue
-    / (ASSERT Expression (COLON Expression-message)? ';')   :~assert
+    / (ASSERT Expression (':' Expression-message)? ';')   :~assert
     / ';'                                                   :~semi
     / (StatementExpression ';')                             ~stmtExpression
-    / (Identifier:+-label COLON Statement)                  :~labelled ;
+    / (Identifier:+-label ':' Statement)                  :~labelled ;
 
 IfElse :~ ifElse
     = IF ParExpression Statement-if (ELSE Statement-else)? ;
@@ -1007,7 +1016,7 @@ SwitchBlock
     = '{' (SwitchLabel+ # labels BlockStatements)* :# switchBlocks '}' ;
 
 SwitchLabel
-    = CASE Expression~label COLON / DEFAULT:~default COLON ;
+    = CASE Expression~label ':' / DEFAULT:~default ':' ;
 
 StatementExpression
     = Expression allow { assign, binc, bdec, ainc, adec, mcall, tmcall, ccall } ;
@@ -1024,7 +1033,7 @@ StatementExpressionList # stmtExprs
     = StatementExpression ,+ ',' ;
 
 EnhancedForStatement :~ enhancedFor
-    = FOR '(' VariableModifiers Type VariableDeclaratorId COLON Expression-iterable ')'
+    = FOR '(' VariableModifiers Type VariableDeclaratorId ':' Expression-iterable ')'
         Statement-body ;
 
 TryStatement :~ try
@@ -1036,13 +1045,13 @@ CatchClause :# catchClauses
     = CATCH '(' CatchFormalParameter ')' Block ;
 
 CatchFormalParameter
-    = VariableModifiers ClassType # types ,+ OR VariableDeclaratorId ;
+    = VariableModifiers ClassType # types ,+ '|' VariableDeclaratorId ;
 
 Finally
     = FINALLY Block - finally ;
 
 Resource
-    = VariableModifiers Type VariableDeclaratorId EQU Expression-value ;
+    = VariableModifiers Type VariableDeclaratorId '=' Expression-value ;
 
 //=========================================================================
 //  JLS 15  Expressions
@@ -1138,7 +1147,7 @@ Arguments # arguments
 */
 
 LambdaExpression :~ lambda
-    = LambdaParameters ARROW (Expression / Block) :- lambdaBody ;
+    = LambdaParameters '->'  (Expression / Block) :- lambdaBody ;
 
 LambdaParameters
     = Identifier:+-id
@@ -1266,27 +1275,16 @@ LValue
     = Expression allow { iden, dot_iden, array_access } ;
 
 AssignmentOperator
-    = EQU
-    / STAREQU
-    / DIVEQU
-    / MODEQU
-    / PLUSEQU
-    / MINUSEQU
-    / SLEQU
-    / SREQU
-    / BSREQU
-    / ANDEQU
-    / HATEQU
-    / OREQU ;
+    = '=' / '*=' / '/=' / '%=' / '+=' / '-=' / '<<=' / '>>=' / '>>>=' / '&=' / '^=' / '|=' ;
 
 ConditionalExpression :~ conditionalExpr
-    = Expression-cond QUERY drop Expression-if COLON Expression-else ;
+    = Expression-cond '?' drop Expression-if ':' Expression-else ;
 
 // NOTE:-first must be reference type or primitive type
 //       further allowed only w/ reference type and must be class types
 
 CastExpression :~ cast
-    = '(' Type # types ,+ AND ')' Expression-op;
+    = '(' Type # types ,+ '&' ')' Expression-op;
 
 
 /*
@@ -1358,41 +1356,41 @@ OTHER SUFFIX
 
 */
 
-OrOr        = (Expression-l OROR          Expression-r) :~oror          ;
-AndAnd      = (Expression-l ANDAND        Expression-r) :~andand        ;
-Or          = (Expression-l OR            Expression-r) :~or            ;
-Hat         = (Expression-l HAT           Expression-r) :~hat           ;
-And         = (Expression-l AND           Expression-r) :~and           ;
+OrOr        = (Expression-l '||'          Expression-r) :~oror          ;
+AndAnd      = (Expression-l '&&'          Expression-r) :~andand        ;
+Or          = (Expression-l '|'           Expression-r) :~or            ;
+Hat         = (Expression-l '^'           Expression-r) :~hat           ;
+And         = (Expression-l '&'           Expression-r) :~and           ;
 
-Equal       = (Expression-l EQUAL         Expression-r) :~equal         ;
-NotEqual    = (Expression-l NOTEQUAL      Expression-r) :~notEqual      ;
+Equal       = (Expression-l '=='          Expression-r) :~equal         ;
+NotEqual    = (Expression-l '!='          Expression-r) :~notEqual      ;
 
-Le          = (Expression-l LE            Expression-r) :~le            ;
-Ge          = (Expression-l GE            Expression-r) :~ge            ;
-Lt          = (Expression-l LT            Expression-r) :~lt            ;
-Gt          = (Expression-l GT            Expression-r) :~gt            ;
+Le          = (Expression-l '<='          Expression-r) :~le            ;
+Ge          = (Expression-l '>='          Expression-r) :~ge            ;
+Lt          = (Expression-l '<'           Expression-r) :~lt            ;
+Gt          = (Expression-l '>'           Expression-r) :~gt            ;
 InstanceOf  = (Expression-l INSTANCEOF    Expression-r) :~instanceof    ;
 
-Sl          = (Expression-l SL            Expression-r) :~sl            ;
-Sr          = (Expression-l SR            Expression-r) :~sr            ;
-Bsr         = (Expression-l BSR           Expression-r) :~bsr           ;
+Sl          = (Expression-l '<<'          Expression-r) :~sl            ;
+Sr          = (Expression-l '>>'          Expression-r) :~sr            ;
+Bsr         = (Expression-l '>>>'         Expression-r) :~bsr           ;
 
-Plus        = (Expression-l PLUS          Expression-r) :~plus          ;
-Minus       = (Expression-l MINUS         Expression-r) :~minus         ;
+Plus        = (Expression-l '+'           Expression-r) :~plus          ;
+Minus       = (Expression-l '-'           Expression-r) :~minus         ;
 
-Star        = (Expression-l STAR          Expression-r) :~star          ;
-Div         = (Expression-l DIV           Expression-r) :~div           ;
-Mod         = (Expression-l MOD           Expression-r) :~mod           ;
+Star        = (Expression-l '*'           Expression-r) :~star          ;
+Div         = (Expression-l '/'           Expression-r) :~div           ;
+Mod         = (Expression-l '%'           Expression-r) :~mod           ;
 
-BInc        = (INC      Expression-op) :~bInc      ;
-BDec        = (DEC      Expression-op) :~bDec      ;
-UPlus       = (PLUS     Expression-op) :~uPlus     ;
-UMinus      = (MINUS    Expression-op) :~uMinus    ;
-Tilde       = (TILDE    Expression-op) :~tilde     ;
-Bang        = (BANG     Expression-op) :~bang      ;
+BInc        = ('++'     Expression-op) :~bInc      ;
+BDec        = ('--'     Expression-op) :~bDec      ;
+UPlus       = ('+'      Expression-op) :~uPlus     ;
+UMinus      = ('-'      Expression-op) :~uMinus    ;
+Tilde       = ('~'      Expression-op) :~tilde     ;
+Bang        = ('!'      Expression-op) :~bang      ;
 
-AInc        = (Expression-op INC                                                ) :~aInc        ;
-ADec        = (Expression-op DEC                                                ) :~aDec        ;
+AInc        = (Expression-op '++'                                               ) :~aInc        ;
+ADec        = (Expression-op '--'                                               ) :~aDec        ;
 DotTypeArgs = (Expression-op '.' TypeArguments Identifier:+-id drop Arguments   ) :~dotTypeArgs ;
 Call        = (Expression-op drop Arguments                                     ) :~call        ;
 DotIden     = (Expression-op '.' Identifier:+-id                                ) :~dotIden     ;
