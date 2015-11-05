@@ -2,6 +2,7 @@ o?=dev
 LIBS?=
 OUTDIR?=out/$o
 MVN_OUTPUT?=deps/fetched
+JVM_ARGS?=
 
 ifeq ($(OS),Windows_NT)
 	SEP=;
@@ -28,6 +29,8 @@ build
     variables to be included in the class files debug information. Using
     'opti' will disable *all* debugging information. Defaults to 'dev'.
 
+	The 'resources' directory is automatically copied to the output directory.
+
 clean
 
     Deletes OUTDIR. Recall OUTDIR default to 'out/$o', and 'o' is the build
@@ -36,7 +39,11 @@ clean
 run
 
     Runs the class indicate in variable 't' (e.g. 'my.pkg.Main'), passing
-    the variable 'a' as argument (optional).
+    the variable 'a' as argument (optional). Additionally, the contents of the
+    variable JVM_ARGS are passed to the JVM.
+
+	The output directory, its 'resources' sub-directory and all jars in the 'deps/jar/'
+    directory are added to the class path.
 
 trace
 
@@ -87,14 +94,14 @@ help:
 
 build:
 	mkdir -p $(OUTDIR)
-	cp -R resources/* $(OUTDIR) 2>/dev/null || :
-	javac -Xlint:unchecked $(DEBUG) -d $(OUTDIR) -cp "deps/*" `find src $(LIBS) -name *.java`
+	if [ -d resources ]; then cp -R resources/. $(OUTDIR); fi
+	javac -Xlint:unchecked $(DEBUG) -d $(OUTDIR) -cp "deps/jar/*" `find src $(LIBS) -name *.java`
 
 clean:
 	rm -rf $(OUTDIR)
 
 run:
-	java -cp "$(OUTDIR)$(SEP)deps/*$(SEP)$(OUTDIR)/resources" $t $a
+	java -cp "$(OUTDIR)$(SEP)deps/jar/*$(SEP)$(OUTDIR)/resources" $(JVM_ARGS) $t $a
 
 trace:
 	java -cp "$(OUTDIR)$(SEP)deps/*$(SEP)$(OUTDIR)/resources" -agentlib:hprof=cpu=samples $t $a

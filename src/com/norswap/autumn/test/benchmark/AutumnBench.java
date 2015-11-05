@@ -17,7 +17,7 @@ public final class AutumnBench
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static String grammarFile = "src/com/norswap/autumn/test/grammars/Java8.autumn";
+    private static String grammarFile = "grammars/Java8.autumn";
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -46,7 +46,7 @@ public final class AutumnBench
         {
             for (Path path: Glob.glob("**/*.java", Paths.get(
                 //"/Users/nilaurent/Documents/spring-framework")))
-                "../guava")))
+                "../_readonly/guava")))
             {
                 ParseResult result = Autumn.parseFile(grammar, path.toString());
 

@@ -1,4 +1,4 @@
-package com.norswap.autumn.test.grammars;
+package com.norswap.autumn.test;
 
 import com.norswap.autumn.Autumn;
 import com.norswap.autumn.parsing.Grammar;
@@ -11,7 +11,7 @@ public final class TestGrammar
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static String grammarFile = "src/com/norswap/autumn/test/grammars/Java8.autumn";
+    private static String grammarFile = "grammars/Java8.autumn";
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

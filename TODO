@@ -22,16 +22,6 @@ GUMPTION
     - use Array instead of [] for first and children in PE
     - insert $ in Java8 (rule-level only) (-> 544)
 
-TODO PLANNING
-
-4 weeks + 1 (try to interleave):
-
-w1: parse tree etc  (over)
-w2: GUI model
-w3: GUI
-w4: presentation
-w5: manual
-
 TODO FURTHER SMALL
 
 - allow options in grammar files, namely for root and whitespace spec
