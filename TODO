@@ -28,8 +28,6 @@ TODO FURTHER SMALL
 
 - well formedness check (ford: WF -- can't loop without consuming)
 
-- rename MemoHandler to MemoState
-
 - scoped memoization
     - MemoScope
     - ScopedMemo
@@ -43,6 +41,13 @@ TODO FURTHER SMALL
 - syntax for custom operators ($name?)
 
 - repeating locators (which can locate multiple locations if invoked repeatedly)
+
+- no capture operator (or do I have it already ?)
+
+- make precedence annotations be BEFORE the arrows
+- make @= the default, if not already the case
+- allow naming cluster branches
+    - fold :~X with @X
 
 TODO FURTHER BIG
 

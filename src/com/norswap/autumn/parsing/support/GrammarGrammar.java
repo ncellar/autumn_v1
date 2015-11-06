@@ -1,6 +1,5 @@
 package com.norswap.autumn.parsing.support;
 
-import com.norswap.autumn.Autumn;
 import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParsingExpression;
 

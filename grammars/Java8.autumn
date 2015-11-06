@@ -29,7 +29,7 @@ LineComment
     = "//" _ *+ [\r\n] ;
 
 Spacing
-    = ( WhiteSpace / MultiLineComment / LineComment )* ;
+    = (WhiteSpace / MultiLineComment / LineComment)* ;
 
 Letter = [a-z] / [A-Z] / [_$] ;
 
@@ -568,7 +568,7 @@ constraints:
 
 <fieldDeclaration>
     :~fieldDeclaration
-        #modifiers
+        #FieldModifiers
             OR
                 <annotation>
                 :~public
@@ -582,7 +582,7 @@ constraints:
         <declarators>
 
 <declarators>
-    :#declarators
+    :#VariableDeclarators
         <declaratorID>
         ?<variableInitializer>
 
@@ -680,59 +680,67 @@ constraints:
 
 */
 
+/**
+
+Fields:   only annotation, public, protected, private, static, final, transient, volatile
+          (not abstract, synchronized, native, strictfp, default)
+
+Methods:  only annotation, public, protected, private, static, final, abstract, synchronized,
+            native, strictfp, default
+          (not transient, volatile)
+
+Constructor: only annotation, public, protected, private
+
+*/
+
+Modifier
+    = Annotation
+    / PUBLIC        :~$
+    / PROTECTED     :~$
+    / PRIVATE       :~$
+    / STATIC        :~$
+    / FINAL         :~$
+    / TRANSIENT     :~$
+    / VOLATILE      :~$
+    / ABSTRACT      :~$
+    / SYNCHRONIZED  :~$
+    / NATIVE        :~$
+    / STRICTFP      :~$
+    / DEFAULT       :~$ ;
+
+Modifiers #$
+    = Modifier* ;
+
 //-------------------------------------------------------------------------
 //  Fields
 //-------------------------------------------------------------------------
 
-FieldModifier
-    = Annotation
-    / PUBLIC    :~public
-    / PROTECTED :~protected
-    / PRIVATE   :~private
-    / STATIC    :~static
-    / FINAL     :~final
-    / TRANSIENT :~transient
-    / VOLATILE  :~volatile ;
+VariableDeclaratorId :~$
+    = Identifier:+-id Dims;
 
-FieldDeclaration :~ fieldDeclaration
-    = FieldModifier* # modifiers Type VariableDeclaratorList ';' ;
+ArrayInitializer
+    = '{' VariableInitializer # initializerElements , ',' ','? '}' ;
 
-VariableDeclaratorList :# declarators
-    = VariableDeclarator ,+ ',' ;
+VariableInitializer :~$
+    = Expression / ArrayInitializer ;
 
 VariableDeclarator
     = VariableDeclaratorId ('=' VariableInitializer)? ;
 
-VariableDeclaratorId :~ declaratorID
-    = Identifier:+-id Dims;
+VariableDeclarators :#$
+    = VariableDeclarator ,+ ',' ;
 
-VariableInitializer :~ variableInitializer
-    = Expression / ArrayInitializer ;
-
-ArrayInitializer
-    = '{' VariableInitializer # initializerElements , ',' ','? '}' ;
+FieldDeclaration :~$
+    = Modifiers Type VariableDeclarators ';' ;
 
 //-------------------------------------------------------------------------
 //  Methods
 //-------------------------------------------------------------------------
 
-MethodModifier # modifiers
-    = Annotation
-    / PUBLIC        :~public
-    / PROTECTED     :~protected
-    / PRIVATE       :~private
-    / ABSTRACT      :~abstract
-    / STATIC        :~static
-    / FINAL         :~final
-    / SYNCHRONIZED  :~synchronized
-    / NATIVE        :~native
-    / STRICTFP      :~strictfp
-    / DEFAULT       :~default ;
-
-MethodDeclaration :~ methodDeclaration
-    = MethodModifier*
+MethodDeclaration :~$
+    = Modifiers
       TypeParameters?
-      (Type / VOID :~ void) - returnType
+      (Type / VOID :~$) - returnType
       Identifier :+- id
       FormalParameters
       Dims
@@ -740,16 +748,16 @@ MethodDeclaration :~ methodDeclaration
       (Block / ';') ;
 
 FormalParameters
-    = '(' FormalParameter :# parameters , ',' ')' ;
+    = '(' FormalParameter :#$ , ',' ')' ;
 
 FormalParameter
     = VariableModifiers Type
-    ( THIS :- this
+    ( THIS :-$
     / VariableDeclaratorId
     / Annotations '...' :- ellipsis VariableDeclaratorId !',' ) ;
 
 VariableModifiers # modifiers
-    = ( Annotation / FINAL :~ final )* ;
+    = ( Annotation / FINAL :~$ )* ;
 
 Throws
     = THROWS ClassType # exceptions ,+ ',' ;
@@ -758,23 +766,16 @@ Throws
 //  Constructors
 //-------------------------------------------------------------------------
 
-ConstructorModifier
-    = Annotation
-    / PUBLIC        :~public
-    / PROTECTED     :~protected
-    / PRIVATE       :~private ;
-
-ConstructorDeclaration :~ constructorDeclaration
-    = ConstructorModifier* # modifiers
+ConstructorDeclaration :~$
+    = Modifiers
       TypeParameters?
       Identifier:+-id
       FormalParameters
       Throws?
       '{' ExplicitConstructorInvocation? BlockStatements '}' ;
 
-ExplicitConstructorInvocation :- constrInvoc
-    = TypeArguments? THIS:-this Arguments ';'
-    / TypeArguments? SUPER:-super Arguments ';'
+ExplicitConstructorInvocation :-$
+    = TypeArguments? (THIS:-$ / SUPER:-$) Arguments ';'
 
     // http://stackoverflow.com/questions/2831484
     // TODO: only primary expression allowed here (needs precedence filter?)
@@ -785,10 +786,8 @@ ExplicitConstructorInvocation :- constrInvoc
 //  Annotation Elements
 //-------------------------------------------------------------------------
 
-AnnotationTypeElementDeclaration :~ annotationElemDecl
-    = MethodModifier*
-      Type Identifier:+-id '(' ')' Dims
-      (DEFAULT ElementValue)? ';' ;
+AnnotationTypeElementDeclaration :~$
+    = Modifiers Type Identifier:+-id '(' ')' Dims (DEFAULT ElementValue)? ';' ;
 
 //=========================================================================
 //  Annotations (JLS 9.7)
@@ -985,7 +984,7 @@ BlockStatement
     / Statement ;
 
 LocalVariableDeclaration :~ localVarDecl
-    = VariableModifiers Type VariableDeclaratorList ;
+    = VariableModifiers Type VariableDeclarators ;
 
 Statement ~ statement
     = Block
@@ -1156,82 +1155,104 @@ LambdaParameters
 
 // ===============================================================================
 
+E = Expression ;
+
 Expression ~ expression
     = expr
 
-    -> Assignment               @+ @left_recur @assign
-    -> LambdaExpression         @=
-    -> ConditionalExpression    @+ @left_recur
+    -> Assignment            @+ @left_recur @assign
+    -> LambdaExpression      @=
+    -> ConditionalExpression @+ @left_recur
 
     // BINARY OPERATORS
 
-    -> OrOr                     @+ @left_assoc
-    -> AndAnd                   @+ @left_assoc
-    -> Or                       @+ @left_assoc
-    -> Hat                      @+ @left_assoc
-    -> And                      @+ @left_assoc
+    -> (E '||' E) :~ '||' @+ @left_assoc
+    -> (E '&&' E) :~ '&&' @+ @left_assoc
+    -> (E '|'  E) :~ '|'  @+ @left_assoc
+    -> (E '^'  E) :~ '^'  @+ @left_assoc
+    -> (E '&'  E) :~ '&'  @+ @left_assoc
 
-    -> Equal                    @+ @left_assoc
-    -> NotEqual                 @=
+    -> (E '==' E) :~ '==' @+ @left_assoc
+    -> (E '!=' E) :~ '!=' @=
 
-    -> Le                       @+ @left_assoc
-    -> Ge                       @=
-    -> Lt                       @=
-    -> Gt                       @=
-    -> InstanceOf               @=
+    -> (E '<=' E) :~ '<=' @+ @left_assoc
+    -> (E '>=' E) :~ '>=' @=
+    -> (E '<' E)  :~ '<'  @=
+    -> (E '>' E)  :~ '>'  @=
 
-    -> Sl                       @+ @left_assoc
-    -> Sr                       @=
-    -> Bsr                      @=
+    -> (E INSTANCEOF E) :~ INSTANCEOF @=
 
-    -> Plus                     @+ @left_assoc
-    -> Minus                    @=
+    -> (E '<<' E)   :~ '<<'  @+ @left_assoc
+    -> (E '>>' E)   :~ '>>'  @=
+    -> (E '>>>' E)  :~ '>>>' @=
 
-    -> Star                     @+ @left_assoc
-    -> Div                      @=
-    -> Mod                      @=
+    -> (E '+' E) :~ '+' @+ @left_assoc
+    -> (E '-' E) :~ '-' @=
+
+    -> (E '*' E) :~ '*' @+ @left_assoc
+    -> (E '/' E) :~ '/' @=
+    -> (E '%' E) :~ '%' @=
 
     // PREFIX OPERATORS
 
-    -> BInc                     @+ @binc
-    -> BDec                     @= @bdec
-    -> UPlus                    @=
-    -> UMinus                   @=
-    -> Tilde                    @=
-    -> Bang                     @=
-    -> CastExpression           @= // does not conflict with (expr)(arguments) because lower precedence
+    -> ('++' E) :~ '++x' @+ @binc
+    -> ('--' E) :~ '--x' @= @bdec
+    -> ('+' E)  :~ '+'   @=
+    -> ('-' E)  :~ '-'   @=
+    -> ('~' E)  :~ '~'   @=
+    -> ('!' E)  :~ '!'   @=
+
+    -> CastExpression   @=
+
+    // Cast do not conflict with method call ((expr)(arguments)) the precedence of method call
+    // is lower.
 
     // POSTFIX EXPRESSIONS
 
-    -> AInc                     @+ @left_assoc @ainc
-    -> ADec                     @= @adec
-    -> DotTypeArgs              @= @tmcall
-    -> Call                     @= @mcall
-    -> DotNew                   @=
-    -> DotThis                  @=
-    -> DotSuper                 @=
-    -> DotClass                 @=
-    -> DotIden                  @= @dot_iden
-    -> ArrayAccess              @= @array_access
-    -> MethodRef                @=
-    -> NewRef                   @=
+    -> (E '++') :~ 'x++' @+ @left_assoc @ainc
+    -> (E '--') :~ 'x--' @= @adec
+
+    -> (E-op '.' TypeArguments Identifier :+-id drop Arguments)
+            :~ dotTypeArgsCall @= @tmcall
+
+    -> (E-op drop Arguments)
+            :~ call @= @mcall
+
+    -> (E-op '.' NEW drop ClassCreator)
+            :~ dotNew @=
+
+    -> (E '.' THIS)  :~ dotThis  @=
+    -> (E '.' SUPER) :~ dotSuper @=
+    -> (E '.' CLASS) :~ dotClass @=
+
+    -> (E-op '.' Identifier:+-id)
+            :~ dotIden @= @dot_iden
+
+    -> (E-op '[' drop E-subscript ']')
+            :~ arrayAccess @= @array_access
+
+    -> (E-op '::' TypeArguments? Identifier:+-id)
+            :~ methodRef @=
+
+    -> (TypeArguments? NEW)
+            :~ newRef @=
 
     // POSTFIX TYPES
 
-    -> TypeWithArgs             @=
-    -> ArrayType                @=
+    -> (E-op TypeArguments) :~ TypeWithArgs @=
+    -> (E '[' ']') :~ ArrayType @=
 
     // PRIMARY EXPRESSIONS
 
-    -> '(' drop Expression ')'  @+
-    -> ThisCall                 @=
-    -> THIS:~this               @=
-    -> SuperCall                @=
-    -> SUPER:~super             @=
-    -> CtorCall                 @= @ccall
-    -> ArrayCtorCall            @=
-    -> Identifier:+~identifier  @= @iden
-    -> Literal                  @=
+    -> '(' drop Expression ')'                  @+
+    -> (THIS Arguments) :~ ThisCall             @=
+    -> THIS :~ this                             @=
+    -> (SUPER Arguments) :~ SuperCall           @=
+    -> SUPER :~ super                           @=
+    -> (NEW drop ClassCreator) :~ CtorCall      @= @ccall
+    -> (NEW drop ArrayCreator) :~ ArrayCtorCall @=
+    -> Identifier :+~ identifier                @= @iden
+    -> Literal                                  @=
 
     // PRIMARY TYPES
 
@@ -1355,59 +1376,5 @@ OTHER SUFFIX
     <arrayCreator>
 
 */
-
-OrOr        = (Expression-l '||'          Expression-r) :~oror          ;
-AndAnd      = (Expression-l '&&'          Expression-r) :~andand        ;
-Or          = (Expression-l '|'           Expression-r) :~or            ;
-Hat         = (Expression-l '^'           Expression-r) :~hat           ;
-And         = (Expression-l '&'           Expression-r) :~and           ;
-
-Equal       = (Expression-l '=='          Expression-r) :~equal         ;
-NotEqual    = (Expression-l '!='          Expression-r) :~notEqual      ;
-
-Le          = (Expression-l '<='          Expression-r) :~le            ;
-Ge          = (Expression-l '>='          Expression-r) :~ge            ;
-Lt          = (Expression-l '<'           Expression-r) :~lt            ;
-Gt          = (Expression-l '>'           Expression-r) :~gt            ;
-InstanceOf  = (Expression-l INSTANCEOF    Expression-r) :~instanceof    ;
-
-Sl          = (Expression-l '<<'          Expression-r) :~sl            ;
-Sr          = (Expression-l '>>'          Expression-r) :~sr            ;
-Bsr         = (Expression-l '>>>'         Expression-r) :~bsr           ;
-
-Plus        = (Expression-l '+'           Expression-r) :~plus          ;
-Minus       = (Expression-l '-'           Expression-r) :~minus         ;
-
-Star        = (Expression-l '*'           Expression-r) :~star          ;
-Div         = (Expression-l '/'           Expression-r) :~div           ;
-Mod         = (Expression-l '%'           Expression-r) :~mod           ;
-
-BInc        = ('++'     Expression-op) :~bInc      ;
-BDec        = ('--'     Expression-op) :~bDec      ;
-UPlus       = ('+'      Expression-op) :~uPlus     ;
-UMinus      = ('-'      Expression-op) :~uMinus    ;
-Tilde       = ('~'      Expression-op) :~tilde     ;
-Bang        = ('!'      Expression-op) :~bang      ;
-
-AInc        = (Expression-op '++'                                               ) :~aInc        ;
-ADec        = (Expression-op '--'                                               ) :~aDec        ;
-DotTypeArgs = (Expression-op '.' TypeArguments Identifier:+-id drop Arguments   ) :~dotTypeArgs ;
-Call        = (Expression-op drop Arguments                                     ) :~call        ;
-DotIden     = (Expression-op '.' Identifier:+-id                                ) :~dotIden     ;
-DotNew      = (Expression-op '.' NEW drop ClassCreator                          ) :~dotNew      ;
-DotThis     = (Expression-op '.' THIS                                           ) :~dotThis     ;
-DotSuper    = (Expression-op '.' SUPER                                          ) :~dotSuper    ;
-DotClass    = (Expression-op '.' CLASS                                          ) :~dotClass    ;
-ArrayAccess = (Expression-op '[' drop Expression-subscript ']'                  ) :~arrayAccess ;
-MethodRef   = (Expression-op '::' TypeArguments? Identifier:+-id                ) :~methodRef   ;
-NewRef      = (Expression-op '::' TypeArguments? NEW                            ) :~newRef      ;
-
-TypeWithArgs = (Expression-op TypeArguments    ) :~typeWithArgs    ;
-ArrayType    = (Expression-op '[' ']'          ) :~arrayTYpe       ;
-
-ThisCall        = (THIS  Arguments          ) :~thisCall        ;
-SuperCall       = (SUPER Arguments          ) :~superCall       ;
-CtorCall        = (NEW drop ClassCreator    ) :~ctorCall        ;
-ArrayCtorCall   = (NEW drop ArrayCreator    ) :~arrayCtorCall   ;
 
 // ===============================================================================
