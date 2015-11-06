@@ -45,7 +45,6 @@ TODO FURTHER SMALL
 - no capture operator (or do I have it already ?)
 
 - make precedence annotations be BEFORE the arrows
-- make @= the default, if not already the case
 - allow naming cluster branches
     - fold :~X with @X
 

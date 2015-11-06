@@ -1161,7 +1161,7 @@ Expression ~ expression
     = expr
 
     -> Assignment            @+ @left_recur @assign
-    -> LambdaExpression      @=
+    -> LambdaExpression
     -> ConditionalExpression @+ @left_recur
 
     // BINARY OPERATORS
@@ -1173,36 +1173,36 @@ Expression ~ expression
     -> (E '&'  E) :~ '&'  @+ @left_assoc
 
     -> (E '==' E) :~ '==' @+ @left_assoc
-    -> (E '!=' E) :~ '!=' @=
+    -> (E '!=' E) :~ '!='
 
     -> (E '<=' E) :~ '<=' @+ @left_assoc
-    -> (E '>=' E) :~ '>=' @=
-    -> (E '<' E)  :~ '<'  @=
-    -> (E '>' E)  :~ '>'  @=
+    -> (E '>=' E) :~ '>='
+    -> (E '<' E)  :~ '<'
+    -> (E '>' E)  :~ '>'
 
     -> (E INSTANCEOF E) :~ INSTANCEOF @=
 
     -> (E '<<' E)   :~ '<<'  @+ @left_assoc
-    -> (E '>>' E)   :~ '>>'  @=
-    -> (E '>>>' E)  :~ '>>>' @=
+    -> (E '>>' E)   :~ '>>'
+    -> (E '>>>' E)  :~ '>>>'
 
     -> (E '+' E) :~ '+' @+ @left_assoc
-    -> (E '-' E) :~ '-' @=
+    -> (E '-' E) :~ '-'
 
     -> (E '*' E) :~ '*' @+ @left_assoc
-    -> (E '/' E) :~ '/' @=
-    -> (E '%' E) :~ '%' @=
+    -> (E '/' E) :~ '/'
+    -> (E '%' E) :~ '%'
 
     // PREFIX OPERATORS
 
     -> ('++' E) :~ '++x' @+ @binc
-    -> ('--' E) :~ '--x' @= @bdec
-    -> ('+' E)  :~ '+'   @=
-    -> ('-' E)  :~ '-'   @=
-    -> ('~' E)  :~ '~'   @=
-    -> ('!' E)  :~ '!'   @=
+    -> ('--' E) :~ '--x' @bdec
+    -> ('+' E)  :~ '+'
+    -> ('-' E)  :~ '-'
+    -> ('~' E)  :~ '~'
+    -> ('!' E)  :~ '!'
 
-    -> CastExpression   @=
+    -> CastExpression
 
     // Cast do not conflict with method call ((expr)(arguments)) the precedence of method call
     // is lower.
@@ -1210,54 +1210,54 @@ Expression ~ expression
     // POSTFIX EXPRESSIONS
 
     -> (E '++') :~ 'x++' @+ @left_assoc @ainc
-    -> (E '--') :~ 'x--' @= @adec
+    -> (E '--') :~ 'x--' @adec
 
     -> (E-op '.' TypeArguments Identifier :+-id drop Arguments)
-            :~ dotTypeArgsCall @= @tmcall
+            :~ dotTypeArgsCall @tmcall
 
     -> (E-op drop Arguments)
-            :~ call @= @mcall
+            :~ call @mcall
 
     -> (E-op '.' NEW drop ClassCreator)
-            :~ dotNew @=
+            :~ dotNew
 
-    -> (E '.' THIS)  :~ dotThis  @=
-    -> (E '.' SUPER) :~ dotSuper @=
-    -> (E '.' CLASS) :~ dotClass @=
+    -> (E '.' THIS)  :~ dotThis
+    -> (E '.' SUPER) :~ dotSuper
+    -> (E '.' CLASS) :~ dotClass
 
     -> (E-op '.' Identifier:+-id)
-            :~ dotIden @= @dot_iden
+            :~ dotIden @dot_iden
 
     -> (E-op '[' drop E-subscript ']')
-            :~ arrayAccess @= @array_access
+            :~ arrayAccess @array_access
 
     -> (E-op '::' TypeArguments? Identifier:+-id)
-            :~ methodRef @=
+            :~ methodRef
 
     -> (TypeArguments? NEW)
-            :~ newRef @=
+            :~ newRef
 
     // POSTFIX TYPES
 
-    -> (E-op TypeArguments) :~ TypeWithArgs @=
-    -> (E '[' ']') :~ ArrayType @=
+    -> (E-op TypeArguments) :~ TypeWithArgs
+    -> (E '[' ']') :~ ArrayType
 
     // PRIMARY EXPRESSIONS
 
-    -> '(' drop Expression ')'                  @+
-    -> (THIS Arguments) :~ ThisCall             @=
-    -> THIS :~ this                             @=
-    -> (SUPER Arguments) :~ SuperCall           @=
-    -> SUPER :~ super                           @=
-    -> (NEW drop ClassCreator) :~ CtorCall      @= @ccall
-    -> (NEW drop ArrayCreator) :~ ArrayCtorCall @=
-    -> Identifier :+~ identifier                @= @iden
-    -> Literal                                  @=
+    -> '(' drop Expression ')' @+
+    -> (THIS Arguments) :~ ThisCall
+    -> THIS :~ this
+    -> (SUPER Arguments) :~ SuperCall
+    -> SUPER :~ super
+    -> (NEW drop ClassCreator) :~ CtorCall      @ccall
+    -> (NEW drop ArrayCreator) :~ ArrayCtorCall
+    -> Identifier :+~ identifier @iden
+    -> Literal
 
     // PRIMARY TYPES
 
-    -> BasicType    @=
-    -> VOID:~void   @=
+    -> BasicType
+    -> VOID:~void
     ;
 
 // ===============================================================================
