@@ -199,15 +199,13 @@ public final class GrammarCompiler
         if (!allowed.isEmpty() || !forbidden.isEmpty())
         {
             return filter(
+                ref,
                 Streams.from(allowed)
                     .map(pe -> reference(ref.target + "." + pe.value))
                     .toArray(ParsingExpression[]::new),
-
                 Streams.from(forbidden)
                     .map(pe -> reference(ref.target + "." + pe.value))
-                    .toArray(ParsingExpression[]::new),
-
-                ref
+                    .toArray(ParsingExpression[]::new)
             );
         }
         else {

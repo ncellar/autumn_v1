@@ -104,6 +104,8 @@ public final class Parser implements Cloneable
             0,
             true,
             null,
+            null,
+            null,
             new Array<>(),
             new Array<>(),
             config.customStateFactories()

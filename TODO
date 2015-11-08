@@ -38,11 +38,36 @@ TODO FURTHER SMALL
     - error handling: an error over a token can become "unexpected X"
     - advantage: handles reserved identifiers
 
-- syntax for custom operators ($name?)
-
 - repeating locators (which can locate multiple locations if invoked repeatedly)
 
-- no capture operator (or do I have it already ?)
+
+
+- tokenizer X =
+- how to set the current tokenizer?
+    `tokenizer(X)`
+- how to call a token?
+    % token_name
+- TokenRef class
+- how to mark an alternative as a token
+    %= token_name
+    `def_token(X)`
+- how to extend syntax with custom functions
+    `function(x)[<string>](<expr>)`
+    pexp X = <java method ref>
+- no capture operator
+    `nocapture(X)`
+- whitespace operator
+    `whitespace`
+- dumb operator
+    `fast(X)`
+- remove ^= and %= operators
+- how to extend toplevel syntax
+- syntax X = <java operator> ;
+
+
+FIRST:
+    - redo filtering
+
 
 TODO FURTHER BIG
 

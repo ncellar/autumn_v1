@@ -257,6 +257,11 @@ public final class ParseState
      */
     public final CustomState[] customStates;
 
+    /**
+     * TODO
+     */
+    public final ClusterState bottomup;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -282,6 +287,7 @@ public final class ParseState
         this.seeds = inputs.seeds != null ? inputs.seeds.clone() : null;
         this.blocked = inputs.blocked.clone();
         this.minPrecedence = inputs.minPrecedence.clone();
+        this.bottomup = new ClusterState();
 
         this.customStates = new CustomState[customFactories.size()];
         for (int i = 0; i < customStates.length; ++i)
@@ -360,6 +366,8 @@ public final class ParseState
         if (end > start)
         {
             seeds = null;
+            bottomup.seeded = null;
+            bottomup.seeds = null;
         }
 
         start = end;
@@ -427,6 +435,8 @@ public final class ParseState
             blackEnd,
             treeChildrenCount,
             seeds,
+            bottomup.seeded,
+            bottomup.seeds,
             JArrays.map(customStates, Snapshot[]::new, CustomState::snapshot));
     }
 
@@ -440,6 +450,8 @@ public final class ParseState
         blackEnd            = snapshot.blackEnd;
         treeChildrenCount   = snapshot.treeChildrenCount;
         seeds               = snapshot.seeds;
+        bottomup.seeded     = snapshot.seeded;
+        bottomup.seeds      = snapshot.seeds2;
 
         tree.truncate(treeChildrenCount);
 
@@ -457,6 +469,8 @@ public final class ParseState
         blackStart          = snapshot.blackStart;
         treeChildrenCount   = snapshot.treeChildrenCount;
         seeds               = snapshot.seeds;
+        bottomup.seeded     = snapshot.seeded;
+        bottomup.seeds      = snapshot.seeds2;
 
         for (int i = 0; i < customStates.length; ++i)
         {
@@ -475,6 +489,9 @@ public final class ParseState
             precedence,
             recordErrors,
             seeds.clone(),
+            // TODO might be null
+            bottomup.seeded.clone(),
+            bottomup.seeds.clone(),
             blocked.clone(),
             minPrecedence.clone(),
             JArrays.map(customStates, Inputs[]::new, CustomState::inputs));

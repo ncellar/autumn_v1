@@ -4,6 +4,7 @@ import com.norswap.autumn.parsing.expressions.*;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster.Group;
 import com.norswap.autumn.parsing.expressions.Whitespace;
 import com.norswap.util.Array;
+import com.norswap.util.JArrays;
 import com.norswap.util.annotations.NonNull;
 
 import java.util.Arrays;
@@ -292,15 +293,43 @@ public final class ParsingExpressionFactory
     // ---------------------------------------------------------------------------------------------
 
     public static Filter filter(
+        ParsingExpression cluster,
         ParsingExpression[] allowed,
-        ParsingExpression[] forbidden,
-        ParsingExpression cluster)
+        ParsingExpression[] forbidden)
     {
         Filter filter = new Filter();
+        filter.operand = cluster;
         filter.allowed = allowed != null ? allowed : new ParsingExpression[0];
         filter.forbidden = forbidden != null ? forbidden : new ParsingExpression[0];
-        filter.operand = cluster;
         return filter;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static Filter allow$(ParsingExpression cluster, ParsingExpression... allowed)
+    {
+        if (cluster instanceof Filter)
+        {
+            Filter f = (Filter) cluster;
+            f.allowed = JArrays.concat(f.allowed, allowed);
+            return f;
+        }
+
+        return filter(cluster, allowed, null);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static Filter forbid$(ParsingExpression cluster, ParsingExpression... forbidden)
+    {
+        if (cluster instanceof Filter)
+        {
+            Filter f = (Filter) cluster;
+            f.forbidden = JArrays.concat(f.forbidden, forbidden);
+            return f;
+        }
+
+        return filter(cluster, null, forbidden);
     }
 
     // ---------------------------------------------------------------------------------------------

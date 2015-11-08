@@ -1,5 +1,6 @@
 package com.norswap.autumn.parsing.expressions;
 
+import com.norswap.autumn.parsing.state.ClusterState;
 import com.norswap.autumn.parsing.state.ParseChanges;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.Parser;
@@ -66,6 +67,72 @@ public final class ExpressionCluster extends ParsingExpression
     public Group[] groups;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public void parse2(Parser parser, ParseState state)
+    {
+        ClusterState bstate = state.bottomup;
+        ParseChanges changes;
+
+        if ((changes = bstate.getSeed(this)) != null)
+        {
+            // If this is a cluster re-entry, use the seed value.
+            state.merge(changes);
+            return;
+        }
+
+        changes = ParseChanges.failure();
+        bstate.setSeed(this, changes);
+
+        ClusterState.Precedence precedence = bstate.getPrecedence(this);
+
+        // Iterate over groups in order of decreasing precedence.
+        for (Group group: groups)
+        {
+            // Blocks recursion into alternates of lower precedence. Also blocks recursion into
+            // alternate of similar precedence for left-associative groups, to prevent
+            // right-recursion.
+
+            if (group.precedence < precedence.value)
+            {
+                break;
+            }
+
+            precedence.value = group.precedence + (group.leftAssociative ? 1 : 0);
+
+            leftRec: do {
+                for (ParsingExpression alternate: group.operands)
+                {
+                    alternate.parse(parser, state);
+
+                    if (state.end > changes.end)
+                    {
+                        // The seed was grown, try growing it again starting from first group rule.
+
+                        changes = state.extract();
+                        bstate.setSeed(this, changes);
+                        state.discard();
+                        continue leftRec;
+                    }
+                    else
+                    {
+                        state.discard();
+                    }
+                }
+
+                // No rule could grow the seed, exit the loop.
+                break;
+            }
+            while (group.leftRecursive);
+
+            state.merge(changes);
+            bstate.removeSeed(this);
+            bstate.removePrecedence(this, precedence);
+
+            if (state.failed()) {
+                state.fail(this);
+            }
+        }
+    }
 
     @Override
     public void parse(Parser parser, ParseState state)

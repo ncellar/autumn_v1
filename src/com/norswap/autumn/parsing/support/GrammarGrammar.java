@@ -206,19 +206,6 @@ public final class GrammarGrammar
             captureText("charSet", charSet),
             captureText("notCharSet", notCharSet)))),
 
-    /*
-        exprAnnotation
-                = sequence(
-                    literal("@"),
-                    choice(
-                        captureText("precedence", num),
-                        capture("increment", plus),
-                        capture("same", equal),
-                        capture("left_assoc", left_assoc),
-                        capture("left_recur", left_recur),
-                        captureText("name", name))),
-    */
-
         ruleLeftHandSide =
             sequence(
                 captureText("ruleName", name),
@@ -231,7 +218,8 @@ public final class GrammarGrammar
             tag$("arrow", capture(sequence(
                 arrow,
                 optional(ruleLeftHandSide),
-                capture("expr", filter(null, $(reference("choice")), parsingExpression))))),
+                capture("expr", filter(parsingExpression, null, $(reference("choice"))))))),
+                //capture("expr", forbid$(parsingExpression, reference("choice")))))),
 
         clusterDirective =
             tag$("directive", captureText(choice(
@@ -241,25 +229,18 @@ public final class GrammarGrammar
 
         // TOP LEVEL
 
-    /*
-        exprCluster
-                = named$("cluster", capture("cluster", sequence(
-                    exprLit,
-                    oneMore(captureGrouped("alts", sequence(
-                        arrow,
-                        capture("expr", filter(null, $(reference("choice")), parsingExpression)),
-                        zeroMore(captureGrouped("annotations", exprAnnotation)))))))),
-    */
-
         exprCluster =
             named$("cluster", capture("cluster", sequence(
                 exprLit,
                 oneMore(group$("alts", choice(clusterArrow, clusterDirective)))))),
 
+        syntaxDef = null,
+
         rule =
             named$("rule", sequence(
                 ruleLeftHandSide,
                 choice(
+                    syntaxDef,
                     exprCluster,
                     capture("expr", parsingExpression)),
                 semi)),

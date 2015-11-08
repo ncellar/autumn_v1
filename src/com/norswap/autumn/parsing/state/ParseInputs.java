@@ -22,6 +22,8 @@ public final class ParseInputs
     public final int precedence;
     public final boolean recordErrors;
     public final @Nullable Array<Seed> seeds;
+    public final @Nullable Array<ParsingExpression> seeded;
+    public final @Nullable Array<ParseChanges> seeds2;
     public final Array<LeftRecursive> blocked;
     public final Array<PrecedenceEntry> minPrecedence;
     public final Inputs[] customInputs;
@@ -35,6 +37,8 @@ public final class ParseInputs
         int precedence,
         boolean recordErrors,
         Array<Seed> seeds,
+        Array<ParsingExpression> seeded,
+        Array<ParseChanges> seeds2,
         Array<LeftRecursive> blocked,
         Array<PrecedenceEntry> minPrecedence,
         Inputs[] customInputs)
@@ -45,6 +49,8 @@ public final class ParseInputs
         this.precedence = precedence;
         this.recordErrors = recordErrors;
         this.seeds = seeds;
+        this.seeded = seeded;
+        this.seeds2 = seeds2;
         this.blocked = blocked;
         this.minPrecedence = minPrecedence;
         this.customInputs = customInputs;

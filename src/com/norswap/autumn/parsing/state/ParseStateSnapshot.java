@@ -1,5 +1,6 @@
 package com.norswap.autumn.parsing.state;
 
+import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.state.CustomState.Snapshot;
 import com.norswap.util.Array;
 import com.norswap.util.annotations.Nullable;
@@ -17,6 +18,8 @@ public final class ParseStateSnapshot
     public final int blackEnd;
     public final int treeChildrenCount;
     public final @Nullable Array<Seed> seeds;
+    public final @Nullable Array<ParsingExpression> seeded;
+    public final @Nullable Array<ParseChanges> seeds2;
     public final Snapshot[] customSnapshots;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -28,6 +31,8 @@ public final class ParseStateSnapshot
         int blackEnd,
         int treeChildrenCount,
         Array<Seed> seeds,
+        @Nullable Array<ParsingExpression> seeded,
+        @Nullable Array<ParseChanges> seeds2,
         Snapshot[] customSnapshots)
     {
         this.start = start;
@@ -36,6 +41,8 @@ public final class ParseStateSnapshot
         this.blackEnd = blackEnd;
         this.treeChildrenCount = treeChildrenCount;
         this.seeds = seeds;
+        this.seeded = seeded;
+        this.seeds2 = seeds2;
         this.customSnapshots = customSnapshots;
     }
 
