@@ -240,7 +240,7 @@ public final class GrammarGrammar
             named$("rule", sequence(
                 ruleLeftHandSide,
                 choice(
-                    syntaxDef,
+                    //syntaxDef,
                     exprCluster,
                     capture("expr", parsingExpression)),
                 semi)),
