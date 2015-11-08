@@ -44,7 +44,7 @@ public final class ParseTree implements Iterable<ParseTree>
     /**
      * Does this node have the given tag?
      */
-    boolean hasTag(String tag)
+    public boolean hasTag(String tag)
     {
         return tags.contains(tag);
     }

@@ -73,25 +73,30 @@ public final class GrammarCompiler
 
     private ParsingExpression compileRule(ParseTree rule)
     {
-        String ruleName = rule.value("ruleName");
-
         ParsingExpression topChoice = rule.has("cluster")
-            ? compileCluster(rule.get("cluster"))
+            ? compileCluster(rule.value("ruleName"), rule.get("cluster"))
             : compilePE(rule.get("expr").child());
 
-        if (rule.has("dumb"))
+        return decorateAssignment(rule, topChoice);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private ParsingExpression decorateAssignment(ParseTree assignment, ParsingExpression pe)
+    {
+        if (assignment.has("dumb"))
         {
-            topChoice = dumb(topChoice);
+            pe = dumb(pe);
         }
 
-        if (rule.has("token"))
+        if (assignment.has("token"))
         {
-            topChoice = token(topChoice);
+            pe = token(pe);
         }
 
-        topChoice = compileCapture(ruleName, topChoice, rule.group("captureSuffixes"));
-
-        return named$(ruleName, topChoice);
+        String ruleName = assignment.value("ruleName");
+        pe = compileCapture(ruleName, pe, assignment.group("captureSuffixes"));
+        return named$(ruleName, pe);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -113,108 +118,73 @@ public final class GrammarCompiler
 
     // ---------------------------------------------------------------------------------------------
 
-    private ParsingExpression compileCluster(ParseTree expression)
+    private ParsingExpression compileCluster(String clusterName, ParseTree expression)
     {
-        Array<ParsingExpression> namedAlternates = new Array<>();
-        Array<Group> groups = new Array<>();
-        Array<Array<ParsingExpression>> alts = new Array<>();
-
-        int i = 0;
+        Array<Group> groups = new Array<>(group(1, false, false));
         int precedence = 1;
+        Array<ParsingExpression> alts = new Array<>();
 
         for (ParseTree alt: expression.group("alts"))
         {
-            ParsingExpression pe = compilePE(alt.get("expr").child());
-
-            int psets = 0;
-            boolean leftRecursive = false;
-            boolean leftAssociative = false;
-
-            for (ParseTree annotation : alt.group("annotations"))
+            if (alt.hasTag("directive"))
             {
-                annotation = annotation.child();
-
-                switch (annotation.accessor)
+                if (!alts.isEmpty())
                 {
-                    case "precedence":
-                        precedence = Integer.parseInt(annotation.value);
-                        ++psets;
-                        break;
-
-                    case "increment":
-                        if (i != 0) ++precedence;
-                        ++psets;
-                        break;
-
-                    case "same":
-                        ++psets;
-                        break;
-
-                    case "left_assoc":
-                        leftRecursive = true;
-                        leftAssociative = true;
-                        break;
-
-                    case "left_recur":
-                        leftRecursive = true;
-                        break;
-
-                    case "name":
-                        pe.name = annotation.value;
-                        namedAlternates.push(pe);
-                        break;
+                    groups.peek().operands = alts.toArray(ParsingExpression[]::new);
+                    alts = new Array<>();
+                    ++precedence;
                 }
-            }
-
-            if (psets > 1)
-            {
-                throw new RuntimeException(
-                    "Expression specifies precedence more than once.");
-            }
-            else if (precedence == 0)
-            {
-                throw new RuntimeException(
-                    "Precedence can't be 0. Don't use @0; or use @= in first position.");
-            }
-            else if (precedence < groups.size() && groups.get(precedence) != null)
-            {
-                if (leftRecursive)
+                else
                 {
-                    throw new RuntimeException(
-                        "Can't specify left-recursion or left-associativity on non-first "
-                            + "alternate of a precedence group in an expression cluster.");
+                    groups.pop();
                 }
 
-                alts.get(precedence).push(pe);
-            }
-            else
-            {
-                groups.put(precedence, group(precedence, leftRecursive, leftAssociative));
-                alts.put(precedence, new Array<>(pe));
-            }
+                switch (alt.value)
+                {
+                    case "@+":
+                        groups.push(group(precedence, false, false));
+                        break;
 
-            ++i;
-        }
+                    case "@+_left_recur":
+                        groups.push(group(precedence, true, false));
+                        break;
 
-        namedAlternates.forEach(namedClusterAlternates::push);
+                    case "@+_left_assoc":
+                        groups.push(group(precedence, true, true));
+                        break;
 
-        // Build the groups
+                    default:
+                        throw new Error("unknown directive");
+                }
 
-        Array<Group> groupsArray = new Array<>();
-
-        for (i = 0; i < groups.size(); ++i)
-        {
-            Group group = groups.get(i);
-
-            if (group == null) {
                 continue;
             }
 
-            group.operands = alts.get(i).toArray(ParsingExpression[]::new);
-            groupsArray.push(group);
+            // arrows
+
+            ParsingExpression pe = compilePE(alt.get("expr").child());
+
+            if (alt.has("ruleName"))
+            {
+                pe = decorateAssignment(alt, pe);
+                pe = named$(clusterName + "." + pe.name, pe);
+
+                namedClusterAlternates.push(pe);
+            }
+
+            alts.push(pe);
         }
 
-        return cluster(groupsArray.toArray(Group[]::new));
+        if (!alts.isEmpty())
+        {
+            groups.peek().operands = alts.toArray(ParsingExpression[]::new);
+        }
+        else
+        {
+            groups.pop();
+        }
+
+        return cluster(groups.toArray(Group[]::new));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -230,11 +200,11 @@ public final class GrammarCompiler
         {
             return filter(
                 Streams.from(allowed)
-                    .map(pe -> reference(pe.value))
+                    .map(pe -> reference(ref.target + "." + pe.value))
                     .toArray(ParsingExpression[]::new),
 
                 Streams.from(forbidden)
-                    .map(pe -> reference(pe.value))
+                    .map(pe -> reference(ref.target + "." + pe.value))
                     .toArray(ParsingExpression[]::new),
 
                 ref
@@ -344,7 +314,6 @@ public final class GrammarCompiler
         }
 
         return out;
-
     }
 
     // ---------------------------------------------------------------------------------------------

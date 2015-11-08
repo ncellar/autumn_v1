@@ -828,10 +828,9 @@ ElementValuePair
     = Identifier:+-id '=' ElementValue ;
 
 ElementValue :~ value
-    = Expression forbid { assign }
+    = Expression forbid { Assignment }
     / ElementValueArrayInitializer
-    / Annotation
-    ;
+    / Annotation ;
 
 ElementValueArrayInitializer # values
     = '{' ElementValue , ',' ','? '}' ;
@@ -1018,7 +1017,7 @@ SwitchLabel
     = CASE Expression~label ':' / DEFAULT:~default ':' ;
 
 StatementExpression
-    = Expression allow { assign, binc, bdec, ainc, adec, mcall, tmcall, ccall } ;
+    = Expression allow { Assignment, '++x', '--x', 'x++', 'x--', MethodCall, DotTypeArgsCall, CtorCall } ;
 
 BasicForStatement :~ basicFor
     = FOR '(' (ForInit :- init)? ';' (Expression - cond)? ';' (StatementExpressionList :- iter)? ')'
@@ -1123,7 +1122,7 @@ DimExpr :# dimExprs
 
 */
 
-Arguments # arguments
+Arguments #$
     = '(' Expression , ',' ')' ;
 
 //-------------------------------------------------------------------------
@@ -1157,107 +1156,105 @@ LambdaParameters
 
 E = Expression ;
 
-Expression ~ expression
-    = expr
+Expression ~ expression = expr
 
-    -> Assignment            @+ @left_recur @assign
+    @+_left_recur
+    -> Assignment = Assignment
     -> LambdaExpression
-    -> ConditionalExpression @+ @left_recur
 
-    // BINARY OPERATORS
+    @+_left_recur
+    -> ConditionalExpression
 
-    -> (E '||' E) :~ '||' @+ @left_assoc
-    -> (E '&&' E) :~ '&&' @+ @left_assoc
-    -> (E '|'  E) :~ '|'  @+ @left_assoc
-    -> (E '^'  E) :~ '^'  @+ @left_assoc
-    -> (E '&'  E) :~ '&'  @+ @left_assoc
+    //// BINARY OPERATORS
 
-    -> (E '==' E) :~ '==' @+ @left_assoc
-    -> (E '!=' E) :~ '!='
+    @+_left_assoc -> '||' :~$ = E '||' E
+    @+_left_assoc -> '&&' :~$ = E '&&' E
+    @+_left_assoc -> '|'  :~$ = E '|'  E
+    @+_left_assoc -> '^'  :~$ = E '^'  E
+    @+_left_assoc -> '&'  :~$ = E '&'  E
 
-    -> (E '<=' E) :~ '<=' @+ @left_assoc
-    -> (E '>=' E) :~ '>='
-    -> (E '<' E)  :~ '<'
-    -> (E '>' E)  :~ '>'
+    @+_left_assoc
+    -> '==' :~$ = E '==' E
+    -> '==' :~$ = E '!=' E
 
-    -> (E INSTANCEOF E) :~ INSTANCEOF @=
+    @+_left_assoc
+    -> '<='         :~$ = E '<=' E
+    -> '>='         :~$ = E '>=' E
+    -> '<'          :~$ = E '<'  E
+    -> '>'          :~$ = E '>'  E
+    -> InstanceOf   :~$ = E INSTANCEOF E
 
-    -> (E '<<' E)   :~ '<<'  @+ @left_assoc
-    -> (E '>>' E)   :~ '>>'
-    -> (E '>>>' E)  :~ '>>>'
+    @+_left_assoc
+    -> '<<'  :~$ = E '<<' E
+    -> '>>'  :~$ = E '>>' E
+    -> '>>>' :~$ = E '>>>' E
 
-    -> (E '+' E) :~ '+' @+ @left_assoc
-    -> (E '-' E) :~ '-'
+    @+_left_assoc
+    -> '+' :~$ = E '+' E
+    -> '-' :~$ = E '-' E
 
-    -> (E '*' E) :~ '*' @+ @left_assoc
-    -> (E '/' E) :~ '/'
-    -> (E '%' E) :~ '%'
+    @+_left_assoc
+    -> '*' :~$ = E '*' E
+    -> '/' :~$ = E '/' E
+    -> '%' :~$ = E '%' E
 
-    // PREFIX OPERATORS
 
-    -> ('++' E) :~ '++x' @+ @binc
-    -> ('--' E) :~ '--x' @bdec
-    -> ('+' E)  :~ '+'
-    -> ('-' E)  :~ '-'
-    -> ('~' E)  :~ '~'
-    -> ('!' E)  :~ '!'
+    //// PREFIX OPERATORS
+
+    @+
+    -> '++x' :~$ = '++' E
+    -> '--x' :~$ = '--' E
+    -> '+'   :~$ = '+' E
+    -> '-'   :~$ = '-' E
+    -> '~'   :~$ = '~' E
+    -> '!'   :~$ = '!' E
 
     -> CastExpression
 
     // Cast do not conflict with method call ((expr)(arguments)) the precedence of method call
     // is lower.
 
-    // POSTFIX EXPRESSIONS
 
-    -> (E '++') :~ 'x++' @+ @left_assoc @ainc
-    -> (E '--') :~ 'x--' @adec
+    //// POSTFIX EXPRESSIONS
 
-    -> (E-op '.' TypeArguments Identifier :+-id drop Arguments)
-            :~ dotTypeArgsCall @tmcall
+    @+_left_assoc
+    -> 'x++'            :~$ = E '++'
+    -> 'x--'            :~$ = E '--'
+    -> DotTypeArgsCall  :~$ = E-op '.' TypeArguments Identifier :+-id drop Arguments
+    -> MethodCall       :~$ = (E-op drop Arguments)
+    -> DotNew           :~$ = E-op '.' NEW drop ClassCreator
+    -> DotThis          :~$ = E '.' THIS
+    -> DotSuper         :~$ = E '.' SUPER
+    -> DotClass         :~$ = E '.' CLASS
+    -> DotIden          :~$ = E-op '.' Identifier:+-id
+    -> ArrayAccess      :~$ = E-op '[' drop E-subscript ']'
+    -> MethodRef        :~$ = E-op '::' TypeArguments? Identifier:+-id
+    -> NewRef           :~$ = TypeArguments? NEW
 
-    -> (E-op drop Arguments)
-            :~ call @mcall
+    //// POSTFIX TYPES
 
-    -> (E-op '.' NEW drop ClassCreator)
-            :~ dotNew
+    -> TypeWithArgs     :~$ = E-op TypeArguments
+    -> ArrayType        :~$ = E '[' ']'
 
-    -> (E '.' THIS)  :~ dotThis
-    -> (E '.' SUPER) :~ dotSuper
-    -> (E '.' CLASS) :~ dotClass
 
-    -> (E-op '.' Identifier:+-id)
-            :~ dotIden @dot_iden
+    //// PRIMARY EXPRESSIONS
 
-    -> (E-op '[' drop E-subscript ']')
-            :~ arrayAccess @array_access
-
-    -> (E-op '::' TypeArguments? Identifier:+-id)
-            :~ methodRef
-
-    -> (TypeArguments? NEW)
-            :~ newRef
-
-    // POSTFIX TYPES
-
-    -> (E-op TypeArguments) :~ TypeWithArgs
-    -> (E '[' ']') :~ ArrayType
-
-    // PRIMARY EXPRESSIONS
-
-    -> '(' drop Expression ')' @+
-    -> (THIS Arguments) :~ ThisCall
-    -> THIS :~ this
-    -> (SUPER Arguments) :~ SuperCall
-    -> SUPER :~ super
-    -> (NEW drop ClassCreator) :~ CtorCall      @ccall
-    -> (NEW drop ArrayCreator) :~ ArrayCtorCall
-    -> Identifier :+~ identifier @iden
+    @+
+    -> Parens           :~$ = '(' drop Expression ')'
+    -> ThisCall         :~$ = THIS Arguments
+    -> THIS :~$
+    -> SuperCall        :~$ = SUPER Arguments
+    -> SUPER :~$
+    -> CtorCall         :~$ = NEW drop ClassCreator
+    -> ArrayCtorCall    :~$ = NEW drop ArrayCreator
+    -> Iden             :~$ = Identifier
     -> Literal
 
-    // PRIMARY TYPES
+
+    //// PRIMARY TYPES
 
     -> BasicType
-    -> VOID:~void
+    -> VOID :~$
     ;
 
 // ===============================================================================
@@ -1293,7 +1290,7 @@ Assignment :~ assignment
     = LValue-l AssignmentOperator:+-op Expression-r ;
 
 LValue
-    = Expression allow { iden, dot_iden, array_access } ;
+    = Expression allow { Iden, DotIden, ArrayAccess } ;
 
 AssignmentOperator
     = '=' / '*=' / '/=' / '%=' / '+=' / '-=' / '<<=' / '>>=' / '>>>=' / '&=' / '^=' / '|=' ;
