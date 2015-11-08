@@ -1,9 +1,9 @@
 package com.norswap.autumn.parsing.expressions;
 
+import com.norswap.autumn.parsing.state.BottomUpState;
 import com.norswap.autumn.parsing.state.ParseChanges;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.state.Seed;
 import com.norswap.autumn.parsing.expressions.abstrakt.UnaryParsingExpression;
 
 public final class LeftRecursive extends UnaryParsingExpression
@@ -17,10 +17,12 @@ public final class LeftRecursive extends UnaryParsingExpression
     @Override
     public void parse(Parser parser, ParseState state)
     {
-        ParseChanges changes = Seed.get(state, this);
+        BottomUpState bstate = state.bottomup;
+        ParseChanges changes;
 
-        if (changes != null)
+        if ((changes = bstate.getSeed(this)) != null)
         {
+            // If this is a re-entry, use the seed value.
             state.merge(changes);
             return;
         }
@@ -29,14 +31,12 @@ public final class LeftRecursive extends UnaryParsingExpression
             // Recursion is blocked in a left-associative expression when not in left
             // position (if we were in left position, there would have been a seed).
 
-            // We bypass error handling: it is not expected that the input matches this expression.
-
-            state.fail();
+            state.fail(this);
             return;
         }
 
         changes = ParseChanges.failure();
-        Seed.push(state, this, changes);
+        bstate.setSeed(this, changes);
 
         if (leftAssociative)
         {
@@ -49,24 +49,23 @@ public final class LeftRecursive extends UnaryParsingExpression
         {
             operand.parse(parser, state);
 
-            if (changes.end >= state.end)
+            if (state.end > changes.end)
             {
-                // If no rule could grow the seed, exit the loop.
+                // Seed was grown, update it and retry the rule.
+                changes = state.extract();
+                bstate.setSeed(this, changes);
                 state.discard();
-                break;
             }
             else
             {
-                // Update the seed and retry the rule.
-
-                changes = state.extract();
-                Seed.set(state, changes);
+                // No rule could grow the seed, exit the loop.
                 state.discard();
+                break;
             }
         }
 
         state.merge(changes);
-        Seed.pop(state);
+        bstate.removeSeed(this);
 
         if (state.failed())
         {

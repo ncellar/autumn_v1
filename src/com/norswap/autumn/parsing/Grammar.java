@@ -50,7 +50,7 @@ public final class Grammar
     public final boolean processLeadingWhitespace;
 
     /**
-     * TODO
+     * TODO document
      */
     public final @Immutable Map<String, String> options;
 
@@ -74,7 +74,7 @@ public final class Grammar
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // TODO EXCEPTIONS
+    // TODO use exceptions + document ParseException
     public static GrammarBuilder fromSource(Source source)
     {
         ParseResult result =

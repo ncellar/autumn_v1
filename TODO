@@ -1,7 +1,43 @@
 --------------------------------------------------------------------------------
-TODO
+TODO NOW
 
-DEBUGGER
+    - finish cleaning up parse state
+        - do we need the loop constraint?
+        - fix all TODOs in ParseState
+        - move precedence into BottomUpState
+        - make BottomUpState into a custom state?k
+
+    - grammar syntax changes
+        - tokenizer X =
+        - how to set the current tokenizer?
+            `tokenizer(X)`
+        - how to call a token?
+            % token_name
+        - TokenRef class
+        - how to mark an alternative as a token
+            %= token_name
+            `def_token(X)`
+        - how to extend syntax with custom functions
+            `function(x)[<string>](<expr>)`
+            pexp X = <java method ref>
+        - no capture operator
+            `nocapture(X)`
+        - whitespace operator
+            `whitespace`
+        - dumb operator
+            `fast(X)`
+        - remove ^= and %= operators
+        - how to extend toplevel syntax
+        - syntax X = <java operator> ;
+
+    - tokenizers
+        - token PE linked to a tokenizer + type
+        - memoization window around position
+        - error handling: an error over a token can become "unexpected X"
+        - advantage: handles reserved identifiers
+
+TODO DEBUGGER
+
     - rework package
         - positioning in next and error locator
             - invert locate
@@ -9,84 +45,52 @@ DEBUGGER
         - integrate own capture info
         - register state tracking custom state
         - why do I have a distinction between ExecutionLocation and spine?
+
     - bookmarks (shared, synchronized) and history (forked)
 
-    document
-        - memo handler in parse state
-
-    consider later:
+    - consider later:
         - make location info class
         - document the "non-inspection" behaviour of beforeLocator
 
-GUMPTION
+TODO GUMPTION
+
     - use Array instead of [] for first and children in PE
     - insert $ in Java8 (rule-level only) (-> 544)
 
 TODO FURTHER SMALL
 
-- allow options in grammar files, namely for root and whitespace spec
+    - allow options in grammar files, namely for root and whitespace spec
+      (to be retrieved from GrammarCompiler)
 
-- well formedness check (ford: WF -- can't loop without consuming)
+    - well formedness check (ford: WF -- can't loop without consuming)
 
-- scoped memoization
-    - MemoScope
-    - ScopedMemo
+    - scoped memoization
+        - MemoScope
+        - ScopedMemo
 
-- tokenizers
-    - token PE linked to a tokenizer + type
-    - memoization window around position
-    - error handling: an error over a token can become "unexpected X"
-    - advantage: handles reserved identifiers
-
-- repeating locators (which can locate multiple locations if invoked repeatedly)
-
-
-
-- tokenizer X =
-- how to set the current tokenizer?
-    `tokenizer(X)`
-- how to call a token?
-    % token_name
-- TokenRef class
-- how to mark an alternative as a token
-    %= token_name
-    `def_token(X)`
-- how to extend syntax with custom functions
-    `function(x)[<string>](<expr>)`
-    pexp X = <java method ref>
-- no capture operator
-    `nocapture(X)`
-- whitespace operator
-    `whitespace`
-- dumb operator
-    `fast(X)`
-- remove ^= and %= operators
-- how to extend toplevel syntax
-- syntax X = <java operator> ;
-
-
-FIRST:
-    - redo filtering
-
+    - repeating locators (which can locate multiple locations if invoked repeatedly)
 
 TODO FURTHER BIG
 
-- better support for layering with smart tree-building that automatically rewrites trees
-  (see D5)
+    - better support for layering with smart tree-building that automatically rewrites trees
+      (see D5)
 
-- mini type system for captures? automatic AST classes generation?
+    - mini type system for captures? automatic AST classes generation?
 
-- think about building in validation rules
+    - think about building in validation rules
 
-- grammar composition & parameterization
+    - grammar composition & parameterization
 
 TODO MUCH LATER
 
-- make dumb expression faster via a backtracking DPDA
+    - make dumb expression faster via a backtracking DPDA
 
-- think about how a parser could be retooled to parse html
-  (which is lax in syntax) -> need to define bounding boxes
+    - think about how a parser could be retooled to parse html
+      (which is lax in syntax) -> need to define bounding boxes
 
-- applications: semi-parsing, JIT
+    - semi-parsing
+
+    - performance metrics to guide optimization
+        + automatic memoization JIT'ing?
 
 --------------------------------------------------------------------------------

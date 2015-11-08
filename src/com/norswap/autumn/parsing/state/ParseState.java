@@ -6,7 +6,6 @@ import com.norswap.autumn.parsing.config.DefaultMemoHandler;
 import com.norswap.autumn.parsing.config.MemoHandler;
 import com.norswap.autumn.parsing.config.ParserConfigurationBuilder;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster;
-import com.norswap.autumn.parsing.expressions.ExpressionCluster.PrecedenceEntry;
 import com.norswap.autumn.parsing.expressions.Filter;
 import com.norswap.autumn.parsing.expressions.LeftRecursive;
 import com.norswap.autumn.parsing.expressions.Not;
@@ -21,7 +20,6 @@ import com.norswap.autumn.parsing.tree.BuildParseTree;
 import com.norswap.util.Array;
 import com.norswap.util.Caster;
 import com.norswap.util.JArrays;
-import com.norswap.util.annotations.Nullable;
 
 /**
  * An instance of this class is passed to every parsing expression invocation {@link
@@ -185,14 +183,14 @@ public final class ParseState
     public int blackStart;
 
     /**
-     * An uncommitted change to {@link #start}. You can think of it as the position of the end of
-     * the text matched by the parsing expression, or -1 if no match could be made.
+     * An uncommitted change to {@link #start}. You can think of it as one past the position of the
+     * end of the text matched by the parsing expression, or -1 if no match could be made.
      */
     public int end;
 
     /**
-     * An uncommitted change to {@link #blackStart}: the position of the last non-whitespace
-     * character preceding {@link #end}.
+     * An uncommitted change to {@link #blackStart}: one past the position of the last
+     * non-whitespace character preceding {@link #end}.
      */
     public int blackEnd;
 
@@ -205,13 +203,6 @@ public final class ParseState
      * Indicates whether parse errors should be recorded.
      */
     public boolean recordErrors;
-
-    /**
-     * Holds a set of mapping between parsing expressions ({@link ExpressionCluster} and {@link
-     * LeftRecursive} instances whose invocation is ongoing) and their seed (an instance of {@link
-     * ParseChanges}).
-     */
-    public @Nullable Array<Seed> seeds;
 
     /**
      * The parse tree which is to be the parent of parse trees produced by captures in the parsing
@@ -230,15 +221,19 @@ public final class ParseState
     public final ErrorState errors;
 
     /**
-     * TODO
+     * TODO document
      */
     public final MemoHandler memo;
 
     /**
      * The current cluster alternate; set by {@link ExpressionCluster} and read by {@link Filter}.
-     * TODO unsafe, but clunky to begin with; rework the filtering mechanism
      */
-    public ParsingExpression clusterAlternate;
+    public ParsingExpression clusterAlternateCommitted;
+
+    /**
+     * The current cluster alternate; set by {@link ExpressionCluster} and read by {@link Filter}.
+     */
+    public ParsingExpression clusterAlternateUncommitted;
 
     /**
      * A set of blocked {@link LeftRecursive} parsing expression. Invoking these expressions
@@ -247,20 +242,14 @@ public final class ParseState
     public Array<LeftRecursive> blocked;
 
     /**
-     * Holds a set of mapping between {@link ExpressionCluster} instances whose invocation is
-     * ongoing and their current precedence level.
-     */
-    public Array<PrecedenceEntry> minPrecedence;
-
-    /**
      * A set of additional user-defined parse states.
      */
     public final CustomState[] customStates;
 
     /**
-     * TODO
+     * TODO document
      */
-    public final ClusterState bottomup;
+    public final BottomUpState bottomup;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -284,10 +273,12 @@ public final class ParseState
         this.blackStart = inputs.blackStart;
         this.precedence = inputs.precedence;
         this.recordErrors = inputs.recordErrors;
-        this.seeds = inputs.seeds != null ? inputs.seeds.clone() : null;
         this.blocked = inputs.blocked.clone();
-        this.minPrecedence = inputs.minPrecedence.clone();
-        this.bottomup = new ClusterState();
+
+        // TODO FIX!
+        //this.seeds = inputs.seeds != null ? inputs.seeds.clone() : null;
+        //this.minPrecedence = inputs.minPrecedence.clone();
+        this.bottomup = new BottomUpState();
 
         this.customStates = new CustomState[customFactories.size()];
         for (int i = 0; i < customStates.length; ++i)
@@ -365,13 +356,13 @@ public final class ParseState
     {
         if (end > start)
         {
-            seeds = null;
             bottomup.seeded = null;
             bottomup.seeds = null;
         }
 
         start = end;
         blackStart = blackEnd;
+        clusterAlternateCommitted = clusterAlternateUncommitted;
         treeChildrenCount = tree.childrenCount();
 
         for (CustomState state: customStates)
@@ -386,6 +377,7 @@ public final class ParseState
     {
         end = start;
         blackEnd = blackStart;
+        clusterAlternateUncommitted = null;
         tree.truncate(treeChildrenCount);
 
         for (CustomState state: customStates)
@@ -402,6 +394,7 @@ public final class ParseState
             end,
             blackEnd,
             tree.children.copyFromIndex(treeChildrenCount),
+            clusterAlternateUncommitted,
             JArrays.map(customStates, CustomChanges[]::new, CustomState::extract));
     }
 
@@ -411,6 +404,7 @@ public final class ParseState
     {
         end = changes.end;
         blackEnd = changes.blackEnd;
+        clusterAlternateUncommitted = changes.clusterAlternate;
 
         if (changes.children != null)
         {
@@ -434,9 +428,9 @@ public final class ParseState
             end,
             blackEnd,
             treeChildrenCount,
-            seeds,
             bottomup.seeded,
             bottomup.seeds,
+            clusterAlternateCommitted,
             JArrays.map(customStates, Snapshot[]::new, CustomState::snapshot));
     }
 
@@ -449,9 +443,13 @@ public final class ParseState
         end                 = snapshot.end;
         blackEnd            = snapshot.blackEnd;
         treeChildrenCount   = snapshot.treeChildrenCount;
-        seeds               = snapshot.seeds;
         bottomup.seeded     = snapshot.seeded;
-        bottomup.seeds      = snapshot.seeds2;
+        bottomup.seeds      = snapshot.seeds;
+
+        clusterAlternateCommitted
+            = snapshot.clusterAlternate;
+        clusterAlternateUncommitted
+            = snapshot.clusterAlternate;
 
         tree.truncate(treeChildrenCount);
 
@@ -468,9 +466,11 @@ public final class ParseState
         start               = snapshot.start;
         blackStart          = snapshot.blackStart;
         treeChildrenCount   = snapshot.treeChildrenCount;
-        seeds               = snapshot.seeds;
         bottomup.seeded     = snapshot.seeded;
-        bottomup.seeds      = snapshot.seeds2;
+        bottomup.seeds      = snapshot.seeds;
+
+        clusterAlternateCommitted
+            = snapshot.clusterAlternate;
 
         for (int i = 0; i < customStates.length; ++i)
         {
@@ -488,12 +488,11 @@ public final class ParseState
             blackStart,
             precedence,
             recordErrors,
-            seeds.clone(),
             // TODO might be null
             bottomup.seeded.clone(),
             bottomup.seeds.clone(),
+            // TODO precedence !!!
             blocked.clone(),
-            minPrecedence.clone(),
             JArrays.map(customStates, Inputs[]::new, CustomState::inputs));
     }
 

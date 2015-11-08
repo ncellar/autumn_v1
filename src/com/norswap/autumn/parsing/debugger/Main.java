@@ -20,7 +20,6 @@ public final class Main
 
     public static void main(String[] args)
     {
-        // TODO
         args = new String[]{ "bogus", "bogus" };
 
         if (args.length < 2)
@@ -66,7 +65,7 @@ public final class Main
                 new Array<>(),
                 parser.rootInputs());
 
-        // TODO start GUI
+        // NOTE(NORSWAP): start GUI here
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

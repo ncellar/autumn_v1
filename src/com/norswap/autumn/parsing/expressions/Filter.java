@@ -10,14 +10,22 @@ import com.norswap.util.annotations.NonNull;
 
 import java.util.Arrays;
 
+/**
+ * NOTE(Norswap):
+ * <p>
+ * The operand should be an ExpressionCluster (or some wrapper thereof).
+ * <p>
+ * Care must be taken in presence of  grammar transformations. All the applied transformations must
+ * be unique: i.e. if a cluster alternate is replaced by a node X, the reference held by the filter
+ * should be replaced by the same node X (up to pointer equality!). This is the default when using
+ * {@link com.norswap.autumn.parsing.graph.Transformer}.
+ */
 public final class Filter extends UnaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public @NonNull ParsingExpression[] allowed;
     public @NonNull ParsingExpression[] forbidden;
-
-    // NOTE: The operand should be an ExpressionCluster (or some wrapper thereof).
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -32,7 +40,7 @@ public final class Filter extends UnaryParsingExpression
         }
 
         boolean success = allowed.length == 0;
-        ParsingExpression clusterAlternate = state.clusterAlternate;
+        ParsingExpression clusterAlternate = state.clusterAlternateUncommitted;
 
         for (ParsingExpression pe : allowed)
         {

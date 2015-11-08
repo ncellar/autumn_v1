@@ -207,25 +207,24 @@ public final class GrammarGrammar
             captureText("notCharSet", notCharSet)))),
 
         ruleLeftHandSide =
-            sequence(
+            named$("ruleLeftHandSide", sequence(
                 captureText("ruleName", name),
                 zeroMore(captureSuffix),
                 optional(capture("dumb", hat)),
                 optional(capture("token", percent)),
-                equal),
+                equal)),
 
         clusterArrow =
-            tag$("arrow", capture(sequence(
+            named$("arrow", tag$("arrow", capture(sequence(
                 arrow,
                 optional(ruleLeftHandSide),
-                capture("expr", filter(parsingExpression, null, $(reference("choice"))))))),
-                //capture("expr", forbid$(parsingExpression, reference("choice")))))),
+                capture("expr", forbid$(parsingExpression, reference("choice"))))))),
 
         clusterDirective =
-            tag$("directive", captureText(choice(
+            named$("directive", tag$("directive", captureText(choice(
                     keyword("@+"),
                     keyword("@+_left_assoc"),
-                    keyword("@+_left_recur")))),
+                    keyword("@+_left_recur"))))),
 
         // TOP LEVEL
 

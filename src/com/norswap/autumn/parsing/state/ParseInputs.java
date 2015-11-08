@@ -1,6 +1,5 @@
 package com.norswap.autumn.parsing.state;
 
-import com.norswap.autumn.parsing.expressions.ExpressionCluster.PrecedenceEntry;
 import com.norswap.autumn.parsing.expressions.LeftRecursive;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.state.CustomState.Inputs;
@@ -21,11 +20,9 @@ public final class ParseInputs
     public final int blackStart;
     public final int precedence;
     public final boolean recordErrors;
-    public final @Nullable Array<Seed> seeds;
     public final @Nullable Array<ParsingExpression> seeded;
-    public final @Nullable Array<ParseChanges> seeds2;
+    public final @Nullable Array<ParseChanges> seeds;
     public final Array<LeftRecursive> blocked;
-    public final Array<PrecedenceEntry> minPrecedence;
     public final Inputs[] customInputs;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -36,11 +33,9 @@ public final class ParseInputs
         int blackStart,
         int precedence,
         boolean recordErrors,
-        Array<Seed> seeds,
         Array<ParsingExpression> seeded,
-        Array<ParseChanges> seeds2,
+        Array<ParseChanges> seeds,
         Array<LeftRecursive> blocked,
-        Array<PrecedenceEntry> minPrecedence,
         Inputs[] customInputs)
     {
         this.pe = pe;
@@ -48,11 +43,9 @@ public final class ParseInputs
         this.blackStart = blackStart;
         this.precedence = precedence;
         this.recordErrors = recordErrors;
-        this.seeds = seeds;
         this.seeded = seeded;
-        this.seeds2 = seeds2;
+        this.seeds = seeds;
         this.blocked = blocked;
-        this.minPrecedence = minPrecedence;
         this.customInputs = customInputs;
     }
 
@@ -70,6 +63,7 @@ public final class ParseInputs
         if (blackStart != that.blackStart) return false;
         if (precedence != that.precedence) return false;
         if (!pe.equals(that.pe)) return false;
+        if (!seeded.equals(that.seeded)) return false;
         if (!seeds.equals(that.seeds)) return false;
         if (!blocked.equals(that.blocked)) return false;
 

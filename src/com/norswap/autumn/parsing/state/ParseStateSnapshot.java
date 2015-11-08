@@ -17,9 +17,9 @@ public final class ParseStateSnapshot
     public final int end;
     public final int blackEnd;
     public final int treeChildrenCount;
-    public final @Nullable Array<Seed> seeds;
     public final @Nullable Array<ParsingExpression> seeded;
-    public final @Nullable Array<ParseChanges> seeds2;
+    public final @Nullable Array<ParseChanges> seeds;
+    public final ParsingExpression clusterAlternate;
     public final Snapshot[] customSnapshots;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -30,9 +30,9 @@ public final class ParseStateSnapshot
         int end,
         int blackEnd,
         int treeChildrenCount,
-        Array<Seed> seeds,
         @Nullable Array<ParsingExpression> seeded,
-        @Nullable Array<ParseChanges> seeds2,
+        @Nullable Array<ParseChanges> seeds,
+        ParsingExpression clusterAlternate,
         Snapshot[] customSnapshots)
     {
         this.start = start;
@@ -40,9 +40,9 @@ public final class ParseStateSnapshot
         this.end = end;
         this.blackEnd = blackEnd;
         this.treeChildrenCount = treeChildrenCount;
-        this.seeds = seeds;
         this.seeded = seeded;
-        this.seeds2 = seeds2;
+        this.seeds = seeds;
+        this.clusterAlternate = clusterAlternate;
         this.customSnapshots = customSnapshots;
     }
 

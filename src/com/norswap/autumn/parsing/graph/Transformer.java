@@ -40,7 +40,6 @@ public final class Transformer extends ParsingExpressionVisitor
     public void afterRoot(Slot<ParsingExpression> slot, NodeState state)
     {
         afterChild(null, slot, state);
-
     }
 
     // ---------------------------------------------------------------------------------------------

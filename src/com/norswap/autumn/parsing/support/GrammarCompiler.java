@@ -44,8 +44,6 @@ public final class GrammarCompiler
             .filter(rule -> "Spacing".equals(rule.name))
             .findFirst().orElse(Whitespace.DEFAULT());
 
-        // TODO enable setting whitespace & root from grammar file
-
         return Grammar.fromRoot(exprs.get(0))
             .rules(exprs)
             .whitespace(whitespace);
