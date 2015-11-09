@@ -181,18 +181,6 @@ public final class FeatureTests
                     $("left", $("num", "2")),
                     $("right", $("num", "3"))))));
 
-            // [[+: [
-            //  left: [num: "1"],
-            //  right: [[+: [
-            //      left: [num: "2"],
-            //      right: [num: "3"]]]]]]],
-            //
-            // expected: [+: [
-            // left: [num: "1"],
-            // right: [+: [
-            //      left: [num: "2"],
-            //      right: [num: "3"]]]]]
-
             Ensure.equals(tree, expected);
         }
     }
@@ -227,7 +215,6 @@ public final class FeatureTests
         pe = named$("expr", choice(
             precedence(1, leftAssociative(plus.deepCopy())),
             precedence(2, leftAssociative(mult.deepCopy())),
-            precedence(3, leftAssociative(exp.deepCopy())),
             num.deepCopy()));
 
         tree = tree(pe, "1+2*3");

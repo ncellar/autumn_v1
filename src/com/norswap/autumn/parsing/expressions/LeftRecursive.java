@@ -26,6 +26,18 @@ public final class LeftRecursive extends UnaryParsingExpression
             state.merge(changes);
             return;
         }
+        /*
+        else if (leftAssociative)
+        {
+            BottomUpState.Precedence precedence = bstate.getPrecedence(this);
+
+            if (precedence.value > 0)
+            {
+                state.fail();
+                return;
+            }
+        }
+        */
         else if (leftAssociative && state.blocked.containsID(this))
         {
             // Recursion is blocked in a left-associative expression when not in left
@@ -41,6 +53,7 @@ public final class LeftRecursive extends UnaryParsingExpression
         if (leftAssociative)
         {
             state.blocked.push(this);
+            // precedence.value = 1;
         }
 
         // Keep parsing the operand, as long as long as the seed keeps growing.
@@ -66,6 +79,7 @@ public final class LeftRecursive extends UnaryParsingExpression
 
         state.merge(changes);
         bstate.removeSeed(this);
+        // bstate.removePrecedence(this, precedence);
 
         if (state.failed())
         {

@@ -503,6 +503,13 @@ public final class ParsingExpressionFactory
 
     // ---------------------------------------------------------------------------------------------
 
+    public static Precedence precedence(int precedence, ParsingExpression... operands)
+    {
+        return precedence(precedence, sequence(operands));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     public static Reference reference(String target)
     {
         Reference result = new Reference();
@@ -608,6 +615,13 @@ public final class ParsingExpressionFactory
     {
         pe.name = name;
         return pe;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static Debug debug(String id)
+    {
+        return new Debug(id);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

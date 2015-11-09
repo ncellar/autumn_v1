@@ -80,6 +80,28 @@ public abstract class ParsingExpression implements DeepCopy
     // ---------------------------------------------------------------------------------------------
 
     /**
+     * TODO
+     */
+    public final String nameOrHashcode()
+    {
+        return name != null
+            ? name + " - " + String.format("%X", hashCode())
+            : String.format("%X", hashCode());
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * TODO
+     */
+    public final String toStringOneLine()
+    {
+        return String.format("%s (%s)", getClass().getSimpleName(), nameOrHashcode());
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
      * Prints the shortest possible representation of this expression.
      *
      * If it has the name, use this name; otherwise print its structure cutting off the recursion

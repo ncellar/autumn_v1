@@ -57,7 +57,7 @@ public final class BottomUpState implements CustomState
 
         for (int i = 0; i < size; ++i)
         {
-            if (pe == seeded.get(i));
+            if (pe == seeded.get(i))
             {
                 return seeds.get(i);
             }
@@ -90,6 +90,7 @@ public final class BottomUpState implements CustomState
 
     public void removeSeed(ParsingExpression pe)
     {
+        seeded.pop();
         seeds.pop();
     }
 
