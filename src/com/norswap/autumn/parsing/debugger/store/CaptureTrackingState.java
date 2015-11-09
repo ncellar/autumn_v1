@@ -2,6 +2,7 @@ package com.norswap.autumn.parsing.debugger.store;
 
 import com.norswap.autumn.parsing.state.CustomChanges;
 import com.norswap.autumn.parsing.state.CustomState;
+import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.util.Array;
 
 /**
@@ -47,7 +48,7 @@ public class CaptureTrackingState implements CustomState
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void commit()
+    public void commit(ParseState state)
     {
         capturesCount = captures.size();
     }
@@ -55,7 +56,7 @@ public class CaptureTrackingState implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void discard()
+    public void discard(ParseState state)
     {
         captures.truncate(capturesCount);
     }
@@ -63,7 +64,7 @@ public class CaptureTrackingState implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public Changes extract()
+    public Changes extract(ParseState state)
     {
         Changes changes = new Changes();
         changes.added = captures.copyFromIndex(capturesCount);
@@ -73,7 +74,7 @@ public class CaptureTrackingState implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void merge(CustomChanges changes)
+    public void merge(CustomChanges changes, ParseState state)
     {
         Changes c = (Changes) changes;
         captures.addAll(c.added);
@@ -82,7 +83,7 @@ public class CaptureTrackingState implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public Snapshot snapshot()
+    public Snapshot snapshot(ParseState state)
     {
         Snapshot snapshot = new Snapshot();
         snapshot.count = capturesCount;
@@ -92,7 +93,7 @@ public class CaptureTrackingState implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void restore(CustomState.Snapshot snapshot)
+    public void restore(CustomState.Snapshot snapshot, ParseState state)
     {
         Snapshot s = (Snapshot) snapshot;
         capturesCount = s.count;
@@ -102,7 +103,7 @@ public class CaptureTrackingState implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void uncommit(CustomState.Snapshot snapshot)
+    public void uncommit(CustomState.Snapshot snapshot, ParseState state)
     {
         Snapshot s = (Snapshot) snapshot;
         capturesCount = s.count;
@@ -111,7 +112,7 @@ public class CaptureTrackingState implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public Inputs inputs()
+    public Inputs inputs(ParseState state)
     {
         return null;
     }
@@ -119,7 +120,7 @@ public class CaptureTrackingState implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public Result result()
+    public Result result(ParseState state)
     {
         Result result = new Result();
         result.captures = captures;

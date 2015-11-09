@@ -24,23 +24,23 @@ public interface CustomState
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    void commit();
+    void commit(ParseState state);
 
-    void discard();
+    void discard(ParseState state);
 
-    CustomChanges extract();
+    CustomChanges extract(ParseState state);
 
-    void merge(CustomChanges changes);
+    void merge(CustomChanges changes, ParseState state);
 
-    Snapshot snapshot();
+    Snapshot snapshot(ParseState state);
 
-    void restore(Snapshot snapshot);
+    void restore(Snapshot snapshot, ParseState state);
 
-    void uncommit(Snapshot snapshot);
+    void uncommit(Snapshot snapshot, ParseState state);
 
-    Inputs inputs();
+    Inputs inputs(ParseState state);
 
-    Result result();
+    Result result(ParseState state);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

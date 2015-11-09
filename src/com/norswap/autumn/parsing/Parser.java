@@ -85,7 +85,7 @@ public final class Parser implements Cloneable
             end >= 0,
             end,
             state.tree.build(),
-            JArrays.map(state.customStates, Result[]::new, CustomState::result),
+            JArrays.map(state.customStates, Result[]::new, x -> x.result(state)),
             state.errors.report(source));
     }
 
@@ -105,8 +105,6 @@ public final class Parser implements Cloneable
             true,
             null,
             null,
-            null,
-            new Array<>(),
             new Array<>(),
             config.customStateFactories()
                 .mapToArray(CustomStateFactory::rootInputs, CustomState.Inputs[]::new));

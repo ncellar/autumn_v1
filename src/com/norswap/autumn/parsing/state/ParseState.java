@@ -29,11 +29,12 @@ import com.norswap.util.JArrays;
  * manipulate during the parse. It contains things like the input position or the parse tree being
  * built.
  * <p>
+ * <p>
  * <strong>Committed and Uncommitted State</strong>
  * <p>
- * The parse state is divided between committed and uncommitted state. A very simple example is that
- * of the input position. When a parsing expression succeeds, it may consume some input and signal
- * so by setting the {@link #end} field. This is an uncommitted state change. Whenever {@link
+ * The parse state is divided between committed and uncommitted state. A very simple example is
+ * state is the input position. When a parsing expression succeeds, it may consume some input and
+ * signal so by setting the {@link #end} field. This is an uncommitted state change. Whenever {@link
  * #commit} is called, the value of {@code end} is assigned to {@link #start}. Subsequent expression
  * invocations using this state will parse at the new input position. Calling {@link #discard} will
  * discard all the uncommitted data.
@@ -55,6 +56,7 @@ import com.norswap.util.JArrays;
  * <p>
  * <strong>Parse Inputs</strong>
  * <p>
+ * <p>
  * The parse inputs are a particularly important subset of the parse state. The parse inputs consist
  * of all the state that influences the result of expression invocations. Obviously this includes
  * the input position, but also things like the precedence level or blocked expressions. Not all
@@ -67,6 +69,14 @@ import com.norswap.util.JArrays;
  * created on-demand, by calling {@link #inputs} and {@link #extract} respectively. This notion is
  * used for memoization: the default memoization strategy ({@link DefaultMemoHandler} is to maintain
  * a map from {@code ParseInputs} to {@code ParseChanges}.
+ * <p>
+ * <strong>Memoization</strong>
+ * <p>
+ * You can also customize the memoization strategy by supplying a custom {@link MemoHandler} to the
+ * {@link com.norswap.autumn.parsing.config.ParserConfiguration}. In general, a memoization handler
+ * memoizes the {@link ParseChanges} that results from invoking an expression with given {@link
+ * ParseInputs}. It is the strategy's responsibility to decide which invocations should be memoized,
+ * for how long, and the implementation.
  * <p>
  * <strong>Snapshots</strong>
  * <p>
@@ -103,6 +113,7 @@ import com.norswap.util.JArrays;
  * <p>
  * Despite its name, a snapshot is not a full picture of the parse state, and as such cannot be
  * passed around to recall arbitrary parse states.
+ * <p>
  * <p>
  * <strong>Custom Parse State</strong>
  * <p>
@@ -221,7 +232,7 @@ public final class ParseState
     public final ErrorState errors;
 
     /**
-     * TODO document
+     * See {@link ParseState}, section "Memoization".
      */
     public final MemoHandler memo;
 
@@ -247,7 +258,8 @@ public final class ParseState
     public final CustomState[] customStates;
 
     /**
-     * TODO document
+     * State that handles the bottom-up part of the parser, i.e. left-recursion and expressions
+     * clusters.
      */
     public final BottomUpState bottomup;
 
@@ -275,10 +287,10 @@ public final class ParseState
         this.recordErrors = inputs.recordErrors;
         this.blocked = inputs.blocked.clone();
 
-        // TODO FIX!
-        //this.seeds = inputs.seeds != null ? inputs.seeds.clone() : null;
-        //this.minPrecedence = inputs.minPrecedence.clone();
+        // TODO move into own method
         this.bottomup = new BottomUpState();
+        bottomup.seeded = inputs.seeded != null ? inputs.seeded.clone() : null;
+        bottomup.seeds  = inputs.seeds  != null ? inputs.seeds .clone() : null;
 
         this.customStates = new CustomState[customFactories.size()];
         for (int i = 0; i < customStates.length; ++i)
@@ -362,12 +374,11 @@ public final class ParseState
 
         start = end;
         blackStart = blackEnd;
-        clusterAlternateCommitted = clusterAlternateUncommitted;
         treeChildrenCount = tree.childrenCount();
 
         for (CustomState state: customStates)
         {
-            state.commit();
+            state.commit(this);
         }
     }
 
@@ -382,7 +393,7 @@ public final class ParseState
 
         for (CustomState state: customStates)
         {
-            state.discard();
+            state.discard(this);
         }
     }
 
@@ -395,7 +406,7 @@ public final class ParseState
             blackEnd,
             tree.children.copyFromIndex(treeChildrenCount),
             clusterAlternateUncommitted,
-            JArrays.map(customStates, CustomChanges[]::new, CustomState::extract));
+            JArrays.map(customStates, CustomChanges[]::new, x -> x.extract(this)));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -414,7 +425,7 @@ public final class ParseState
         if (changes.customChanges != null)
         for (int i = 0; i < customStates.length; ++i)
         {
-            customStates[i].merge(changes.customChanges[i]);
+            customStates[i].merge(changes.customChanges[i], this);
         }
     }
 
@@ -431,7 +442,7 @@ public final class ParseState
             bottomup.seeded,
             bottomup.seeds,
             clusterAlternateCommitted,
-            JArrays.map(customStates, Snapshot[]::new, CustomState::snapshot));
+            JArrays.map(customStates, Snapshot[]::new, x -> x.snapshot(this)));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -455,7 +466,7 @@ public final class ParseState
 
         for (int i = 0; i < customStates.length; i++)
         {
-            customStates[i].restore(snapshot.customSnapshots[i]);
+            customStates[i].restore(snapshot.customSnapshots[i], this);
         }
     }
 
@@ -474,7 +485,7 @@ public final class ParseState
 
         for (int i = 0; i < customStates.length; ++i)
         {
-            customStates[i].uncommit(snapshot.customSnapshots[i]);
+            customStates[i].uncommit(snapshot.customSnapshots[i], this);
         }
     }
 
@@ -488,12 +499,11 @@ public final class ParseState
             blackStart,
             precedence,
             recordErrors,
-            // TODO might be null
-            bottomup.seeded.clone(),
-            bottomup.seeds.clone(),
+            bottomup.seeded != null ? bottomup.seeded.clone() : null,
+            bottomup.seeds  != null ? bottomup.seeds .clone() : null,
             // TODO precedence !!!
             blocked.clone(),
-            JArrays.map(customStates, Inputs[]::new, CustomState::inputs));
+            JArrays.map(customStates, Inputs[]::new, x -> x.inputs(this)));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

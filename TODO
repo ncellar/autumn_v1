@@ -2,10 +2,10 @@
 TODO NOW
 
     - finish cleaning up parse state
-        - do we need the loop constraint?
+        - make left recursion use precedence data struct
+        - make BottomUpState into a custom state?
+        - move clusteralternate into bottomupstate
         - fix all TODOs in ParseState
-        - move precedence into BottomUpState
-        - make BottomUpState into a custom state?k
 
     - grammar syntax changes
         - tokenizer X =
