@@ -51,6 +51,11 @@ public final class BottomupState implements CustomState
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * The position associated to the seeds.
+     */
+    private int position;
+
+    /**
      * The set of all expressions for which we currently have a seed value.
      */
     private @Nullable Array<ParsingExpression> seeded;
@@ -114,10 +119,11 @@ public final class BottomupState implements CustomState
 
     // ---------------------------------------------------------------------------------------------
 
-    public void setSeed(ParsingExpression pe, ParseChanges seed)
+    public void setSeed(ParsingExpression pe, ParseChanges seed, int position)
     {
         if (seeded == null)
         {
+            this.position = position;
             seeded = new Array<>(pe);
             seeds = new Array<>(seed);
         }
@@ -215,6 +221,7 @@ public final class BottomupState implements CustomState
     public void load(CustomState.Inputs inputs)
     {
         Inputs in = (Inputs) inputs;
+        this.position = in.position;
         this.seeded = in.seeded != null ? in.seeded.clone() : null;
         this.seeds   = in.seeds != null ? in.seeds .clone() : null;
         this.precedences = cast(in.precedences.clone());
@@ -227,8 +234,9 @@ public final class BottomupState implements CustomState
     @Override
     public void commit(ParseState state)
     {
-        if (state.end > state.start)
+        if (state.end > position)
         {
+            position = 0;
             seeded = null;
             seeds = null;
         }
@@ -264,7 +272,7 @@ public final class BottomupState implements CustomState
     public Snapshot snapshot(ParseState state)
     {
         return seeded != null
-            ? new Snapshot(seeded, seeds, committedAlternate)
+            ? new Snapshot(position, seeded, seeds, committedAlternate)
             : null;
     }
 
@@ -277,6 +285,7 @@ public final class BottomupState implements CustomState
         if (snapshot != null)
         {
             Snapshot s = (Snapshot) snapshot;
+            this.position = s.position;
             this.seeded = s.seeded;
             this.seeds = s.seeds;
 
@@ -294,6 +303,7 @@ public final class BottomupState implements CustomState
         if (snapshot != null)
         {
             Snapshot s = (Snapshot) snapshot;
+            this.position = s.position;
             this.seeded = s.seeded;
             this.seeds = s.seeds;
 
@@ -307,6 +317,7 @@ public final class BottomupState implements CustomState
     public Inputs inputs(ParseState state)
     {
         return new Inputs(
+            position,
             seeded != null ? seeded.clone() : null,
             seeds  != null ? seeds .clone() : null,
             cast(precedences.clone()),
@@ -338,15 +349,18 @@ public final class BottomupState implements CustomState
 
     public final static class Snapshot implements CustomState.Snapshot
     {
+        final int position;
         final Array<ParsingExpression> seeded;
         final Array<ParseChanges> seeds;
         final ParsingExpression committedAlternate;
 
         public Snapshot(
+            int position,
             Array<ParsingExpression> seeded,
             Array<ParseChanges> seeds,
             ParsingExpression committedAlternate)
         {
+            this.position = position;
             this.seeded = seeded;
             this.seeds = seeds;
             this.committedAlternate = committedAlternate;
@@ -357,6 +371,7 @@ public final class BottomupState implements CustomState
 
     public final static class Inputs implements CustomState.Inputs
     {
+        final int position;
         final @Nullable Array<ParsingExpression> seeded;
         final @Nullable Array<ParseChanges> seeds;
         final HashMap<ParsingExpression, Precedence> precedences;
@@ -364,12 +379,14 @@ public final class BottomupState implements CustomState
         final HashSet<ParsingExpression> blocked;
 
         public Inputs(
+            int position,
             @Nullable Array<ParsingExpression> seeded,
             @Nullable Array<ParseChanges> seeds,
             HashMap<ParsingExpression, Precedence> precedences,
             Array<ParsingExpression> history,
             HashSet<ParsingExpression> blocked)
         {
+            this.position = position;
             this.seeded = seeded;
             this.seeds = seeds;
             this.precedences = precedences;
@@ -384,6 +401,8 @@ public final class BottomupState implements CustomState
             if (!(o instanceof Inputs)) return false;
 
             Inputs that = (Inputs) o;
+
+            if (position != that.position) return false;
 
             if (seeded != that.seeded)
             {
@@ -408,7 +427,7 @@ public final class BottomupState implements CustomState
         @Override
         public int hashCode()
         {
-            int result = 0;
+            int result = position;
             result = 31 * result + (seeded != null ? seeded.hashCode() : 0);
             result = 31 * result + (seeds  != null ? seeds .hashCode() : 0);
             result = 31 * result + precedences.hashCode();

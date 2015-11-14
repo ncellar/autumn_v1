@@ -45,6 +45,8 @@ TODO NOW
 
     - common parse state patterns!
 
+    - generators for state/input/etc boilerplate
+
 TODO DEBUGGER
 
     - rework package

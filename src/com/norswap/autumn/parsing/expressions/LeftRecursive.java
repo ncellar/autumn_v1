@@ -39,7 +39,7 @@ public final class LeftRecursive extends UnaryParsingExpression
         }
 
         changes = ParseChanges.failure();
-        bstate.setSeed(this, changes);
+        bstate.setSeed(this, changes, state.start);
 
         if (leftAssociative)
         {
@@ -56,7 +56,7 @@ public final class LeftRecursive extends UnaryParsingExpression
             {
                 // Seed was grown, update it and retry the rule.
                 changes = state.extract();
-                bstate.setSeed(this, changes);
+                bstate.setSeed(this, changes, state.start);
                 state.discard();
             }
             else

@@ -68,7 +68,7 @@ public final class ExpressionCluster extends ParsingExpression
         }
 
         changes = ParseChanges.failure();
-        bstate.setSeed(this, changes);
+        bstate.setSeed(this, changes, state.start);
 
         BottomupState.Precedence precedence = bstate.getPrecedence(this);
         int oldPrecedence = precedence.oldPrecedence();
@@ -97,7 +97,7 @@ public final class ExpressionCluster extends ParsingExpression
                         // The seed was grown, try growing it again starting from first group rule.
                         bstate.uncommittedAlternate = alternate;
                         changes = state.extract();
-                        bstate.setSeed(this, changes);
+                        bstate.setSeed(this, changes, state.start);
                         state.discard();
                         continue leftRec;
                     }

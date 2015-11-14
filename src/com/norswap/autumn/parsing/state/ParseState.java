@@ -336,28 +336,26 @@ public final class ParseState
 
     public void commit()
     {
-        for (CustomState state: customStates)
-        {
-            state.commit(this);
-        }
-
         start = end;
         blackStart = blackEnd;
         treeChildrenCount = tree.childrenCount();
+
+        for (CustomState state: customStates)  {
+            state.commit(this);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public void discard()
     {
-        for (CustomState state: customStates)
-        {
-            state.discard(this);
-        }
-
         end = start;
         blackEnd = blackStart;
         tree.truncate(treeChildrenCount);
+
+        for (CustomState state: customStates) {
+            state.discard(this);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -375,20 +373,16 @@ public final class ParseState
 
     public void merge(ParseChanges changes)
     {
-        // TODO pass global changes object to merge
-
-        if (changes.customChanges != null)
-            for (int i = 0; i < customStates.length; ++i)
-            {
-                customStates[i].merge(changes.customChanges[i], this);
-            }
-
         end = changes.end;
         blackEnd = changes.blackEnd;
 
-        if (changes.children != null)
-        {
+        if (changes.children != null)  {
             tree.addAll(changes.children);
+        }
+
+        if (changes.customChanges != null)
+        for (int i = 0; i < customStates.length; ++i)  {
+            customStates[i].merge(changes.customChanges[i], this);
         }
     }
 
@@ -410,12 +404,6 @@ public final class ParseState
     public void restore(ParseStateSnapshot snapshot)
     {
         // TODO null check (like in merge) ?
-        // TODO pass global snapshot object to restore
-
-        for (int i = 0; i < customStates.length; i++)
-        {
-            customStates[i].restore(snapshot.customSnapshots[i], this);
-        }
 
         start               = snapshot.start;
         blackStart          = snapshot.blackStart;
@@ -424,6 +412,10 @@ public final class ParseState
         treeChildrenCount   = snapshot.treeChildrenCount;
 
         tree.truncate(treeChildrenCount);
+
+        for (int i = 0; i < customStates.length; i++) {
+            customStates[i].restore(snapshot.customSnapshots[i], this);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -431,16 +423,14 @@ public final class ParseState
     public void uncommit(ParseStateSnapshot snapshot)
     {
         // TODO null check (like in merge) ?
-        // TODO pass global snapshot object to restore
-
-        for (int i = 0; i < customStates.length; ++i)
-        {
-            customStates[i].uncommit(snapshot.customSnapshots[i], this);
-        }
 
         start               = snapshot.start;
         blackStart          = snapshot.blackStart;
         treeChildrenCount   = snapshot.treeChildrenCount;
+
+        for (int i = 0; i < customStates.length; ++i) {
+            customStates[i].uncommit(snapshot.customSnapshots[i], this);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -461,8 +451,7 @@ public final class ParseState
     @Override
     public String toString()
     {
-        return String.format("(%X) [%d/%d - %d/%d[ tree(%d/%d)%s",
-            hashCode(),
+        return String.format("[%d/%d - %d/%d] tree(%d/%d) %s",
             start,
             blackStart,
             end,
