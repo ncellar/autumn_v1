@@ -3,7 +3,7 @@ package com.norswap.autumn.parsing.extensions;
 import com.norswap.autumn.parsing.GrammarBuilderExtensionView;
 import com.norswap.autumn.parsing.graph.LeftRecursionHandler;
 import com.norswap.autumn.parsing.graph.NullabilityCalculator;
-import com.norswap.autumn.parsing.state.BottomUpState;
+import com.norswap.autumn.parsing.state.BottomupState;
 import com.norswap.autumn.parsing.state.CustomStateIndex;
 
 public class BottomupExtension implements Extension
@@ -15,9 +15,9 @@ public class BottomupExtension implements Extension
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public BottomUpState customParseState()
+    public BottomupState customParseState()
     {
-        return new BottomUpState();
+        return new BottomupState();
     }
 
     // ---------------------------------------------------------------------------------------------

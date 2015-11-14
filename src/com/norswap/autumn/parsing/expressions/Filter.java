@@ -1,7 +1,7 @@
 package com.norswap.autumn.parsing.expressions;
 
 import com.norswap.autumn.parsing.extensions.BottomupExtension;
-import com.norswap.autumn.parsing.state.BottomUpState;
+import com.norswap.autumn.parsing.state.BottomupState;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
@@ -36,7 +36,7 @@ public final class Filter extends UnaryParsingExpression
     @Override
     public void parse(Parser parser, ParseState state)
     {
-        BottomUpState bstate = cast(state.customStates[BottomupExtension.INDEX]);
+        BottomupState bstate = cast(state.customStates[BottomupExtension.INDEX]);
 
         operand.parse(parser, state);
 

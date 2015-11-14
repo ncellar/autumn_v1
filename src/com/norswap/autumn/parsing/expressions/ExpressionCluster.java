@@ -1,7 +1,7 @@
 package com.norswap.autumn.parsing.expressions;
 
 import com.norswap.autumn.parsing.extensions.BottomupExtension;
-import com.norswap.autumn.parsing.state.BottomUpState;
+import com.norswap.autumn.parsing.state.BottomupState;
 import com.norswap.autumn.parsing.state.ParseChanges;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.Parser;
@@ -57,7 +57,7 @@ public final class ExpressionCluster extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseState state)
     {
-        BottomUpState bstate = cast(state.customStates[BottomupExtension.INDEX]);
+        BottomupState bstate = cast(state.customStates[BottomupExtension.INDEX]);
         ParseChanges changes;
 
         if ((changes = bstate.getSeed(this)) != null)
@@ -70,7 +70,7 @@ public final class ExpressionCluster extends ParsingExpression
         changes = ParseChanges.failure();
         bstate.setSeed(this, changes);
 
-        BottomUpState.Precedence precedence = bstate.getPrecedence(this);
+        BottomupState.Precedence precedence = bstate.getPrecedence(this);
         int oldPrecedence = precedence.oldPrecedence();
 
         // Iterate over groups in order of decreasing precedence.

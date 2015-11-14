@@ -26,7 +26,7 @@ import static com.norswap.util.Caster.cast;
  * A set of blocked {@link LeftRecursive} parsing expression. Invoking these expressions
  * will never succeed.
  */
-public final class BottomUpState implements CustomState
+public final class BottomupState implements CustomState
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -91,7 +91,7 @@ public final class BottomUpState implements CustomState
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public BottomUpState() {}
+    public BottomupState() {}
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

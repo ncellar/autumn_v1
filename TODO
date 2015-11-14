@@ -8,6 +8,10 @@ TODO NOW
 
     - in GrammarBuilder, replace enableLeftRecursion... by disableDefaultExtensions
 
+    - misc TODOs
+        - better toString
+        - exception handling
+
     - grammar syntax changes
         - tokenizer X =
         - how to set the current tokenizer?
