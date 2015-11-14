@@ -20,8 +20,6 @@ public final class DefaultErrorState implements ErrorState
     // The two first fields are conceptually the top of the stack implemented by the two other
     // arrays.
 
-    // TODO performance regression of using a set rather than an array?
-
     private int farthestErrorPosition = -1;
     private HashSet<ParsingExpression> farthestExpressions = new HashSet<>();
 

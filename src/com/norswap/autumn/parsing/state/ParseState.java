@@ -400,8 +400,6 @@ public final class ParseState
 
     public void restore(ParseStateSnapshot snapshot)
     {
-        // TODO null check (like in merge) ?
-
         start               = snapshot.start;
         blackStart          = snapshot.blackStart;
         end                 = snapshot.end;
@@ -419,8 +417,6 @@ public final class ParseState
 
     public void uncommit(ParseStateSnapshot snapshot)
     {
-        // TODO null check (like in merge) ?
-
         start               = snapshot.start;
         blackStart          = snapshot.blackStart;
         treeChildrenCount   = snapshot.treeChildrenCount;

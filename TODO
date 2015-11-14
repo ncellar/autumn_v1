@@ -1,10 +1,8 @@
 --------------------------------------------------------------------------------
 TODO NOW
 
-    - finish cleaning up parse state
-        - fix all TODOs in ParseState
-        - split cluster state and left-recursion state?
-
+    - split cluster state and left-recursion state?
+    - document states
     - in GrammarBuilder, replace enableLeftRecursion... by disableDefaultExtensions
 
     - misc TODOs
@@ -78,6 +76,8 @@ TODO FURTHER SMALL
         - ScopedMemo
 
     - repeating locators (which can locate multiple locations if invoked repeatedly)
+
+    - better string printing for short expressions
 
 TODO FURTHER BIG
 

@@ -1,55 +1,21 @@
-package com.norswap.autumn.parsing.state;
+package com.norswap.autumn.parsing.extensions.leftrec;
 
 import com.norswap.autumn.parsing.ParsingExpression;
-import com.norswap.autumn.parsing.expressions.ExpressionCluster;
-import com.norswap.autumn.parsing.expressions.Filter;
 import com.norswap.autumn.parsing.expressions.LeftRecursive;
-import com.norswap.autumn.parsing.expressions.WithMinPrecedence;
-import com.norswap.autumn.parsing.state.patterns.Container;
+import com.norswap.autumn.parsing.state.CustomChanges;
+import com.norswap.autumn.parsing.state.CustomState;
+import com.norswap.autumn.parsing.state.ParseChanges;
+import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.util.Array;
 import com.norswap.util.annotations.Nullable;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
 
 import static com.norswap.util.Caster.cast;
 
-/**
- * TODO (this was copy pasted)
- *
- * Holds a set of mapping between parsing expressions ({@link ExpressionCluster} and {@link
- * LeftRecursive} instances whose invocation is ongoing) and their seed (an instance of {@link
- * ParseChanges}).
- *
- * Holds a set of mapping between {@link ExpressionCluster} instances whose invocation is
- * ongoing and their current precedence level.
- *
- * A set of blocked {@link LeftRecursive} parsing expression. Invoking these expressions
- * will never succeed.
- */
-public final class BottomupState implements CustomState
+public final class LeftRecursionState implements CustomState
 {
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public static class Precedence
-    {
-        Precedence(int value)
-        {
-            this.value = value;
-        }
-
-        // Value is above the history stack.
-
-        public int value;
-        Array<Integer> history = new Array<>();
-
-        public int oldPrecedence()
-        {
-            return history.peekOr(0);
-        }
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -68,37 +34,13 @@ public final class BottomupState implements CustomState
     private @Nullable Array<ParseChanges> seeds;
 
     /**
-     * Maps from expression clusters to their current precedence.
-     */
-    private HashMap<ExpressionCluster, Precedence> precedences = new HashMap<>();
-
-    /**
-     * A stack of expressions with a precedence level that are currently being visited. These
-     * expressions are the keys of {@link #precedences}.
-     * <p>
-     * This data structure is necessary for {@link #getCurrentPrecedence} (used by {@link
-     * WithMinPrecedence}) to work.
-     */
-    private Array<ExpressionCluster> history = new Array<>();
-
-    /**
      * Set of expressions in which we can't recurse, in order to ensure left-associativity.
      */
     private HashSet<LeftRecursive> blocked = new HashSet<>();
 
-    /**
-     * The current cluster alternate; set by {@link ExpressionCluster} and read by {@link Filter}.
-     */
-    public ParsingExpression committedAlternate;
-
-    /**
-     * The current cluster alternate; set by {@link ExpressionCluster} and read by {@link Filter}.
-     */
-    public ParsingExpression uncommittedAlternate;
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public BottomupState() {}
+    public LeftRecursionState() {}
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -150,54 +92,6 @@ public final class BottomupState implements CustomState
 
     // ---------------------------------------------------------------------------------------------
 
-    public Precedence getPrecedence(ExpressionCluster pe)
-    {
-        history.push(pe);
-
-        return precedences.compute(pe, (k, v) -> {
-            if (v != null)
-            {
-                v.history.push(v.value);
-                return v;
-            }
-            else
-            {
-                return new Precedence(0);
-            }
-        });
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public void removePrecedence(ExpressionCluster pe, Precedence precedence)
-    {
-        history.pop();
-
-        if (precedence.history.isEmpty())
-        {
-            precedences.remove(pe);
-        }
-        else
-        {
-            precedence.value = precedence.history.pop();
-        }
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public Precedence getCurrentPrecedence()
-    {
-        if (history.isEmpty())
-        {
-            throw new Error(
-                "Trying to retrieve a cluster precedence while none is currently parsing.");
-        }
-
-        return precedences.get(history.peek());
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
     public void block(LeftRecursive pe)
     {
         blocked.add(pe);
@@ -226,8 +120,6 @@ public final class BottomupState implements CustomState
         this.position = in.position;
         this.seeded = in.seeded != null ? in.seeded.clone() : null;
         this.seeds   = in.seeds != null ? in.seeds .clone() : null;
-        this.precedences = cast(in.precedences.clone());
-        this.history = in.history.clone();
         this.blocked = cast(in.blocked.clone());
     }
 
@@ -247,31 +139,20 @@ public final class BottomupState implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void discard(ParseState state)
+    public void discard(ParseState state) {}
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public CustomChanges extract(ParseState state)
     {
-        uncommittedAlternate = committedAlternate;
+        return null;
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public Container<ParsingExpression> extract(ParseState state)
-    {
-        return committedAlternate != uncommittedAlternate
-            ? new Container<>(uncommittedAlternate)
-            : null;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void merge(CustomChanges changes, ParseState state)
-    {
-        if (changes != null) {
-            uncommittedAlternate = ((Container<ParsingExpression>)changes).content;
-        }
-    }
+    public void merge(CustomChanges changes, ParseState state) {}
 
     // ---------------------------------------------------------------------------------------------
 
@@ -279,51 +160,35 @@ public final class BottomupState implements CustomState
     public CustomState.Snapshot snapshot(ParseState state)
     {
         return seeded != null
-            ? new Snapshot(position, seeded, seeds, committedAlternate)
-            : new Container<>(committedAlternate);
+            ? new Snapshot(position, seeded, seeds)
+            : null;
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    @SuppressWarnings("unchecked")
     public void restore(CustomState.Snapshot snapshot, ParseState state)
     {
-        if (snapshot instanceof Snapshot)
+        if (snapshot != null)
         {
             Snapshot s = (Snapshot) snapshot;
             this.position = s.position;
             this.seeded = s.seeded;
             this.seeds = s.seeds;
-
-            committedAlternate = s.committedAlternate;
-            uncommittedAlternate = s.committedAlternate;
-        }
-        else
-        {
-            committedAlternate = ((Container<ParsingExpression>) snapshot).content;
-            uncommittedAlternate = committedAlternate;
         }
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    @SuppressWarnings("unchecked")
     public void uncommit(CustomState.Snapshot snapshot, ParseState state)
     {
-        if (snapshot instanceof Snapshot)
+        if (snapshot != null)
         {
             Snapshot s = (Snapshot) snapshot;
             this.position = s.position;
             this.seeded = s.seeded;
             this.seeds = s.seeds;
-
-            committedAlternate = s.committedAlternate;
-        }
-        else
-        {
-            committedAlternate = ((Container<ParsingExpression>) snapshot).content;
         }
     }
 
@@ -336,8 +201,6 @@ public final class BottomupState implements CustomState
             position,
             seeded != null ? seeded.clone() : null,
             seeds  != null ? seeds .clone() : null,
-            cast(precedences.clone()),
-            history.clone(),
             cast(blocked.clone()));
     }
 
@@ -351,35 +214,20 @@ public final class BottomupState implements CustomState
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public final static class Changes implements CustomChanges
-    {
-        final ParsingExpression uncommittedAlternate;
-
-        public Changes(ParsingExpression uncommittedAlternate)
-        {
-            this.uncommittedAlternate = uncommittedAlternate;
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
     public final static class Snapshot implements CustomState.Snapshot
     {
         final int position;
         final Array<ParsingExpression> seeded;
         final Array<ParseChanges> seeds;
-        final ParsingExpression committedAlternate;
 
         public Snapshot(
             int position,
             Array<ParsingExpression> seeded,
-            Array<ParseChanges> seeds,
-            ParsingExpression committedAlternate)
+            Array<ParseChanges> seeds)
         {
             this.position = position;
             this.seeded = seeded;
             this.seeds = seeds;
-            this.committedAlternate = committedAlternate;
         }
     }
 
@@ -390,23 +238,17 @@ public final class BottomupState implements CustomState
         final int position;
         final @Nullable Array<ParsingExpression> seeded;
         final @Nullable Array<ParseChanges> seeds;
-        final HashMap<ParsingExpression, Precedence> precedences;
-        final Array<ExpressionCluster> history;
         final HashSet<ParsingExpression> blocked;
 
         public Inputs(
             int position,
             @Nullable Array<ParsingExpression> seeded,
             @Nullable Array<ParseChanges> seeds,
-            HashMap<ParsingExpression, Precedence> precedences,
-            Array<ExpressionCluster> history,
             HashSet<ParsingExpression> blocked)
         {
             this.position = position;
             this.seeded = seeded;
             this.seeds = seeds;
-            this.precedences = precedences;
-            this.history = history;
             this.blocked = blocked;
         }
 
@@ -421,8 +263,6 @@ public final class BottomupState implements CustomState
             if (position != that.position) return false;
             if (!Objects.equals(seeded, that.seeded)) return false;
             if (!Objects.equals(seeds,  that.seeds )) return false;
-            if (!precedences.equals(that.precedences)) return false;
-            if (!history.equals(that.history)) return false;
 
             return blocked.equals(that.blocked);
         }
@@ -433,8 +273,6 @@ public final class BottomupState implements CustomState
             int result = position;
             result = 31 * result + (seeded != null ? seeded.hashCode() : 0);
             result = 31 * result + (seeds  != null ? seeds .hashCode() : 0);
-            result = 31 * result + precedences.hashCode();
-            result = 31 * result + history.hashCode();
             result = 31 * result + blocked.hashCode();
             return result;
         }
