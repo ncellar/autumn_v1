@@ -58,7 +58,7 @@ fetch
 
     Fetches the maven artifact (e.g. jar file) specified in the 'a' variable, in
     Gradle format. It does not fetch the dependencies of the artifact
-    transitively.
+    transitively. You can find the Gradle format spec on http://mvnrepository.com
 
     The downloaded files are put in the directory indicated by the
     MVN_OUTPUT variable, defaulting to 'deps/fetched'.

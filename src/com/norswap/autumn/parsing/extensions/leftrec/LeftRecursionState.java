@@ -1,5 +1,6 @@
 package com.norswap.autumn.parsing.extensions.leftrec;
 
+import com.google.auto.value.AutoValue;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.expressions.LeftRecursive;
 import com.norswap.autumn.parsing.state.CustomChanges;
@@ -10,7 +11,6 @@ import com.norswap.util.Array;
 import com.norswap.util.annotations.Nullable;
 
 import java.util.HashSet;
-import java.util.Objects;
 
 import static com.norswap.util.Caster.cast;
 
@@ -117,10 +117,10 @@ public final class LeftRecursionState implements CustomState
     public void load(CustomState.Inputs inputs)
     {
         Inputs in = (Inputs) inputs;
-        this.position = in.position;
-        this.seeded = in.seeded != null ? in.seeded.clone() : null;
-        this.seeds   = in.seeds != null ? in.seeds .clone() : null;
-        this.blocked = cast(in.blocked.clone());
+        this.position = in.position();
+        this.seeded = in.seeded() != null ? in.seeded().clone() : null;
+        this.seeds  = in.seeds () != null ? in.seeds ().clone() : null;
+        this.blocked = cast(in.blocked().clone());
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -197,7 +197,7 @@ public final class LeftRecursionState implements CustomState
     @Override
     public Inputs inputs(ParseState state)
     {
-        return new Inputs(
+        return Inputs.create(
             position,
             seeded != null ? seeded.clone() : null,
             seeds  != null ? seeds .clone() : null,
@@ -233,49 +233,26 @@ public final class LeftRecursionState implements CustomState
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public final static class Inputs implements CustomState.Inputs
+    @AutoValue
+    public static abstract class Inputs implements CustomState.Inputs
     {
-        final int position;
-        final @Nullable Array<ParsingExpression> seeded;
-        final @Nullable Array<ParseChanges> seeds;
-        final HashSet<ParsingExpression> blocked;
-
-        public Inputs(
+        public static Inputs create(
             int position,
             @Nullable Array<ParsingExpression> seeded,
             @Nullable Array<ParseChanges> seeds,
             HashSet<ParsingExpression> blocked)
         {
-            this.position = position;
-            this.seeded = seeded;
-            this.seeds = seeds;
-            this.blocked = blocked;
+            return new AutoValue_LeftRecursionState_Inputs(
+                position,
+                seeded,
+                seeds,
+                blocked);
         }
 
-        @Override
-        public boolean equals(Object o)
-        {
-            if (this == o) return true;
-            if (!(o instanceof Inputs)) return false;
-
-            Inputs that = (Inputs) o;
-
-            if (position != that.position) return false;
-            if (!Objects.equals(seeded, that.seeded)) return false;
-            if (!Objects.equals(seeds,  that.seeds )) return false;
-
-            return blocked.equals(that.blocked);
-        }
-
-        @Override
-        public int hashCode()
-        {
-            int result = position;
-            result = 31 * result + (seeded != null ? seeded.hashCode() : 0);
-            result = 31 * result + (seeds  != null ? seeds .hashCode() : 0);
-            result = 31 * result + blocked.hashCode();
-            return result;
-        }
+        abstract int position();
+        abstract @Nullable Array<ParsingExpression> seeded();
+        abstract @Nullable Array<ParseChanges> seeds();
+        abstract HashSet<ParsingExpression> blocked();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -24,7 +24,9 @@ public final class DefaultErrorState implements ErrorState
     private HashSet<ParsingExpression> farthestExpressions = new HashSet<>();
 
     private Array<Integer> positions = new Array<>();
-    private Array<HashSet<ParsingExpression>> expressions = cast(new Array<>(new HashSet<>()));
+
+    @SuppressWarnings("unchecked")
+    private Array<HashSet<ParsingExpression>> expressions = new Array<>(new HashSet<>());
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

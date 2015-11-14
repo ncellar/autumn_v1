@@ -1,5 +1,6 @@
 package com.norswap.autumn.parsing.state;
 
+import com.google.auto.value.AutoValue;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster;
 import com.norswap.autumn.parsing.expressions.Filter;
@@ -11,7 +12,6 @@ import com.norswap.util.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Objects;
 
 import static com.norswap.util.Caster.cast;
 
@@ -223,12 +223,12 @@ public final class BottomupState implements CustomState
     public void load(CustomState.Inputs inputs)
     {
         Inputs in = (Inputs) inputs;
-        this.position = in.position;
-        this.seeded = in.seeded != null ? in.seeded.clone() : null;
-        this.seeds   = in.seeds != null ? in.seeds .clone() : null;
-        this.precedences = cast(in.precedences.clone());
-        this.history = in.history.clone();
-        this.blocked = cast(in.blocked.clone());
+        this.position = in.position();
+        this.seeded = in.seeded() != null ? in.seeded().clone() : null;
+        this.seeds  = in.seeds () != null ? in.seeds ().clone() : null;
+        this.precedences = cast(in.precedences().clone());
+        this.history = in.history().clone();
+        this.blocked = cast(in.blocked().clone());
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -332,7 +332,7 @@ public final class BottomupState implements CustomState
     @Override
     public Inputs inputs(ParseState state)
     {
-        return new Inputs(
+        return Inputs.create(
             position,
             seeded != null ? seeded.clone() : null,
             seeds  != null ? seeds .clone() : null,
@@ -385,16 +385,10 @@ public final class BottomupState implements CustomState
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public final static class Inputs implements CustomState.Inputs
+    @AutoValue
+    public static abstract class Inputs implements CustomState.Inputs
     {
-        final int position;
-        final @Nullable Array<ParsingExpression> seeded;
-        final @Nullable Array<ParseChanges> seeds;
-        final HashMap<ParsingExpression, Precedence> precedences;
-        final Array<ExpressionCluster> history;
-        final HashSet<ParsingExpression> blocked;
-
-        public Inputs(
+        public static Inputs create(
             int position,
             @Nullable Array<ParsingExpression> seeded,
             @Nullable Array<ParseChanges> seeds,
@@ -402,42 +396,21 @@ public final class BottomupState implements CustomState
             Array<ExpressionCluster> history,
             HashSet<ParsingExpression> blocked)
         {
-            this.position = position;
-            this.seeded = seeded;
-            this.seeds = seeds;
-            this.precedences = precedences;
-            this.history = history;
-            this.blocked = blocked;
+            return new AutoValue_BottomupState_Inputs(
+                position,
+                seeded,
+                seeds,
+                precedences,
+                history,
+                blocked);
         }
 
-        @Override
-        public boolean equals(Object o)
-        {
-            if (this == o) return true;
-            if (!(o instanceof Inputs)) return false;
-
-            Inputs that = (Inputs) o;
-
-            if (position != that.position) return false;
-            if (!Objects.equals(seeded, that.seeded)) return false;
-            if (!Objects.equals(seeds,  that.seeds )) return false;
-            if (!precedences.equals(that.precedences)) return false;
-            if (!history.equals(that.history)) return false;
-
-            return blocked.equals(that.blocked);
-        }
-
-        @Override
-        public int hashCode()
-        {
-            int result = position;
-            result = 31 * result + (seeded != null ? seeded.hashCode() : 0);
-            result = 31 * result + (seeds  != null ? seeds .hashCode() : 0);
-            result = 31 * result + precedences.hashCode();
-            result = 31 * result + history.hashCode();
-            result = 31 * result + blocked.hashCode();
-            return result;
-        }
+        abstract int position();
+        abstract @Nullable Array<ParsingExpression> seeded();
+        abstract @Nullable Array<ParseChanges> seeds();
+        abstract HashMap<ParsingExpression, Precedence> precedences();
+        abstract Array<ExpressionCluster> history();
+        abstract HashSet<ParsingExpression> blocked();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

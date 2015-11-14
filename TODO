@@ -43,6 +43,8 @@ TODO NOW
 
     - generators for state/input/etc boilerplate
 
+    - annotation processing support in makefile
+
 TODO DEBUGGER
 
     - rework package
