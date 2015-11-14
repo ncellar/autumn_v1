@@ -95,7 +95,7 @@ public final class ExpressionCluster extends ParsingExpression
                     if (state.end > changes.end)
                     {
                         // The seed was grown, try growing it again starting from first group rule.
-                        state.clusterAlternateUncommitted = alternate;
+                        bstate.uncommittedAlternate = alternate;
                         changes = state.extract();
                         bstate.setSeed(this, changes);
                         state.discard();

@@ -15,7 +15,6 @@ public final class ParseStateSnapshot
     public final int end;
     public final int blackEnd;
     public final int treeChildrenCount;
-    public final ParsingExpression clusterAlternate;
     public final Snapshot[] customSnapshots;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -26,7 +25,6 @@ public final class ParseStateSnapshot
         int end,
         int blackEnd,
         int treeChildrenCount,
-        ParsingExpression clusterAlternate,
         Snapshot[] customSnapshots)
     {
         this.start = start;
@@ -34,7 +32,6 @@ public final class ParseStateSnapshot
         this.end = end;
         this.blackEnd = blackEnd;
         this.treeChildrenCount = treeChildrenCount;
-        this.clusterAlternate = clusterAlternate;
         this.customSnapshots = customSnapshots;
     }
 

@@ -13,7 +13,7 @@ public interface CustomChanges
     /**
      * Creates a new custom result object from these changes and the passed custom inputs.
      */
-    Result result(Inputs inputs);
+    default Result result(Inputs inputs) { return null; }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

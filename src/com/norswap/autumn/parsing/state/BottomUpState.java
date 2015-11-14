@@ -2,7 +2,9 @@ package com.norswap.autumn.parsing.state;
 
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster;
+import com.norswap.autumn.parsing.expressions.Filter;
 import com.norswap.autumn.parsing.expressions.LeftRecursive;
+import com.norswap.autumn.parsing.expressions.WithMinPrecedence;
 import com.norswap.util.Array;
 import com.norswap.util.annotations.Nullable;
 
@@ -48,11 +50,44 @@ public final class BottomUpState implements CustomState
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * The set of all expressions for which we currently have a seed value.
+     */
     private @Nullable Array<ParsingExpression> seeded;
+
+    /**
+     * The set of seeds matching the parsing expressions in {@link #seeded}.
+     */
     private @Nullable Array<ParseChanges> seeds;
+
+    /**
+     * Maps from expression clusters to their current precedence.
+     */
     private HashMap<ParsingExpression, Precedence> precedences = new HashMap<>();
+
+    /**
+     * A stack of expressions with a precedence level that are currently being visited. These
+     * expressions are the keys of {@link #precedences}.
+     * <p>
+     * This data structure is necessary for {@link #getCurrentPrecedence} (used by {@link
+     * WithMinPrecedence}) to work.
+     */
     private Array<ParsingExpression> history = new Array<>();
+
+    /**
+     * Set of expressions in which we can't recurse, in order to ensure left-associativity.
+     */
     private HashSet<ParsingExpression> blocked = new HashSet<>();
+
+    /**
+     * The current cluster alternate; set by {@link ExpressionCluster} and read by {@link Filter}.
+     */
+    public ParsingExpression committedAlternate;
+
+    /**
+     * The current cluster alternate; set by {@link ExpressionCluster} and read by {@link Filter}.
+     */
+    public ParsingExpression uncommittedAlternate;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -107,7 +142,7 @@ public final class BottomUpState implements CustomState
 
     // ---------------------------------------------------------------------------------------------
 
-    public Precedence getPrecedence(ParsingExpression pe)
+    public Precedence getPrecedence(ExpressionCluster pe)
     {
         history.push(pe);
 
@@ -126,7 +161,7 @@ public final class BottomUpState implements CustomState
 
     // ---------------------------------------------------------------------------------------------
 
-    public void removePrecedence(ParsingExpression pe, Precedence precedence)
+    public void removePrecedence(ExpressionCluster pe, Precedence precedence)
     {
         history.pop();
 
@@ -202,20 +237,26 @@ public final class BottomUpState implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void discard(ParseState state) {}
+    public void discard(ParseState state)
+    {
+        uncommittedAlternate = null;
+    }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
     public CustomChanges extract(ParseState state)
     {
-        return null;
+        return new Changes(uncommittedAlternate);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void merge(CustomChanges changes, ParseState state) {}
+    public void merge(CustomChanges changes, ParseState state)
+    {
+        uncommittedAlternate = ((Changes)changes).uncommittedAlternate;
+    }
 
     // ---------------------------------------------------------------------------------------------
 
@@ -223,7 +264,7 @@ public final class BottomUpState implements CustomState
     public Snapshot snapshot(ParseState state)
     {
         return seeded != null
-            ? new Snapshot(seeded, seeds)
+            ? new Snapshot(seeded, seeds, committedAlternate)
             : null;
     }
 
@@ -232,11 +273,15 @@ public final class BottomUpState implements CustomState
     @Override
     public void restore(CustomState.Snapshot snapshot, ParseState state)
     {
+        // TODO null check might be wrong with committedAlternate
         if (snapshot != null)
         {
             Snapshot s = (Snapshot) snapshot;
             this.seeded = s.seeded;
             this.seeds = s.seeds;
+
+            committedAlternate = s.committedAlternate;
+            uncommittedAlternate = s.committedAlternate;
         }
     }
 
@@ -245,7 +290,15 @@ public final class BottomUpState implements CustomState
     @Override
     public void uncommit(CustomState.Snapshot snapshot, ParseState state)
     {
-        restore(snapshot, state);
+        // TODO null check might be wrong with committedAlternate
+        if (snapshot != null)
+        {
+            Snapshot s = (Snapshot) snapshot;
+            this.seeded = s.seeded;
+            this.seeds = s.seeds;
+
+            committedAlternate = s.committedAlternate;
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -271,15 +324,32 @@ public final class BottomUpState implements CustomState
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    public final static class Changes implements CustomChanges
+    {
+        final ParsingExpression uncommittedAlternate;
+
+        public Changes(ParsingExpression uncommittedAlternate)
+        {
+            this.uncommittedAlternate = uncommittedAlternate;
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     public final static class Snapshot implements CustomState.Snapshot
     {
         final Array<ParsingExpression> seeded;
         final Array<ParseChanges> seeds;
+        final ParsingExpression committedAlternate;
 
-        public Snapshot(Array<ParsingExpression> seeded, Array<ParseChanges> seeds)
+        public Snapshot(
+            Array<ParsingExpression> seeded,
+            Array<ParseChanges> seeds,
+            ParsingExpression committedAlternate)
         {
             this.seeded = seeded;
             this.seeds = seeds;
+            this.committedAlternate = committedAlternate;
         }
     }
 

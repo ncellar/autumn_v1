@@ -14,7 +14,6 @@ public final class ParseChanges
 
     public final int end;
     public final int blackEnd;
-    public final ParsingExpression clusterAlternate;
     public final @Nullable Array<BuildParseTree> children;
     public final @Nullable CustomChanges[] customChanges;
 
@@ -24,13 +23,11 @@ public final class ParseChanges
         int end,
         int blackEnd,
         Array<BuildParseTree> children,
-        ParsingExpression clusterAlternate,
         CustomChanges[] customChanges)
     {
         this.end = end;
         this.blackEnd = blackEnd;
         this.children = children;
-        this.clusterAlternate = clusterAlternate;
         this.customChanges = customChanges;
     }
 
@@ -38,7 +35,7 @@ public final class ParseChanges
 
     public static ParseChanges failure()
     {
-        return new ParseChanges(-1, -1, null, null, null);
+        return new ParseChanges(-1, -1, null, null);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

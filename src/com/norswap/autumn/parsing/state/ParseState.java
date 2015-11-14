@@ -233,16 +233,6 @@ public final class ParseState
     public final MemoHandler memo;
 
     /**
-     * The current cluster alternate; set by {@link ExpressionCluster} and read by {@link Filter}.
-     */
-    public ParsingExpression clusterAlternateCommitted;
-
-    /**
-     * The current cluster alternate; set by {@link ExpressionCluster} and read by {@link Filter}.
-     */
-    public ParsingExpression clusterAlternateUncommitted;
-
-    /**
      * A set of additional user-defined parse states.
      */
     public final CustomState[] customStates;
@@ -367,7 +357,6 @@ public final class ParseState
 
         end = start;
         blackEnd = blackStart;
-        clusterAlternateUncommitted = null;
         tree.truncate(treeChildrenCount);
     }
 
@@ -379,7 +368,6 @@ public final class ParseState
             end,
             blackEnd,
             tree.children.copyFromIndex(treeChildrenCount),
-            clusterAlternateUncommitted,
             JArrays.map(customStates, CustomChanges[]::new, x -> x.extract(this)));
     }
 
@@ -397,7 +385,6 @@ public final class ParseState
 
         end = changes.end;
         blackEnd = changes.blackEnd;
-        clusterAlternateUncommitted = changes.clusterAlternate;
 
         if (changes.children != null)
         {
@@ -415,7 +402,6 @@ public final class ParseState
             end,
             blackEnd,
             treeChildrenCount,
-            clusterAlternateCommitted,
             JArrays.map(customStates, Snapshot[]::new, x -> x.snapshot(this)));
     }
 
@@ -437,11 +423,6 @@ public final class ParseState
         blackEnd            = snapshot.blackEnd;
         treeChildrenCount   = snapshot.treeChildrenCount;
 
-        clusterAlternateCommitted
-            = snapshot.clusterAlternate;
-        clusterAlternateUncommitted
-            = snapshot.clusterAlternate;
-
         tree.truncate(treeChildrenCount);
     }
 
@@ -460,9 +441,6 @@ public final class ParseState
         start               = snapshot.start;
         blackStart          = snapshot.blackStart;
         treeChildrenCount   = snapshot.treeChildrenCount;
-
-        clusterAlternateCommitted
-            = snapshot.clusterAlternate;
     }
 
     // ---------------------------------------------------------------------------------------------

@@ -3,7 +3,6 @@ TODO NOW
 
     - finish cleaning up parse state
 
-        - move clusteralternate into bottomupstate
         - fix all TODOs in ParseState
         - split cluster state and left-recursion state?
 
@@ -37,6 +36,10 @@ TODO NOW
         - memoization window around position
         - error handling: an error over a token can become "unexpected X"
         - advantage: handles reserved identifiers
+
+    - object equals utility
+
+    - common parse state patterns!
 
 TODO DEBUGGER
 
