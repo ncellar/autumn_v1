@@ -10,14 +10,10 @@ public final class ParseChanges
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static final CustomChanges[] NO_CHILDREN = new CustomChanges[0];
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
     public final int end;
     public final int blackEnd;
     public final Array<BuildParseTree> children;
-    public final CustomChanges[] customChanges;
+    public final Array<CustomChanges> customChanges;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -25,7 +21,7 @@ public final class ParseChanges
         int end,
         int blackEnd,
         Array<BuildParseTree> children,
-        CustomChanges[] customChanges)
+        Array<CustomChanges> customChanges)
     {
         this.end = end;
         this.blackEnd = blackEnd;
@@ -37,7 +33,7 @@ public final class ParseChanges
 
     public static ParseChanges failure()
     {
-        return new ParseChanges(-1, -1, Array.empty(), NO_CHILDREN);
+        return new ParseChanges(-1, -1, Array.empty(), Array.empty());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

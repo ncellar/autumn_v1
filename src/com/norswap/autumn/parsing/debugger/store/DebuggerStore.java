@@ -179,7 +179,7 @@ public final class DebuggerStore
         // TODO result might be null!
 
         Array<CaptureList> captures
-            = ((CaptureTrackingState.Result) result.customResults[X]).captures;
+            = ((CaptureTrackingState.Result) result.customResults.get(X)).captures;
 
         Array<CaptureInfo> captureInfos = new Array<>(captures.size());
 

@@ -14,6 +14,7 @@ import com.norswap.autumn.parsing.state.CustomState.Snapshot;
 import com.norswap.autumn.parsing.state.errors.DefaultErrorState;
 import com.norswap.autumn.parsing.state.errors.ErrorState;
 import com.norswap.autumn.parsing.tree.BuildParseTree;
+import com.norswap.util.Array;
 import com.norswap.util.JArrays;
 
 /**
@@ -256,14 +257,15 @@ public final class ParseState
      */
     public void load(ParseInputs inputs)
     {
-        this.start = inputs.start;
-        this.blackStart = inputs.blackStart;
-        this.precedence = inputs.precedence;
-        this.recordErrors = inputs.recordErrors;
+        this.start = inputs.start();
+        this.blackStart = inputs.blackStart();
+        this.precedence = inputs.precedence();
+        this.recordErrors = inputs.recordErrors();
 
-        for (int i = 0; i < inputs.customInputs.length; ++i)
-        {
-            customStates[i].load(inputs.customInputs[i]);
+        Array<Inputs> customInputs = inputs.customInputs();
+        int size = customInputs.size();
+        for (int i = 0; i < size; ++i) {
+            customStates[i].load(customInputs.get(i));
         }
     }
 
@@ -364,7 +366,8 @@ public final class ParseState
             end,
             blackEnd,
             tree.children.copyFromIndex(treeChildrenCount),
-            JArrays.map(customStates, CustomChanges[]::new, x -> x.extract(this)));
+
+            Array.map(customStates, x -> x.extract(this)));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -378,8 +381,9 @@ public final class ParseState
             tree.addAll(changes.children);
         }
 
-        for (int i = 0; i < changes.customChanges.length; ++i)  {
-            customStates[i].merge(changes.customChanges[i], this);
+        int size = changes.customChanges.size();
+        for (int i = 0; i < size; ++i)  {
+            customStates[i].merge(changes.customChanges.get(i), this);
         }
     }
 
@@ -430,13 +434,13 @@ public final class ParseState
 
     public ParseInputs inputs(ParsingExpression pe)
     {
-        return new ParseInputs(
+        return ParseInputs.create(
             pe,
             start,
             blackStart,
             precedence,
             recordErrors,
-            JArrays.map(customStates, Inputs[]::new, x -> x.inputs(this)));
+            Array.map(customStates, x -> x.inputs(this)));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

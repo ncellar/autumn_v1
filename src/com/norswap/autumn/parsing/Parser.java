@@ -4,10 +4,9 @@ import com.norswap.autumn.parsing.config.ParserConfiguration;
 import com.norswap.autumn.parsing.extensions.Extension;
 import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.state.CustomState;
-import com.norswap.autumn.parsing.state.CustomState.Result;
 import com.norswap.autumn.parsing.state.ParseInputs;
 import com.norswap.autumn.parsing.state.ParseState;
-import com.norswap.util.JArrays;
+import com.norswap.util.Array;
 import com.norswap.util.annotations.Immutable;
 
 import java.util.HashMap;
@@ -78,8 +77,8 @@ public final class Parser implements Cloneable
         if (inputs != null)
         {
             state.load(inputs);
-            if (inputs.start == 0) processLeadingWhitespace(state);
-            inputs.pe.parse(this, state);
+            if (inputs.start() == 0) processLeadingWhitespace(state);
+            inputs.pe().parse(this, state);
         }
         else
         {
@@ -92,7 +91,7 @@ public final class Parser implements Cloneable
             state.end >= 0,
             state.end,
             state.tree.build(),
-            JArrays.map(state.customStates, Result[]::new, x -> x.result(state)),
+            Array.map(state.customStates, x -> x.result(state)),
             state.errors.report(source));
 
         if (state.end < 0)

@@ -25,9 +25,9 @@ public final class ParseTree implements Iterable<ParseTree>
 
     public final String value;
 
-    private @NonNull Set<String> tags;
+    private final @NonNull Set<String> tags;
 
-    private @NonNull Array<ParseTree> children;
+    private final @NonNull Array<ParseTree> children;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

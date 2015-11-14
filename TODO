@@ -1,14 +1,10 @@
 --------------------------------------------------------------------------------
 TODO NOW
 
+    - equals refactoring
     - split cluster state and left-recursion state?
     - document states
     - in GrammarBuilder, replace enableLeftRecursion... by disableDefaultExtensions
-
-    - misc TODOs
-        - better toString
-        - exception handling
-        - use object equals utility
 
     - grammar syntax changes
         - tokenizer X =
