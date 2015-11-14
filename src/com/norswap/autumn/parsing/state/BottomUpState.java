@@ -247,7 +247,7 @@ public final class BottomupState implements CustomState
     @Override
     public void discard(ParseState state)
     {
-        uncommittedAlternate = null;
+        uncommittedAlternate = committedAlternate;
     }
 
     // ---------------------------------------------------------------------------------------------

@@ -378,8 +378,7 @@ public final class ParseState
             tree.addAll(changes.children);
         }
 
-        if (changes.customChanges != null)
-        for (int i = 0; i < customStates.length; ++i)  {
+        for (int i = 0; i < changes.customChanges.length; ++i)  {
             customStates[i].merge(changes.customChanges[i], this);
         }
     }

@@ -1,9 +1,7 @@
 package com.norswap.autumn.parsing.state;
 
-import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.tree.BuildParseTree;
 import com.norswap.util.Array;
-import com.norswap.util.annotations.Nullable;
 
 /**
  * See {@link ParseState}, "Committed and Uncommitted State" section.
@@ -12,10 +10,14 @@ public final class ParseChanges
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    private static final CustomChanges[] NO_CHILDREN = new CustomChanges[0];
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     public final int end;
     public final int blackEnd;
-    public final @Nullable Array<BuildParseTree> children;
-    public final @Nullable CustomChanges[] customChanges;
+    public final Array<BuildParseTree> children;
+    public final CustomChanges[] customChanges;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -35,7 +37,7 @@ public final class ParseChanges
 
     public static ParseChanges failure()
     {
-        return new ParseChanges(-1, -1, null, null);
+        return new ParseChanges(-1, -1, Array.empty(), NO_CHILDREN);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
