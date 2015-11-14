@@ -48,6 +48,14 @@ public class CaptureTrackingState implements CustomState
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
+    public void load(Inputs inputs)
+    {
+        // TODO
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
     public void commit(ParseState state)
     {
         capturesCount = captures.size();

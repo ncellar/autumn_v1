@@ -15,100 +15,86 @@ public final class GrammarGrammar
 
     // TOKENS
 
-    and         = token("&"),
-    bang        = token("!"),
-    equal       = token("="),
-    plus        = token("+"),
-    qMark       = token("?"),
-    colon       = token(":"),
-    semi        = token(";"),
-    slash       = token("/"),
-    star        = token("*"),
-    tilda       = token("~"),
-    lBrace      = token("{"),
-    rBrace      = token("}"),
-    lParen      = token("("),
-    rParen      = token(")"),
-    underscore  = token("_"),
-    starPlus    = token("*+"),
-    plusPlus    = token("++"),
-    arrow       = token("->"),
-    lAnBra      = token("<"),
-    rAnBra      = token(">"),
-    comma       = token(","),
-    commaPlus   = token(",+"),
-    minus       = token("-"),
-    hash        = token("#"),
-    dollar      = token("$"),
-    dot         = token("."),
-    percent     = token("%"),
-    hat         = token("^"),
+    and         = tok("&"),
+    bang        = tok("!"),
+    equal       = tok("="),
+    plus        = tok("+"),
+    qMark       = tok("?"),
+    colon       = tok(":"),
+    semi        = tok(";"),
+    slash       = tok("/"),
+    star        = tok("*"),
+    tilda       = tok("~"),
+    lBrace      = tok("{"),
+    rBrace      = tok("}"),
+    lParen      = tok("("),
+    rParen      = tok(")"),
+    underscore  = tok("_"),
+    starPlus    = tok("*+"),
+    plusPlus    = tok("++"),
+    arrow       = tok("->"),
+    lAnBra      = tok("<"),
+    rAnBra      = tok(">"),
+    comma       = tok(","),
+    commaPlus   = tok(",+"),
+    minus       = tok("-"),
+    hash        = tok("#"),
+    dollar      = tok("$"),
+    dot         = tok("."),
+    percent     = tok("%"),
+    hat         = tok("^"),
 
     // NAMES AND LITERALS
 
-    digit       = charRange('0', '9'),
+    digit
+        = charRange('0', '9'),
 
-    hexDigit    = choice(
-        digit,
-        charRange('a', 'f'),
-        charRange('A', 'F')),
+    hexDigit
+        = choice(digit, charRange('a', 'f'), charRange('A', 'F')),
 
-    letter      = choice(
-        charRange('a', 'z'),
-        charRange('A', 'Z')),
+    letter
+        = choice(charRange('a', 'z'), charRange('A', 'Z')),
 
-    nameChar    = choice(
-        letter,
-        digit,
-        literal("_")),
+    nameChar
+        = choice(letter, digit, literal("_")),
 
-    num         = token(oneMore(digit)),
+    num
+        = token(oneMore(digit)),
 
     exprLit     = keyword("expr"),
-
     dropLit     = keyword("drop"),
-
     left_assoc  = keyword("left_assoc"),
-
     left_recur  = keyword("left_recur"),
 
-    reserved    = choice(
-        exprLit,
-        dropLit,
-        left_assoc,
-        left_recur),
+    reserved
+        = choice(exprLit, dropLit, left_assoc, left_recur),
 
-    escape      = named$("escape", choice(
-        sequence(
-            literal("\\u"),
-            hexDigit,
-            hexDigit,
-            hexDigit,
-            hexDigit),
-        sequence(
-            literal("\\"),
-            charSet("tn")),
-        sequence(
-            not(literal("\\u")),
-            literal("\\"),
-            any()))),
+    unicodeEscape
+        = sequence(literal("\\u"), hexDigit, hexDigit, hexDigit, hexDigit),
 
-    character   = named$("character", choice(
-        escape,
-        notCharSet("\n\\"))),
+    tabOrLineEscape
+        = sequence(literal("\\"), charSet("tn")),
 
-    name        = named$("name", token(choice(
-        sequence(
-            not(reserved),
-            letter,
-            zeroMore(nameChar)),
-        sequence(
-            literal("'"),
-            aloUntil(any(), literal("'")))))),
+    anyEscape
+        = sequence(literal("\\"), not(literal("u")), any()),
 
-    nameOrDollar = choice(
-        captureText("name", name),
-        capture("dollar", dollar)),
+    escape
+        = named$("escape", choice(unicodeEscape, tabOrLineEscape, anyEscape)),
+
+    character
+        = named$("character", choice(escape, notCharSet("\n\\"))),
+
+    identifier
+        = sequence(not(reserved), letter, zeroMore(nameChar)),
+
+    escapedIdentifier
+        = sequence(literal("'"), aloUntil(any(), literal("'"))),
+
+    name
+        = named$("name", token(choice(identifier, escapedIdentifier))),
+
+    nameOrDollar
+        = choice(captureText("name", name), capture("dollar", dollar)),
 
     // PARSING EXPRESSIONS
 
@@ -162,6 +148,8 @@ public final class GrammarGrammar
 
     expr = reference("expr"),
 
+    // EXPRESSIONS
+
     parsingExpression
         = named$("expr", cluster(
 
@@ -205,6 +193,8 @@ public final class GrammarGrammar
             captureText("stringLit", stringLit),
             captureText("charSet", charSet),
             captureText("notCharSet", notCharSet)))),
+
+        // RULES & CLUSTERS
 
         ruleLeftHandSide =
             named$("ruleLeftHandSide", sequence(
@@ -251,7 +241,14 @@ public final class GrammarGrammar
 
     private static ParsingExpression keyword(String string)
     {
-        return token(literal(string), not(nameChar));
+        return named$(string, token(literal(string), not(nameChar)));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private static ParsingExpression tok(String string)
+    {
+        return named$(string, token(string));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

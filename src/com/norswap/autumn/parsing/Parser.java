@@ -1,14 +1,17 @@
 package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.parsing.config.ParserConfiguration;
+import com.norswap.autumn.parsing.extensions.Extension;
 import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.state.CustomState;
 import com.norswap.autumn.parsing.state.CustomState.Result;
-import com.norswap.autumn.parsing.state.CustomStateFactory;
 import com.norswap.autumn.parsing.state.ParseInputs;
 import com.norswap.autumn.parsing.state.ParseState;
-import com.norswap.util.Array;
 import com.norswap.util.JArrays;
+import com.norswap.util.annotations.Immutable;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public final class Parser implements Cloneable
 {
@@ -28,6 +31,12 @@ public final class Parser implements Cloneable
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    private final @Immutable Map<Class<? extends Extension>, Integer> indices = new HashMap<>();
+
+    private ParseState state;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     public Parser(Grammar grammar, Source source, ParserConfiguration config)
     {
         this.grammar = grammar;
@@ -36,6 +45,12 @@ public final class Parser implements Cloneable
         this.config = config;
         this.whitespace = grammar.whitespace;
         this.processLeadingWhitespace = grammar.processLeadingWhitespace;
+
+        int size = grammar.extensions.size();
+        for (int i = 0; i < size; ++i)
+        {
+            indices.put(grammar.extensions.get(i).getClass(), i);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -45,7 +60,7 @@ public final class Parser implements Cloneable
      */
     public ParseResult parseRoot()
     {
-        return parse(rootInputs());
+        return parse(null);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -55,13 +70,58 @@ public final class Parser implements Cloneable
      */
     public ParseResult parse(ParseInputs inputs)
     {
-        ParseState state = new ParseState(
-            inputs,
+        state = new ParseState(
             config.errorState(),
             config.memoHandler(),
-            config.customStateFactories());
+            grammar.extensions.mapToArray(Extension::customParseState, CustomState[]::new));
 
-        if (inputs.start == 0 && processLeadingWhitespace)
+        if (inputs != null)
+        {
+            state.load(inputs);
+            if (inputs.start == 0) processLeadingWhitespace(state);
+            inputs.pe.parse(this, state);
+        }
+        else
+        {
+            processLeadingWhitespace(state);
+            grammar.root.parse(this, state);
+        }
+
+        ParseResult out = new ParseResult(
+            state.end == source.length(),
+            state.end >= 0,
+            state.end,
+            state.tree.build(),
+            JArrays.map(state.customStates, Result[]::new, x -> x.result(state)),
+            state.errors.report(source));
+
+        if (state.end < 0)
+        {
+            state.discard();
+        }
+
+        state = null;
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Returns the custom state associated with the given extension. This is generally called from a
+     * custom parsing expression to acquire a reference to the relevant custom state on-demand. The
+     * returned state should be cached to avoid the lookup overhead.
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends CustomState> T state(Class<? extends Extension> klass)
+    {
+        return (T) state.customStates[indices.get(klass)];
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private void processLeadingWhitespace(ParseState state)
+    {
+        if (processLeadingWhitespace)
         {
             int pos = whitespace.parseDumb(this, 0);
             if (pos > 0)
@@ -70,44 +130,6 @@ public final class Parser implements Cloneable
                 state.end = pos;
             }
         }
-
-        inputs.pe.parse(this, state);
-
-        int end = state.end;
-
-        if (end < 0)
-        {
-            state.discard();
-        }
-
-        return new ParseResult(
-            end == source.length(),
-            end >= 0,
-            end,
-            state.tree.build(),
-            JArrays.map(state.customStates, Result[]::new, x -> x.result(state)),
-            state.errors.report(source));
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Return the inputs for parsing the root of the grammar associated to the parser over the whole
-     * source.
-     */
-    public ParseInputs rootInputs()
-    {
-        return new ParseInputs(
-            grammar.root,
-            0,
-            0,
-            0,
-            true,
-            null,
-            null,
-            new Array<>(),
-            config.customStateFactories()
-                .mapToArray(CustomStateFactory::rootInputs, CustomState.Inputs[]::new));
     }
 
     // ---------------------------------------------------------------------------------------------

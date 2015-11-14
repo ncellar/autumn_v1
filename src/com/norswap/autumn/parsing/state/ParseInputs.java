@@ -1,10 +1,8 @@
 package com.norswap.autumn.parsing.state;
 
-import com.norswap.autumn.parsing.expressions.LeftRecursive;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.state.CustomState.Inputs;
 import com.norswap.util.Array;
-import com.norswap.util.annotations.Nullable;
 
 import java.util.Arrays;
 
@@ -20,9 +18,6 @@ public final class ParseInputs
     public final int blackStart;
     public final int precedence;
     public final boolean recordErrors;
-    public final @Nullable Array<ParsingExpression> seeded;
-    public final @Nullable Array<ParseChanges> seeds;
-    public final Array<LeftRecursive> blocked;
     public final Inputs[] customInputs;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -33,9 +28,6 @@ public final class ParseInputs
         int blackStart,
         int precedence,
         boolean recordErrors,
-        Array<ParsingExpression> seeded,
-        Array<ParseChanges> seeds,
-        Array<LeftRecursive> blocked,
         Inputs[] customInputs)
     {
         this.pe = pe;
@@ -43,9 +35,6 @@ public final class ParseInputs
         this.blackStart = blackStart;
         this.precedence = precedence;
         this.recordErrors = recordErrors;
-        this.seeded = seeded;
-        this.seeds = seeds;
-        this.blocked = blocked;
         this.customInputs = customInputs;
     }
 
@@ -63,12 +52,8 @@ public final class ParseInputs
         if (blackStart != that.blackStart) return false;
         if (precedence != that.precedence) return false;
         if (!pe.equals(that.pe)) return false;
-        if (!seeded.equals(that.seeded)) return false;
-        if (!seeds.equals(that.seeds)) return false;
-        if (!blocked.equals(that.blocked)) return false;
 
         return Arrays.equals(customInputs, that.customInputs);
-
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -80,8 +65,6 @@ public final class ParseInputs
         result = 31 * result + start;
         result = 31 * result + blackStart;
         result = 31 * result + precedence;
-        result = 31 * result + seeds.hashCode();
-        result = 31 * result + blocked.hashCode();
         result = 31 * result + Arrays.hashCode(customInputs);
         return result;
     }

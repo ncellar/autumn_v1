@@ -19,10 +19,19 @@ public interface CustomState
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     interface Snapshot {}
+
+    /**
+     * Implementation must override {@link Object#equals} and {@link Object#hashCode} unless
+     * uniqueness of inputs objects can be guaranteed.
+     */
     interface Inputs {}
+
+
     interface Result {}
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    void load(Inputs inputs);
 
     void commit(ParseState state);
 

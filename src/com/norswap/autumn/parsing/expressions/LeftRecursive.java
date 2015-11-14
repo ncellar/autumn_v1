@@ -1,10 +1,13 @@
 package com.norswap.autumn.parsing.expressions;
 
+import com.norswap.autumn.parsing.extensions.BottomupExtension;
 import com.norswap.autumn.parsing.state.BottomUpState;
 import com.norswap.autumn.parsing.state.ParseChanges;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.expressions.abstrakt.UnaryParsingExpression;
+
+import static com.norswap.util.Caster.cast;
 
 public final class LeftRecursive extends UnaryParsingExpression
 {
@@ -17,7 +20,7 @@ public final class LeftRecursive extends UnaryParsingExpression
     @Override
     public void parse(Parser parser, ParseState state)
     {
-        BottomUpState bstate = state.bottomup;
+        BottomUpState bstate = cast(state.customStates[BottomupExtension.INDEX]);
         ParseChanges changes;
 
         if ((changes = bstate.getSeed(this)) != null)
@@ -26,19 +29,7 @@ public final class LeftRecursive extends UnaryParsingExpression
             state.merge(changes);
             return;
         }
-        /*
-        else if (leftAssociative)
-        {
-            BottomUpState.Precedence precedence = bstate.getPrecedence(this);
-
-            if (precedence.value > 0)
-            {
-                state.fail();
-                return;
-            }
-        }
-        */
-        else if (leftAssociative && state.blocked.containsID(this))
+        else if (leftAssociative && bstate.blocked(this))
         {
             // Recursion is blocked in a left-associative expression when not in left
             // position (if we were in left position, there would have been a seed).
@@ -52,8 +43,7 @@ public final class LeftRecursive extends UnaryParsingExpression
 
         if (leftAssociative)
         {
-            state.blocked.push(this);
-            // precedence.value = 1;
+            bstate.block(this);
         }
 
         // Keep parsing the operand, as long as long as the seed keeps growing.
@@ -78,17 +68,17 @@ public final class LeftRecursive extends UnaryParsingExpression
         }
 
         state.merge(changes);
+
         bstate.removeSeed(this);
-        // bstate.removePrecedence(this, precedence);
+
+        if (leftAssociative)
+        {
+            bstate.unblock(this);
+        }
 
         if (state.failed())
         {
             state.fail(this);
-        }
-
-        if (leftAssociative)
-        {
-            state.blocked.pop();
         }
     }
 

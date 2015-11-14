@@ -176,6 +176,8 @@ public final class DebuggerStore
         }
         catch (HighSpeedUnwindBullet b) { /* PEW PEW */ }
 
+        // TODO result might be null!
+
         Array<CaptureList> captures
             = ((CaptureTrackingState.Result) result.customResults[X]).captures;
 

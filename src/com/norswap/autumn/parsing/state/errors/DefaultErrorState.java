@@ -6,6 +6,10 @@ import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.util.Array;
 
+import java.util.HashSet;
+
+import static com.norswap.util.Caster.cast;
+
 /**
  * See {@link ParseState}, section "Error Handling".
  */
@@ -16,11 +20,13 @@ public final class DefaultErrorState implements ErrorState
     // The two first fields are conceptually the top of the stack implemented by the two other
     // arrays.
 
+    // TODO performance regression of using a set rather than an array?
+
     private int farthestErrorPosition = -1;
-    private Array<ParsingExpression> farthestExpressions = new Array<>();
+    private HashSet<ParsingExpression> farthestExpressions = new HashSet<>();
+
     private Array<Integer> positions = new Array<>();
-    @SuppressWarnings("unchecked")
-    private Array<Array<ParsingExpression>> expressions = new Array<>(new Array<>());
+    private Array<HashSet<ParsingExpression>> expressions = cast(new Array<>(new HashSet<>()));
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -30,7 +36,7 @@ public final class DefaultErrorState implements ErrorState
         positions.push(farthestErrorPosition);
         expressions.push(farthestExpressions);
         farthestErrorPosition = -1;
-        farthestExpressions = new Array<>();
+        farthestExpressions = new HashSet<>();
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -39,7 +45,7 @@ public final class DefaultErrorState implements ErrorState
     public void dismissErrorRecordPoint()
     {
         int prevPointPos = positions.pop();
-        Array<ParsingExpression> prevPointExprs = expressions.pop();
+        HashSet<ParsingExpression> prevPointExprs = expressions.pop();
 
         if (farthestErrorPosition == prevPointPos)
         {
@@ -57,7 +63,7 @@ public final class DefaultErrorState implements ErrorState
     @Override
     public DefaultErrorChanges changes()
     {
-        return new DefaultErrorChanges(farthestErrorPosition, farthestExpressions.clone());
+        return new DefaultErrorChanges(farthestErrorPosition, cast(farthestExpressions.clone()));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -74,7 +80,7 @@ public final class DefaultErrorState implements ErrorState
         else if (c.position > farthestErrorPosition)
         {
             farthestErrorPosition = c.position;
-            farthestExpressions = c.expressions.clone();
+            farthestExpressions = cast(c.expressions.clone());
         }
     }
 

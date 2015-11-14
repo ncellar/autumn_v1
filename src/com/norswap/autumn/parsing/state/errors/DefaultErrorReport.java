@@ -4,6 +4,8 @@ import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.source.TextPosition;
 import com.norswap.util.Array;
 
+import java.util.Set;
+
 /**
  * Default implementation of {@link ErrorReport}, used by {@link DefaultErrorState}.
  * <p>
@@ -19,7 +21,9 @@ public final class DefaultErrorReport implements ErrorReport
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public DefaultErrorReport(TextPosition farthestErrorPosition, Array<ParsingExpression> farthestExpressions)
+    public DefaultErrorReport(
+        TextPosition farthestErrorPosition,
+        Set<ParsingExpression> farthestExpressions)
     {
         this.errorLocations = new Array<>();
         StringBuilder b = new StringBuilder();

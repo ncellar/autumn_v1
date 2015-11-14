@@ -69,18 +69,21 @@ public abstract class ParsingExpression implements DeepCopy
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * @see {@link #toStringShort()}
+     * @see {@link #toStringOneLine}
      */
     @Override
     public String toString()
     {
-        return toString(true, true);
+        // TODO
+        //return toStringShort();
+        return toStringOneLine();
     }
 
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * TODO
+     * Returns a string containing the hashcode of the parsing expression (based on pointer
+     * identity, as well as the name of the expression, if it has one.
      */
     public final String nameOrHashcode()
     {
@@ -92,7 +95,8 @@ public abstract class ParsingExpression implements DeepCopy
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * TODO
+     * Returns a string containing the simple (unqualified) name of the class of the expression, as
+     * well as the contents of {@link #nameOrHashcode}.
      */
     public final String toStringOneLine()
     {
@@ -102,9 +106,9 @@ public abstract class ParsingExpression implements DeepCopy
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Prints the shortest possible representation of this expression.
-     *
-     * If it has the name, use this name; otherwise print its structure cutting off the recursion
+     * Returns a string containing a short representation of this expression's structure.
+     * <p>
+     * If it has the name, use this name; otherwise output its structure cutting off the recursion
      * as soon as named nodes are encountered.
      */
     public final String toStringShort()
@@ -115,8 +119,9 @@ public abstract class ParsingExpression implements DeepCopy
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Prints the structure of the expression, cutting off the recursion as soon as named nodes are
-     * encountered, except for this expression itself.
+     * Returns a string containing the structure of the expression, cutting off the recursion as
+     * soon as named nodes are encountered. If the expression itself is named, its structure will be
+     * shown regardless.
      */
     public final String toStringUnroll()
     {
@@ -126,9 +131,9 @@ public abstract class ParsingExpression implements DeepCopy
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Prints the expression in full, with all its descendants. Recursion is indicated as such.
-     * No expression is printed more than once, references like "visited(EXPRESSION_NAME)" are
-     * used after the first time.
+     * Returns a string containing expression in full, with all its descendants. Recursion is marked
+     * as such. No expression is outputted more than once, references like
+     * "visited(EXPRESSION_NAME)" are used after the first time.
      */
     public final String toStringFull()
     {

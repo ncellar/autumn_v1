@@ -1,7 +1,7 @@
 package com.norswap.autumn.parsing;
 
-import com.norswap.autumn.parsing.graph.LeftRecursionHandler;
-import com.norswap.autumn.parsing.graph.NullabilityCalculator;
+import com.norswap.autumn.parsing.extensions.BottomupExtension;
+import com.norswap.autumn.parsing.extensions.Extension;
 import com.norswap.autumn.parsing.graph.ReferenceResolver;
 import com.norswap.util.Array;
 import com.norswap.util.graph.GraphVisitor;
@@ -9,13 +9,11 @@ import com.norswap.util.graph.Slot;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Builder pattern for {@link Grammar}.
  */
-public final class GrammarBuilder
+public final class GrammarBuilder implements GrammarBuilderExtensionView
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -27,11 +25,11 @@ public final class GrammarBuilder
 
     private boolean processLeadingWhitespace = true;
 
-    private Map<String, String> options;
-
     private boolean leftRecursionElimination = true;
 
     private boolean referenceResolution = true;
+
+    private final Array<Extension> extensions = new Array<>();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -48,7 +46,6 @@ public final class GrammarBuilder
         this.rules = grammar.rules;
         this.whitespace = grammar.whitespace;
         this.processLeadingWhitespace = grammar.processLeadingWhitespace;
-        this.options = grammar.options;
         this.leftRecursionElimination = false;
         this.referenceResolution = false;
     }
@@ -79,6 +76,14 @@ public final class GrammarBuilder
 
     // ---------------------------------------------------------------------------------------------
 
+    public GrammarBuilder withExtension(Extension extension)
+    {
+        extensions.add(extension);
+        return this;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     public GrammarBuilder leftRecursionElimination(boolean leftRecursionElimination)
     {
         this.leftRecursionElimination = leftRecursionElimination;
@@ -90,27 +95,6 @@ public final class GrammarBuilder
     public GrammarBuilder referenceResolution(boolean referenceResolution)
     {
         this.referenceResolution = referenceResolution;
-        return this;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public GrammarBuilder options(Map<String, String> options)
-    {
-        this.options = options;
-        return this;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public GrammarBuilder addOption(String key, String value)
-    {
-        if (this.options == null)
-        {
-            this.options = new HashMap<>();
-        }
-
-        this.options.put(key, value);
         return this;
     }
 
@@ -126,10 +110,6 @@ public final class GrammarBuilder
             ? whitespace
             : Whitespace.DEFAULT();
 
-        options = options != null
-            ? options
-            : Collections.emptyMap();
-
         if (referenceResolution)
         {
             transform(new ReferenceResolver());
@@ -137,19 +117,21 @@ public final class GrammarBuilder
 
         if (leftRecursionElimination)
         {
-            NullabilityCalculator calc = new NullabilityCalculator();
-            compute(calc);
-
-            LeftRecursionHandler detector = new LeftRecursionHandler(true, calc);
-            transform(detector);
+            withExtension(new BottomupExtension());
         }
 
-        return new Grammar(root, rules, whitespace, processLeadingWhitespace, options);
+        for (Extension extension: extensions)
+        {
+            extension.transform(this);
+        }
+
+        return new Grammar(root, rules, whitespace, processLeadingWhitespace, extensions);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public GrammarBuilder transform(GraphVisitor<ParsingExpression> visitor)
+    @Override
+    public void transform(GraphVisitor<ParsingExpression> visitor)
     {
         Slot<ParsingExpression> root2 = visitor.partialVisit(root);
         Array<Slot<ParsingExpression>> rules2 = visitor.partialVisit(rules);
@@ -159,18 +141,16 @@ public final class GrammarBuilder
         root = root2.latest();
         whitespace = whitespace2.latest();
         rules = rules2.map(Slot::latest);
-        return this;
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public GrammarBuilder compute(GraphVisitor<ParsingExpression> visitor)
+    @Override
+    public void compute(GraphVisitor<ParsingExpression> visitor)
     {
         visitor.partialVisit(root);
         visitor.partialVisit(rules);
         visitor.partialVisit(whitespace);
-        visitor.conclude();
-        return this;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

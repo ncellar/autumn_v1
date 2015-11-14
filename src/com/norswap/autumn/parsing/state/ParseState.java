@@ -1,24 +1,21 @@
 package com.norswap.autumn.parsing.state;
 
-import com.norswap.autumn.parsing.Extension;
 import com.norswap.autumn.parsing.ParseResult;
 import com.norswap.autumn.parsing.config.DefaultMemoHandler;
 import com.norswap.autumn.parsing.config.MemoHandler;
-import com.norswap.autumn.parsing.config.ParserConfigurationBuilder;
+import com.norswap.autumn.parsing.config.ParserConfiguration;
 import com.norswap.autumn.parsing.expressions.ExpressionCluster;
 import com.norswap.autumn.parsing.expressions.Filter;
-import com.norswap.autumn.parsing.expressions.LeftRecursive;
 import com.norswap.autumn.parsing.expressions.Not;
 import com.norswap.autumn.parsing.expressions.Precedence;
 import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.extensions.Extension;
 import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.state.CustomState.Inputs;
 import com.norswap.autumn.parsing.state.CustomState.Snapshot;
 import com.norswap.autumn.parsing.state.errors.DefaultErrorState;
 import com.norswap.autumn.parsing.state.errors.ErrorState;
 import com.norswap.autumn.parsing.tree.BuildParseTree;
-import com.norswap.util.Array;
-import com.norswap.util.Caster;
 import com.norswap.util.JArrays;
 
 /**
@@ -118,9 +115,8 @@ import com.norswap.util.JArrays;
  * <strong>Custom Parse State</strong>
  * <p>
  * Users can add their own parse state, as classes implementing the {@link CustomState} interface.
- * These states can be accessed through the {@link #customStates} field. Custom states should be
- * part of an Autumn extension ({@link Extension}), and can be registered by calling {@link
- * ParserConfigurationBuilder#customState} from {@link Extension#register}.
+ * These states can be accessed through the {@link #customStates} field. Custom states are
+ * registered as part of an Autumn extension ({@link Extension}).
  * <p>
  * <strong>Manipulating End Positions</strong>
  * <p>
@@ -138,7 +134,7 @@ import com.norswap.util.JArrays;
  * <p>
  * The default implementation of {@link ErrorState} is {@link DefaultErrorState}. Its strategy is to
  * keep track of the errors occuring at the farthest error position. Users can supply their own
- * error handling strategy using {@link ParserConfigurationBuilder#errorState}.
+ * error handling strategy using {@link ParserConfiguration.Builder#errorState}.
  * <p>
  * While errors are part of the parse state, they escape the "commit paradigm". Since uncommitted
  * changes are usually discarded when an expression fails, we would end up losing all the error
@@ -247,55 +243,39 @@ public final class ParseState
     public ParsingExpression clusterAlternateUncommitted;
 
     /**
-     * A set of blocked {@link LeftRecursive} parsing expression. Invoking these expressions
-     * will never succeed.
-     */
-    public Array<LeftRecursive> blocked;
-
-    /**
      * A set of additional user-defined parse states.
      */
     public final CustomState[] customStates;
 
-    /**
-     * State that handles the bottom-up part of the parser, i.e. left-recursion and expressions
-     * clusters.
-     */
-    public final BottomUpState bottomup;
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public ParseState(
+        ErrorState errorState,
+        MemoHandler memoHandler,
+        CustomState[] customStates)
+    {
+        this.tree = new BuildParseTree();
+        this.memo = memoHandler;
+        this.errors = errorState;
+        this.recordErrors = true;
+        this.customStates = customStates;
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Creates the parse state, given the initial inputs, error state and custom states factories.
+     * Modifies the parse state to match that contained within the inputs.
      */
-    public ParseState(
-        ParseInputs inputs,
-        ErrorState errorState,
-        MemoHandler memoHandler,
-        Array<CustomStateFactory> customFactories)
+    public void load(ParseInputs inputs)
     {
-        this.end = 0;
-        this.blackEnd = 0;
-        this.tree = new BuildParseTree();
-
-        this.memo = memoHandler;
-        this.errors = errorState;
-
         this.start = inputs.start;
         this.blackStart = inputs.blackStart;
         this.precedence = inputs.precedence;
         this.recordErrors = inputs.recordErrors;
-        this.blocked = inputs.blocked.clone();
 
-        // TODO move into own method
-        this.bottomup = new BottomUpState();
-        bottomup.seeded = inputs.seeded != null ? inputs.seeded.clone() : null;
-        bottomup.seeds  = inputs.seeds  != null ? inputs.seeds .clone() : null;
-
-        this.customStates = new CustomState[customFactories.size()];
-        for (int i = 0; i < customStates.length; ++i)
+        for (int i = 0; i < inputs.customInputs.length; ++i)
         {
-            customStates[i] = customFactories.get(i).build(Caster.cast(inputs.customInputs[i]));
+            customStates[i].load(inputs.customInputs[i]);
         }
     }
 
@@ -366,35 +346,29 @@ public final class ParseState
 
     public void commit()
     {
-        if (end > start)
+        for (CustomState state: customStates)
         {
-            bottomup.seeded = null;
-            bottomup.seeds = null;
+            state.commit(this);
         }
 
         start = end;
         blackStart = blackEnd;
         treeChildrenCount = tree.childrenCount();
-
-        for (CustomState state: customStates)
-        {
-            state.commit(this);
-        }
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public void discard()
     {
-        end = start;
-        blackEnd = blackStart;
-        clusterAlternateUncommitted = null;
-        tree.truncate(treeChildrenCount);
-
         for (CustomState state: customStates)
         {
             state.discard(this);
         }
+
+        end = start;
+        blackEnd = blackStart;
+        clusterAlternateUncommitted = null;
+        tree.truncate(treeChildrenCount);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -413,6 +387,14 @@ public final class ParseState
 
     public void merge(ParseChanges changes)
     {
+        // TODO pass global changes object to merge
+
+        if (changes.customChanges != null)
+            for (int i = 0; i < customStates.length; ++i)
+            {
+                customStates[i].merge(changes.customChanges[i], this);
+            }
+
         end = changes.end;
         blackEnd = changes.blackEnd;
         clusterAlternateUncommitted = changes.clusterAlternate;
@@ -420,12 +402,6 @@ public final class ParseState
         if (changes.children != null)
         {
             tree.addAll(changes.children);
-        }
-
-        if (changes.customChanges != null)
-        for (int i = 0; i < customStates.length; ++i)
-        {
-            customStates[i].merge(changes.customChanges[i], this);
         }
     }
 
@@ -439,8 +415,6 @@ public final class ParseState
             end,
             blackEnd,
             treeChildrenCount,
-            bottomup.seeded,
-            bottomup.seeds,
             clusterAlternateCommitted,
             JArrays.map(customStates, Snapshot[]::new, x -> x.snapshot(this)));
     }
@@ -449,13 +423,19 @@ public final class ParseState
 
     public void restore(ParseStateSnapshot snapshot)
     {
+        // TODO null check (like in merge) ?
+        // TODO pass global snapshot object to restore
+
+        for (int i = 0; i < customStates.length; i++)
+        {
+            customStates[i].restore(snapshot.customSnapshots[i], this);
+        }
+
         start               = snapshot.start;
         blackStart          = snapshot.blackStart;
         end                 = snapshot.end;
         blackEnd            = snapshot.blackEnd;
         treeChildrenCount   = snapshot.treeChildrenCount;
-        bottomup.seeded     = snapshot.seeded;
-        bottomup.seeds      = snapshot.seeds;
 
         clusterAlternateCommitted
             = snapshot.clusterAlternate;
@@ -463,30 +443,26 @@ public final class ParseState
             = snapshot.clusterAlternate;
 
         tree.truncate(treeChildrenCount);
-
-        for (int i = 0; i < customStates.length; i++)
-        {
-            customStates[i].restore(snapshot.customSnapshots[i], this);
-        }
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public void uncommit(ParseStateSnapshot snapshot)
     {
-        start               = snapshot.start;
-        blackStart          = snapshot.blackStart;
-        treeChildrenCount   = snapshot.treeChildrenCount;
-        bottomup.seeded     = snapshot.seeded;
-        bottomup.seeds      = snapshot.seeds;
-
-        clusterAlternateCommitted
-            = snapshot.clusterAlternate;
+        // TODO null check (like in merge) ?
+        // TODO pass global snapshot object to restore
 
         for (int i = 0; i < customStates.length; ++i)
         {
             customStates[i].uncommit(snapshot.customSnapshots[i], this);
         }
+
+        start               = snapshot.start;
+        blackStart          = snapshot.blackStart;
+        treeChildrenCount   = snapshot.treeChildrenCount;
+
+        clusterAlternateCommitted
+            = snapshot.clusterAlternate;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -499,10 +475,6 @@ public final class ParseState
             blackStart,
             precedence,
             recordErrors,
-            bottomup.seeded != null ? bottomup.seeded.clone() : null,
-            bottomup.seeds  != null ? bottomup.seeds .clone() : null,
-            // TODO precedence !!!
-            blocked.clone(),
             JArrays.map(customStates, Inputs[]::new, x -> x.inputs(this)));
     }
 

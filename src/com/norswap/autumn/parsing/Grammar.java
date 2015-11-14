@@ -2,9 +2,11 @@ package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.Autumn;
 import com.norswap.autumn.parsing.config.ParserConfiguration;
+import com.norswap.autumn.parsing.extensions.Extension;
 import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.support.GrammarCompiler;
 import com.norswap.autumn.parsing.support.GrammarGrammar;
+import com.norswap.util.Array;
 import com.norswap.util.annotations.Immutable;
 import com.norswap.util.graph.GraphVisitor;
 
@@ -50,10 +52,13 @@ public final class Grammar
     public final boolean processLeadingWhitespace;
 
     /**
-     * TODO document
+     * Extensions used by the grammar.
      */
-    public final @Immutable Map<String, String> options;
+    public final @Immutable Array<Extension> extensions;
 
+    /**
+     * Build on-demand for {@link #getRule}.
+     */
     private Map<String, ParsingExpression> rulesByName;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -63,13 +68,13 @@ public final class Grammar
         Collection<ParsingExpression> rules,
         ParsingExpression whitespace,
         boolean processLeadingWhitespace,
-        Map<String, String> options)
+        Array<Extension> extensions)
     {
         this.root = root;
         this.rules = rules;
         this.whitespace = whitespace;
         this.processLeadingWhitespace = processLeadingWhitespace;
-        this.options = options;
+        this.extensions = extensions;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -78,7 +83,7 @@ public final class Grammar
     public static GrammarBuilder fromSource(Source source)
     {
         ParseResult result =
-            new Parser(GrammarGrammar.grammar, source, ParserConfiguration.build()).parseRoot();
+            new Parser(GrammarGrammar.grammar, source, ParserConfiguration.DEFAULT).parseRoot();
 
         if (!result.matched)
         {
@@ -124,13 +129,10 @@ public final class Grammar
 
     // ---------------------------------------------------------------------------------------------
 
-    public Grammar transform(GraphVisitor<ParsingExpression> visitor)
-    {
-        return new GrammarBuilder(this).transform(visitor).build();
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
+    /**
+     * Runs the given visitor over the rules, root and whitespace (in that order) of the grammar.
+     * Note that all of these expressions are visited as part of the same visit.
+     */
     public void compute(GraphVisitor<ParsingExpression> visitor)
     {
         visitor.partialVisit(root);

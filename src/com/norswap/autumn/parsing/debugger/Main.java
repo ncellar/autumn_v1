@@ -36,7 +36,8 @@ public final class Main
         try {
             grammar = Grammar
                 .fromSource(Source.fromFile(args[0]).build())
-                .transform(new Transformer(pe -> new Breakpoint(pe, store)))
+                // TODO make extension
+                //.transform(new Transformer(pe -> new Breakpoint(pe, store)))
                 .build();
         }
         catch (IOException e)
@@ -54,7 +55,7 @@ public final class Main
             return;
         }
 
-        ParserConfiguration config = ParserConfiguration.build();
+        ParserConfiguration config = ParserConfiguration.DEFAULT;
         Parser parser = new Parser(grammar, source, config);
         Debugger debugger = new Debugger(parser, store);
         ExecutionLocation rootLocation = new ExecutionLocation(grammar.root);
@@ -63,7 +64,7 @@ public final class Main
         store.windowFor(
                 rootLocation,
                 new Array<>(),
-                parser.rootInputs());
+                null);
 
         // NOTE(NORSWAP): start GUI here
     }

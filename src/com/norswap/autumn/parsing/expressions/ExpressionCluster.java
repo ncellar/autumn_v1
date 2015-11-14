@@ -1,5 +1,6 @@
 package com.norswap.autumn.parsing.expressions;
 
+import com.norswap.autumn.parsing.extensions.BottomupExtension;
 import com.norswap.autumn.parsing.state.BottomUpState;
 import com.norswap.autumn.parsing.state.ParseChanges;
 import com.norswap.autumn.parsing.state.ParseState;
@@ -11,6 +12,8 @@ import com.norswap.util.DeepCopy;
 
 import java.util.Arrays;
 import java.util.function.Predicate;
+
+import static com.norswap.util.Caster.cast;
 
 public final class ExpressionCluster extends ParsingExpression
 {
@@ -54,7 +57,7 @@ public final class ExpressionCluster extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseState state)
     {
-        BottomUpState bstate = state.bottomup;
+        BottomUpState bstate = cast(state.customStates[BottomupExtension.INDEX]);
         ParseChanges changes;
 
         if ((changes = bstate.getSeed(this)) != null)
@@ -110,9 +113,9 @@ public final class ExpressionCluster extends ParsingExpression
             while (group.leftRecursive);
         }
 
-        state.merge(changes);
         bstate.removeSeed(this);
         bstate.removePrecedence(this, precedence);
+        state.merge(changes);
 
         if (state.failed()) {
             state.fail(this);
