@@ -2,7 +2,6 @@
 TODO NOW
 
     - finish cleaning up parse state
-
         - fix all TODOs in ParseState
         - split cluster state and left-recursion state?
 
@@ -11,6 +10,7 @@ TODO NOW
     - misc TODOs
         - better toString
         - exception handling
+        - use object equals utility
 
     - grammar syntax changes
         - tokenizer X =
@@ -40,8 +40,6 @@ TODO NOW
         - memoization window around position
         - error handling: an error over a token can become "unexpected X"
         - advantage: handles reserved identifiers
-
-    - object equals utility
 
     - common parse state patterns!
 

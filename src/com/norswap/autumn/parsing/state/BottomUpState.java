@@ -68,7 +68,7 @@ public final class BottomupState implements CustomState
     /**
      * Maps from expression clusters to their current precedence.
      */
-    private HashMap<ParsingExpression, Precedence> precedences = new HashMap<>();
+    private HashMap<ExpressionCluster, Precedence> precedences = new HashMap<>();
 
     /**
      * A stack of expressions with a precedence level that are currently being visited. These
@@ -77,12 +77,12 @@ public final class BottomupState implements CustomState
      * This data structure is necessary for {@link #getCurrentPrecedence} (used by {@link
      * WithMinPrecedence}) to work.
      */
-    private Array<ParsingExpression> history = new Array<>();
+    private Array<ExpressionCluster> history = new Array<>();
 
     /**
      * Set of expressions in which we can't recurse, in order to ensure left-associativity.
      */
-    private HashSet<ParsingExpression> blocked = new HashSet<>();
+    private HashSet<LeftRecursive> blocked = new HashSet<>();
 
     /**
      * The current cluster alternate; set by {@link ExpressionCluster} and read by {@link Filter}.
@@ -196,21 +196,21 @@ public final class BottomupState implements CustomState
 
     // ---------------------------------------------------------------------------------------------
 
-    public void block(ParsingExpression pe)
+    public void block(LeftRecursive pe)
     {
         blocked.add(pe);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public void unblock(ParsingExpression pe)
+    public void unblock(LeftRecursive pe)
     {
         blocked.remove(pe);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public boolean blocked(ParsingExpression pe)
+    public boolean blocked(LeftRecursive pe)
     {
         return blocked.contains(pe);
     }
@@ -375,7 +375,7 @@ public final class BottomupState implements CustomState
         final @Nullable Array<ParsingExpression> seeded;
         final @Nullable Array<ParseChanges> seeds;
         final HashMap<ParsingExpression, Precedence> precedences;
-        final Array<ParsingExpression> history;
+        final Array<ExpressionCluster> history;
         final HashSet<ParsingExpression> blocked;
 
         public Inputs(
@@ -383,7 +383,7 @@ public final class BottomupState implements CustomState
             @Nullable Array<ParsingExpression> seeded,
             @Nullable Array<ParseChanges> seeds,
             HashMap<ParsingExpression, Precedence> precedences,
-            Array<ParsingExpression> history,
+            Array<ExpressionCluster> history,
             HashSet<ParsingExpression> blocked)
         {
             this.position = position;
