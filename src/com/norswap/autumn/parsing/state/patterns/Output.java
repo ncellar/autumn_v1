@@ -1,6 +1,5 @@
 package com.norswap.autumn.parsing.state.patterns;
 
-import com.norswap.autumn.parsing.state.CustomChanges;
 import com.norswap.autumn.parsing.state.CustomState;
 import com.norswap.autumn.parsing.state.ParseState;
 
@@ -36,18 +35,18 @@ public class Output<T> implements CustomState
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public Container<T> snapshot(ParseState state)
+    public Object snapshot(ParseState state)
     {
-        return new Container<>(contentCommitted);
+        return contentCommitted;
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
     @SuppressWarnings("unchecked")
-    public void restore(Snapshot snapshot, ParseState state)
+    public void restore(Object snapshot, ParseState state)
     {
-        contentCommitted = ((Container<T>) snapshot).content;
+        contentCommitted = (T) snapshot;
         contentUncommitted = contentCommitted;
     }
 
@@ -55,9 +54,9 @@ public class Output<T> implements CustomState
 
     @Override
     @SuppressWarnings("unchecked")
-    public void uncommit(Snapshot snapshot, ParseState state)
+    public void uncommit(Object snapshot, ParseState state)
     {
-        contentCommitted = ((Container<T>) snapshot).content;
+        contentCommitted = (T) snapshot;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -79,10 +78,10 @@ public class Output<T> implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public Container<T> extract(ParseState state)
+    public Object extract(ParseState state)
     {
         return contentCommitted != contentUncommitted
-            ? new Container<>(contentUncommitted)
+            ? contentUncommitted
             : null;
     }
 
@@ -90,19 +89,11 @@ public class Output<T> implements CustomState
 
     @Override
     @SuppressWarnings("unchecked")
-    public void merge(CustomChanges changes, ParseState state)
+    public void merge(Object changes, ParseState state)
     {
         if (changes != null) {
-            contentUncommitted = ((Container<T>)changes).content;
+            contentUncommitted = (T) changes;
         }
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public Container<T> result(ParseState state)
-    {
-        return new Container<>(contentUncommitted);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

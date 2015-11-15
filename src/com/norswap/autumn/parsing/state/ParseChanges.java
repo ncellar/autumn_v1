@@ -13,7 +13,7 @@ public final class ParseChanges
     public final int end;
     public final int blackEnd;
     public final Array<BuildParseTree> children;
-    public final Array<CustomChanges> customChanges;
+    public final Array<Object> customChanges;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -21,7 +21,7 @@ public final class ParseChanges
         int end,
         int blackEnd,
         Array<BuildParseTree> children,
-        Array<CustomChanges> customChanges)
+        Array<Object> customChanges)
     {
         this.end = end;
         this.blackEnd = blackEnd;

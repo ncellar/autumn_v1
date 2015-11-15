@@ -3,7 +3,6 @@ package com.norswap.autumn.parsing.extensions.cluster;
 import com.google.auto.value.AutoValue;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.extensions.Seeds;
-import com.norswap.autumn.parsing.state.CustomChanges;
 import com.norswap.autumn.parsing.state.CustomState;
 import com.norswap.autumn.parsing.state.ParseChanges;
 import com.norswap.autumn.parsing.state.ParseState;
@@ -160,7 +159,7 @@ public final class ClusterState implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void load(CustomState.Inputs inputs)
+    public void load(Object inputs)
     {
         Inputs in = (Inputs) inputs;
         seeds.load(cast(in.seeds()));
@@ -171,7 +170,7 @@ public final class ClusterState implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public CustomState.Snapshot snapshot(ParseState state)
+    public Object snapshot(ParseState state)
     {
         return new Snapshot(seeds.snapshot(state), alternate.snapshot(state));
     }
@@ -179,7 +178,7 @@ public final class ClusterState implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void restore(CustomState.Snapshot snapshot, ParseState state)
+    public void restore(Object snapshot, ParseState state)
     {
         Snapshot snap = (Snapshot) snapshot;
         seeds.restore(snap.seeds, state);
@@ -189,7 +188,7 @@ public final class ClusterState implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void uncommit(CustomState.Snapshot snapshot, ParseState state)
+    public void uncommit(Object snapshot, ParseState state)
     {
         Snapshot snap = (Snapshot) snapshot;
         seeds.uncommit(snap.seeds, state);
@@ -216,7 +215,7 @@ public final class ClusterState implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public CustomChanges extract(ParseState state)
+    public Object extract(ParseState state)
     {
         return alternate.extract(state);
     }
@@ -224,18 +223,18 @@ public final class ClusterState implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void merge(CustomChanges changes, ParseState state)
+    public void merge(Object changes, ParseState state)
     {
         alternate.merge(changes, state);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static final class Snapshot implements CustomState.Snapshot
+    public static final class Snapshot
     {
-        final CustomState.Snapshot seeds, alternate;
+        final Object seeds, alternate;
 
-        Snapshot(CustomState.Snapshot seeds, CustomState.Snapshot alternate)
+        Snapshot(Object seeds, Object alternate)
         {
             this.seeds = seeds;
             this.alternate = alternate;
@@ -245,7 +244,7 @@ public final class ClusterState implements CustomState
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @AutoValue
-    public static abstract class Inputs implements CustomState.Inputs
+    public static abstract class Inputs
     {
         static Inputs create(
             @Nullable Object seeds,

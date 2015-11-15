@@ -1,7 +1,7 @@
 package com.norswap.autumn.parsing.extensions;
 
-import com.google.auto.value.AutoValue;
 import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.extensions.cluster.ClusterState;
 import com.norswap.autumn.parsing.extensions.cluster.ExpressionCluster;
 import com.norswap.autumn.parsing.extensions.leftrec.LeftRecursive;
 import com.norswap.autumn.parsing.extensions.leftrec.LeftRecursionState;
@@ -17,7 +17,7 @@ import com.norswap.util.annotations.Nullable;
  * LeftRecursive} instances whose invocation is ongoing) and their seed (an instance of {@link
  * ParseChanges}).
  * <p>
- * Both {@link LeftRecursionState} and TODO require an instance of this.
+ * Both {@link LeftRecursionState} and {@link ClusterState} require an instance of this.
  */
 public final class Seeds implements CustomState, Cloneable
 {
@@ -89,53 +89,52 @@ public final class Seeds implements CustomState, Cloneable
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public Inputs inputs(ParseState state)
+    public Object inputs(ParseState state)
     {
-        return Inputs.create(
-            position,
-            seeded != null ? seeded.clone() : null,
-            seeds  != null ? seeds .clone() : null);
+        return copy();
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void load(CustomState.Inputs inputs)
+    public void load(Object inputs)
     {
-        Inputs in = (Inputs) inputs;
-        this.position = in.position();
-        this.seeded = in.seeded() != null ? in.seeded().clone() : null;
-        this.seeds  = in.seeds () != null ? in.seeds ().clone() : null;
-    }
+        Seeds that = (Seeds) inputs;
+        this.position = that.position;
 
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public Snapshot snapshot(ParseState state)
-    {
-        return seeded != null
-            ? new Snapshot(position, seeded, seeds)
-            : null;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void restore(CustomState.Snapshot snapshot, ParseState state)
-    {
-        if (snapshot != null)
+        if (that.seeded != null)
         {
-            Snapshot s = (Snapshot) snapshot;
-            this.position = s.position;
-            this.seeded = s.seeded;
-            this.seeds = s.seeds;
+            this.seeded = that.seeded.clone();
+            this.seeds  = that.seeds .clone();
         }
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void uncommit(CustomState.Snapshot snapshot, ParseState state)
+    public Object snapshot(ParseState state)
+    {
+        return seeded != null ? clone() : null;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void restore(Object snapshot, ParseState state)
+    {
+        if (snapshot != null)
+        {
+            Seeds that = (Seeds) snapshot;
+            this.position = that.position;
+            this.seeded = that.seeded;
+            this.seeds = that.seeds;
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void uncommit(Object snapshot, ParseState state)
     {
         restore(snapshot, state);
     }
@@ -155,29 +154,17 @@ public final class Seeds implements CustomState, Cloneable
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public final static class Snapshot implements CustomState.Snapshot
+    @Override
+    protected Seeds clone()
     {
-        final int position;
-        final Array<ParsingExpression> seeded;
-        final Array<ParseChanges> seeds;
-
-        Snapshot(
-            int position,
-            Array<ParsingExpression> seeded,
-            Array<ParseChanges> seeds)
-        {
-            this.position = position;
-            this.seeded = seeded;
-            this.seeds = seeds;
-        }
+        return (Seeds) Exceptions.swallow(() -> super.clone());
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // ---------------------------------------------------------------------------------------------
 
-    @Override
-    public Seeds clone()
+    private Seeds copy()
     {
-        Seeds out = (Seeds) Exceptions.swallow(() -> super.clone());
+        Seeds out = clone();
 
         if (seeded != null)
         {
@@ -188,22 +175,29 @@ public final class Seeds implements CustomState, Cloneable
         return out;
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // ---------------------------------------------------------------------------------------------
 
-    @AutoValue
-    public static abstract class Inputs implements CustomState.Inputs
+    @Override
+    public boolean equals(Object o)
     {
-        public static Inputs create(
-            int position,
-            @Nullable Array<ParsingExpression> seeded,
-            @Nullable Array<ParseChanges> seeds)
-        {
-            return new AutoValue_Seeds_Inputs(position, seeded, seeds);
-        }
+        Seeds that;
+        return this == o
+            || o instanceof Seeds
+            && (that = (Seeds) o) != null
+            && position == that.position
+            && (seeded == that.seeded || seeded != null && seeded.equals(that.seeded))
+            && (seeds  == that.seeds  || seeds  != null && seeds .equals(that.seeds ));
+    }
 
-        abstract int position();
-        abstract @Nullable Array<ParsingExpression> seeded();
-        abstract @Nullable Array<ParseChanges> seeds();
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public int hashCode()
+    {
+        int result = position;
+        result = 31 * result + (seeded != null ? seeded.hashCode() : 0);
+        result = 31 * result + (seeds  != null ? seeds .hashCode() : 0);
+        return result;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -11,9 +11,12 @@ import com.norswap.autumn.parsing.debugger.Invocation;
 import com.norswap.autumn.parsing.debugger.NodeInfo;
 import com.norswap.autumn.parsing.debugger.WindowModel;
 import com.norswap.autumn.parsing.expressions.Capture;
+import com.norswap.autumn.parsing.state.ParseChanges;
 import com.norswap.autumn.parsing.state.ParseInputs;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.util.Array;
+
+import static com.norswap.util.Caster.cast;
 
 /**
  *
@@ -178,8 +181,7 @@ public final class DebuggerStore
 
         // TODO result might be null!
 
-        Array<CaptureList> captures
-            = ((CaptureTrackingState.Result) result.customResults.get(X)).captures;
+        Array<CaptureList> captures = cast(result.customChanges.get(X));
 
         Array<CaptureInfo> captureInfos = new Array<>(captures.size());
 
@@ -446,14 +448,17 @@ public final class DebuggerStore
     private Invocation invocation(ParsingExpression pe, ParseState state)
     {
         ParseInputs inputs = state.inputs(pe);
+        ParseChanges changes = state.extract();
 
         return new Invocation(
             inputs,
             new ParseResult(
-                debugger.parser.source,
-                inputs,
-                state.extract(),
-                state.errors.changes()));
+                inputs.start() == 0 && state.end == debugger.parser.source.length(),
+                state.end >= 0,
+                state.end,
+                changes.children.get(0).build(),
+                changes.customChanges,
+                state.errors.changes().report(debugger.parser.source)));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

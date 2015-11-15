@@ -2,7 +2,6 @@ package com.norswap.autumn.parsing.state;
 
 import com.google.auto.value.AutoValue;
 import com.norswap.autumn.parsing.ParsingExpression;
-import com.norswap.autumn.parsing.state.CustomState.Inputs;
 import com.norswap.util.Array;
 
 /**
@@ -18,7 +17,7 @@ public abstract class ParseInputs
     public abstract int blackStart();
     public abstract int precedence();
     public abstract boolean recordErrors();
-    public abstract Array<Inputs> customInputs();
+    public abstract Array<Object> customInputs();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -28,7 +27,7 @@ public abstract class ParseInputs
         int blackStart,
         int precedence,
         boolean recordErrors,
-        Array<Inputs> customInputs)
+        Array<Object> customInputs)
     {
         return new AutoValue_ParseInputs(pe, start, blackStart, precedence, recordErrors, customInputs);
     }

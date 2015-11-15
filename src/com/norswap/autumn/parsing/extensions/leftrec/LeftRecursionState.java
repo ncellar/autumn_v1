@@ -79,16 +79,16 @@ public final class LeftRecursionState implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void load(CustomState.Inputs inputs)
+    public void load(Object inputs)
     {
         Inputs in = (Inputs) inputs;
-        seeds.load(cast(in.seeds()));
+        seeds.load(in.seeds());
         this.blocked = cast(in.blocked().clone());
     }
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public CustomState.Snapshot snapshot(ParseState state)
+    public Object snapshot(ParseState state)
     {
         return seeds.snapshot(state);
     }
@@ -96,7 +96,7 @@ public final class LeftRecursionState implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void restore(CustomState.Snapshot snapshot, ParseState state)
+    public void restore(Object snapshot, ParseState state)
     {
         seeds.restore(snapshot, state);
     }
@@ -104,7 +104,7 @@ public final class LeftRecursionState implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void uncommit(CustomState.Snapshot snapshot, ParseState state)
+    public void uncommit(Object snapshot, ParseState state)
     {
         seeds.uncommit(snapshot, state);
     }
@@ -120,7 +120,7 @@ public final class LeftRecursionState implements CustomState
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @AutoValue
-    public static abstract class Inputs implements CustomState.Inputs
+    public static abstract class Inputs
     {
         public static Inputs create(
             @Nullable Object seeds,

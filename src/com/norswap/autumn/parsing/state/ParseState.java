@@ -9,8 +9,6 @@ import com.norswap.autumn.parsing.expressions.Precedence;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.extensions.Extension;
 import com.norswap.autumn.parsing.source.Source;
-import com.norswap.autumn.parsing.state.CustomState.Inputs;
-import com.norswap.autumn.parsing.state.CustomState.Snapshot;
 import com.norswap.autumn.parsing.state.errors.DefaultErrorState;
 import com.norswap.autumn.parsing.state.errors.ErrorState;
 import com.norswap.autumn.parsing.tree.BuildParseTree;
@@ -170,8 +168,8 @@ import com.norswap.util.JArrays;
  * <p>
  * At the end of the parse, the parser will gather the results of the parse in a {@link ParseResult}
  * object. This includes whether the root expression of the grammar matched some input, whether it
- * matched the whole input, the parse tree generated, and an error report. Additionally, each custom
- * parse state can also supply custom results via the {@link CustomState#result} methods.
+ * matched the whole input, the parse tree generated, and an error report. Additionally, for each custom
+ * parse state, its final parse changes will also be included in the parse result.
  */
 public final class ParseState
 {
@@ -262,7 +260,7 @@ public final class ParseState
         this.precedence = inputs.precedence();
         this.recordErrors = inputs.recordErrors();
 
-        Array<Inputs> customInputs = inputs.customInputs();
+        Array<Object> customInputs = inputs.customInputs();
         int size = customInputs.size();
         for (int i = 0; i < size; ++i) {
             customStates[i].load(customInputs.get(i));
@@ -397,7 +395,7 @@ public final class ParseState
             end,
             blackEnd,
             treeChildrenCount,
-            JArrays.map(customStates, Snapshot[]::new, x -> x.snapshot(this)));
+            JArrays.map(customStates, x -> x.snapshot(this)));
     }
 
     // ---------------------------------------------------------------------------------------------
