@@ -1,7 +1,5 @@
-package com.norswap.autumn.parsing.expressions;
+package com.norswap.autumn.parsing.extensions.cluster;
 
-import com.norswap.autumn.parsing.extensions.BottomupExtension;
-import com.norswap.autumn.parsing.state.BottomupState;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
@@ -36,7 +34,7 @@ public final class Filter extends UnaryParsingExpression
     @Override
     public void parse(Parser parser, ParseState state)
     {
-        BottomupState bstate = cast(state.customStates[BottomupExtension.INDEX]);
+        ClusterState cstate = cast(state.customStates[ClusterExtension.INDEX]);
 
         operand.parse(parser, state);
 
@@ -46,7 +44,7 @@ public final class Filter extends UnaryParsingExpression
         }
 
         boolean success = allowed.length == 0;
-        ParsingExpression clusterAlternate = bstate.uncommittedAlternate;
+        ParsingExpression clusterAlternate = cstate.getAlternate();
 
         for (ParsingExpression pe : allowed)
         {

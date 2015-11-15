@@ -36,49 +36,7 @@ public class Output<T> implements CustomState
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void load(Inputs inputs) {}
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void commit(ParseState state)
-    {
-        contentCommitted = contentUncommitted;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void discard(ParseState state)
-    {
-        contentUncommitted = contentCommitted;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public CustomChanges extract(ParseState state)
-    {
-        return contentCommitted != contentUncommitted
-            ? new Container<>(contentUncommitted)
-            : null;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void merge(CustomChanges changes, ParseState state)
-    {
-        if (changes != null) {
-            contentUncommitted = ((Container<T>)changes).content;
-        }
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public Snapshot snapshot(ParseState state)
+    public Container<T> snapshot(ParseState state)
     {
         return new Container<>(contentCommitted);
     }
@@ -105,9 +63,38 @@ public class Output<T> implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public Inputs inputs(ParseState state)
+    public void discard(ParseState state)
     {
-        return null;
+        contentUncommitted = contentCommitted;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void commit(ParseState state)
+    {
+        contentCommitted = contentUncommitted;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public Container<T> extract(ParseState state)
+    {
+        return contentCommitted != contentUncommitted
+            ? new Container<>(contentUncommitted)
+            : null;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void merge(CustomChanges changes, ParseState state)
+    {
+        if (changes != null) {
+            contentUncommitted = ((Container<T>)changes).content;
+        }
     }
 
     // ---------------------------------------------------------------------------------------------

@@ -1,7 +1,5 @@
-package com.norswap.autumn.parsing.expressions;
+package com.norswap.autumn.parsing.extensions.cluster;
 
-import com.norswap.autumn.parsing.extensions.BottomupExtension;
-import com.norswap.autumn.parsing.state.BottomupState;
 import com.norswap.autumn.parsing.state.ParseChanges;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.Parser;
@@ -57,10 +55,10 @@ public final class ExpressionCluster extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseState state)
     {
-        BottomupState bstate = cast(state.customStates[BottomupExtension.INDEX]);
+        ClusterState cstate = cast(state.customStates[ClusterExtension.INDEX]);
         ParseChanges changes;
 
-        if ((changes = bstate.getSeed(this)) != null)
+        if ((changes = cstate.getSeed(this)) != null)
         {
             // If this is a re-entry, use the seed value.
             state.merge(changes);
@@ -68,9 +66,9 @@ public final class ExpressionCluster extends ParsingExpression
         }
 
         changes = ParseChanges.failure();
-        bstate.setSeed(this, changes, state.start);
+        cstate.setSeed(this, changes, state.start);
 
-        BottomupState.Precedence precedence = bstate.getPrecedence(this);
+        ClusterState.Precedence precedence = cstate.getPrecedence(this);
         int oldPrecedence = precedence.oldPrecedence();
 
         // Iterate over groups in order of decreasing precedence.
@@ -95,9 +93,9 @@ public final class ExpressionCluster extends ParsingExpression
                     if (state.end > changes.end)
                     {
                         // The seed was grown, try growing it again starting from first group rule.
-                        bstate.uncommittedAlternate = alternate;
+                        cstate.setAlternate(alternate);
                         changes = state.extract();
-                        bstate.setSeed(this, changes, state.start);
+                        cstate.setSeed(this, changes, state.start);
                         state.discard();
                         continue leftRec;
                     }
@@ -113,8 +111,8 @@ public final class ExpressionCluster extends ParsingExpression
             while (group.leftRecursive);
         }
 
-        bstate.removeSeed(this);
-        bstate.removePrecedence(this, precedence);
+        cstate.removeSeed(this);
+        cstate.removePrecedence(this, precedence);
         state.merge(changes);
 
         if (state.failed()) {

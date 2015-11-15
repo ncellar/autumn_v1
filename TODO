@@ -1,10 +1,17 @@
 --------------------------------------------------------------------------------
 TODO NOW
 
-    - equals refactoring
-    - split cluster state and left-recursion state?
-    - document states
-    - in GrammarBuilder, replace enableLeftRecursion... by disableDefaultExtensions
+    - discard marker interfaces in CustomState
+    - seeds inputs: should be a clone?
+
+    - annotation processing support in makefile
+    - install IntelliJ 15
+
+    - more common parse state patterns
+        - pure input
+        - copying output
+        - accumulating (like the parse trees)
+        - both input and output
 
     - grammar syntax changes
         - tokenizer X =
@@ -35,11 +42,7 @@ TODO NOW
         - error handling: an error over a token can become "unexpected X"
         - advantage: handles reserved identifiers
 
-    - common parse state patterns!
-
     - generators for state/input/etc boilerplate
-
-    - annotation processing support in makefile
 
 TODO DEBUGGER
 

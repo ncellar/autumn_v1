@@ -1,7 +1,8 @@
 package com.norswap.autumn.parsing;
 
-import com.norswap.autumn.parsing.extensions.BottomupExtension;
 import com.norswap.autumn.parsing.extensions.Extension;
+import com.norswap.autumn.parsing.extensions.cluster.ClusterExtension;
+import com.norswap.autumn.parsing.extensions.leftrec.LeftRecursionExtension;
 import com.norswap.autumn.parsing.graph.ReferenceResolver;
 import com.norswap.util.Array;
 import com.norswap.util.graph.GraphVisitor;
@@ -25,7 +26,7 @@ public final class GrammarBuilder implements GrammarBuilderExtensionView
 
     private boolean processLeadingWhitespace = true;
 
-    private boolean leftRecursionElimination = true;
+    private boolean defaultExtensions = true;
 
     private boolean referenceResolution = true;
 
@@ -46,7 +47,7 @@ public final class GrammarBuilder implements GrammarBuilderExtensionView
         this.rules = grammar.rules;
         this.whitespace = grammar.whitespace;
         this.processLeadingWhitespace = grammar.processLeadingWhitespace;
-        this.leftRecursionElimination = false;
+        this.defaultExtensions = false;
         this.referenceResolution = false;
     }
 
@@ -84,9 +85,9 @@ public final class GrammarBuilder implements GrammarBuilderExtensionView
 
     // ---------------------------------------------------------------------------------------------
 
-    public GrammarBuilder leftRecursionElimination(boolean leftRecursionElimination)
+    public GrammarBuilder defaultExtensions(boolean defaultExtensions)
     {
-        this.leftRecursionElimination = leftRecursionElimination;
+        this.defaultExtensions = defaultExtensions;
         return this;
     }
 
@@ -115,9 +116,13 @@ public final class GrammarBuilder implements GrammarBuilderExtensionView
             transform(new ReferenceResolver());
         }
 
-        if (leftRecursionElimination)
+        if (defaultExtensions)
         {
-            withExtension(new BottomupExtension());
+            withExtension(new LeftRecursionExtension());
+            withExtension(new ClusterExtension());
+
+            // TODO remove when sure all is working
+            //withExtension(new BottomupExtension());
         }
 
         for (Extension extension: extensions)

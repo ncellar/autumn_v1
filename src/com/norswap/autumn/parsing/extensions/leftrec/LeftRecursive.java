@@ -1,7 +1,5 @@
-package com.norswap.autumn.parsing.expressions;
+package com.norswap.autumn.parsing.extensions.leftrec;
 
-import com.norswap.autumn.parsing.extensions.BottomupExtension;
-import com.norswap.autumn.parsing.state.BottomupState;
 import com.norswap.autumn.parsing.state.ParseChanges;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.Parser;
@@ -20,16 +18,16 @@ public final class LeftRecursive extends UnaryParsingExpression
     @Override
     public void parse(Parser parser, ParseState state)
     {
-        BottomupState bstate = cast(state.customStates[BottomupExtension.INDEX]);
+        LeftRecursionState lrstate = cast(state.customStates[LeftRecursionExtension.INDEX]);
         ParseChanges changes;
 
-        if ((changes = bstate.getSeed(this)) != null)
+        if ((changes = lrstate.getSeed(this)) != null)
         {
             // If this is a re-entry, use the seed value.
             state.merge(changes);
             return;
         }
-        else if (leftAssociative && bstate.blocked(this))
+        else if (leftAssociative && lrstate.blocked(this))
         {
             // Recursion is blocked in a left-associative expression when not in left
             // position (if we were in left position, there would have been a seed).
@@ -39,11 +37,11 @@ public final class LeftRecursive extends UnaryParsingExpression
         }
 
         changes = ParseChanges.failure();
-        bstate.setSeed(this, changes, state.start);
+        lrstate.setSeed(this, changes, state.start);
 
         if (leftAssociative)
         {
-            bstate.block(this);
+            lrstate.block(this);
         }
 
         // Keep parsing the operand, as long as long as the seed keeps growing.
@@ -56,7 +54,7 @@ public final class LeftRecursive extends UnaryParsingExpression
             {
                 // Seed was grown, update it and retry the rule.
                 changes = state.extract();
-                bstate.setSeed(this, changes, state.start);
+                lrstate.setSeed(this, changes, state.start);
                 state.discard();
             }
             else
@@ -69,11 +67,11 @@ public final class LeftRecursive extends UnaryParsingExpression
 
         state.merge(changes);
 
-        bstate.removeSeed(this);
+        lrstate.removeSeed(this);
 
         if (leftAssociative)
         {
-            bstate.unblock(this);
+            lrstate.unblock(this);
         }
 
         if (state.failed())

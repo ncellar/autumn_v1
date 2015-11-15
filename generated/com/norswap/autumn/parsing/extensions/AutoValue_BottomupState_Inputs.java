@@ -1,8 +1,9 @@
 
-package com.norswap.autumn.parsing.state;
+package com.norswap.autumn.parsing.extensions;
 
 import com.norswap.autumn.parsing.ParsingExpression;
-import com.norswap.autumn.parsing.expressions.ExpressionCluster;
+import com.norswap.autumn.parsing.extensions.cluster.ExpressionCluster;
+import com.norswap.autumn.parsing.state.ParseChanges;
 import com.norswap.util.Array;
 import java.util.HashMap;
 import java.util.HashSet;

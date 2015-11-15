@@ -1,8 +1,8 @@
 package com.norswap.autumn.parsing.graph;
 
 import com.norswap.autumn.parsing.ParsingExpression;
-import com.norswap.autumn.parsing.expressions.ExpressionCluster;
-import com.norswap.autumn.parsing.expressions.LeftRecursive;
+import com.norswap.autumn.parsing.extensions.cluster.ExpressionCluster;
+import com.norswap.autumn.parsing.extensions.leftrec.LeftRecursive;
 import com.norswap.util.Array;
 import com.norswap.util.graph.GraphVisitor;
 import com.norswap.util.graph.NodeState;

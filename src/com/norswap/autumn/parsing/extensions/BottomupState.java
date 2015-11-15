@@ -1,11 +1,15 @@
-package com.norswap.autumn.parsing.state;
+package com.norswap.autumn.parsing.extensions;
 
 import com.google.auto.value.AutoValue;
 import com.norswap.autumn.parsing.ParsingExpression;
-import com.norswap.autumn.parsing.expressions.ExpressionCluster;
-import com.norswap.autumn.parsing.expressions.Filter;
-import com.norswap.autumn.parsing.expressions.LeftRecursive;
-import com.norswap.autumn.parsing.expressions.WithMinPrecedence;
+import com.norswap.autumn.parsing.extensions.cluster.ExpressionCluster;
+import com.norswap.autumn.parsing.extensions.cluster.Filter;
+import com.norswap.autumn.parsing.extensions.leftrec.LeftRecursive;
+import com.norswap.autumn.parsing.extensions.cluster.WithMinPrecedence;
+import com.norswap.autumn.parsing.state.CustomChanges;
+import com.norswap.autumn.parsing.state.CustomState;
+import com.norswap.autumn.parsing.state.ParseChanges;
+import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.state.patterns.Container;
 import com.norswap.util.Array;
 import com.norswap.util.annotations.Nullable;
@@ -15,19 +19,6 @@ import java.util.HashSet;
 
 import static com.norswap.util.Caster.cast;
 
-/**
- * TODO (this was copy pasted)
- *
- * Holds a set of mapping between parsing expressions ({@link ExpressionCluster} and {@link
- * LeftRecursive} instances whose invocation is ongoing) and their seed (an instance of {@link
- * ParseChanges}).
- *
- * Holds a set of mapping between {@link ExpressionCluster} instances whose invocation is
- * ongoing and their current precedence level.
- *
- * A set of blocked {@link LeftRecursive} parsing expression. Invoking these expressions
- * will never succeed.
- */
 public final class BottomupState implements CustomState
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -220,6 +211,20 @@ public final class BottomupState implements CustomState
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
+    public Inputs inputs(ParseState state)
+    {
+        return Inputs.create(
+            position,
+            seeded != null ? seeded.clone() : null,
+            seeds != null ? seeds.clone() : null,
+            cast(precedences.clone()),
+            history.clone(),
+            cast(blocked.clone()));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
     public void load(CustomState.Inputs inputs)
     {
         Inputs in = (Inputs) inputs;
@@ -229,48 +234,6 @@ public final class BottomupState implements CustomState
         this.precedences = cast(in.precedences().clone());
         this.history = in.history().clone();
         this.blocked = cast(in.blocked().clone());
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void commit(ParseState state)
-    {
-        if (state.end > position)
-        {
-            position = 0;
-            seeded = null;
-            seeds = null;
-        }
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public void discard(ParseState state)
-    {
-        uncommittedAlternate = committedAlternate;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public Container<ParsingExpression> extract(ParseState state)
-    {
-        return committedAlternate != uncommittedAlternate
-            ? new Container<>(uncommittedAlternate)
-            : null;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void merge(CustomChanges changes, ParseState state)
-    {
-        if (changes != null) {
-            uncommittedAlternate = ((Container<ParsingExpression>)changes).content;
-        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -330,15 +293,46 @@ public final class BottomupState implements CustomState
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public Inputs inputs(ParseState state)
+    public void commit(ParseState state)
     {
-        return Inputs.create(
-            position,
-            seeded != null ? seeded.clone() : null,
-            seeds  != null ? seeds .clone() : null,
-            cast(precedences.clone()),
-            history.clone(),
-            cast(blocked.clone()));
+        if (state.end > position)
+        {
+            position = 0;
+            seeded = null;
+            seeds = null;
+        }
+
+        // TODO got added after split
+        committedAlternate = uncommittedAlternate;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void discard(ParseState state)
+    {
+        uncommittedAlternate = committedAlternate;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public Container<ParsingExpression> extract(ParseState state)
+    {
+        return committedAlternate != uncommittedAlternate
+            ? new Container<>(uncommittedAlternate)
+            : null;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void merge(CustomChanges changes, ParseState state)
+    {
+        if (changes != null) {
+            uncommittedAlternate = ((Container<ParsingExpression>)changes).content;
+        }
     }
 
     // ---------------------------------------------------------------------------------------------

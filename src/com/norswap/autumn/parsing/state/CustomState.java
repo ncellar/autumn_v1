@@ -26,30 +26,29 @@ public interface CustomState
      */
     interface Inputs {}
 
-
     interface Result {}
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    void load(Inputs inputs);
+    default Inputs inputs(ParseState state) { return null; }
 
-    void commit(ParseState state);
+    default void load(Inputs inputs) {}
 
-    void discard(ParseState state);
+    default Snapshot snapshot(ParseState state) { return null; }
 
-    CustomChanges extract(ParseState state);
+    default void restore(Snapshot snapshot, ParseState state) {}
 
-    void merge(CustomChanges changes, ParseState state);
+    default void uncommit(Snapshot snapshot, ParseState state) {}
 
-    Snapshot snapshot(ParseState state);
+    default void discard(ParseState state) {}
 
-    void restore(Snapshot snapshot, ParseState state);
+    default void commit(ParseState state) {}
 
-    void uncommit(Snapshot snapshot, ParseState state);
+    default CustomChanges extract(ParseState state) { return null; }
 
-    Inputs inputs(ParseState state);
+    default void merge(CustomChanges changes, ParseState state) {}
 
-    Result result(ParseState state);
+    default Result result(ParseState state) { return null; }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

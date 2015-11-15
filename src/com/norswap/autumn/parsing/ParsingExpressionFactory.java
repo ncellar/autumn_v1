@@ -1,8 +1,12 @@
 package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.parsing.expressions.*;
-import com.norswap.autumn.parsing.expressions.ExpressionCluster.Group;
+import com.norswap.autumn.parsing.extensions.cluster.ExpressionCluster;
+import com.norswap.autumn.parsing.extensions.cluster.ExpressionCluster.Group;
 import com.norswap.autumn.parsing.expressions.Whitespace;
+import com.norswap.autumn.parsing.extensions.cluster.Filter;
+import com.norswap.autumn.parsing.extensions.cluster.WithMinPrecedence;
+import com.norswap.autumn.parsing.extensions.leftrec.LeftRecursive;
 import com.norswap.util.Array;
 import com.norswap.util.JArrays;
 import com.norswap.util.annotations.NonNull;
