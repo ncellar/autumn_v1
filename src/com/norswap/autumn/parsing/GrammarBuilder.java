@@ -120,9 +120,6 @@ public final class GrammarBuilder implements GrammarBuilderExtensionView
         {
             withExtension(new LeftRecursionExtension());
             withExtension(new ClusterExtension());
-
-            // TODO remove when sure all is working
-            //withExtension(new BottomupExtension());
         }
 
         for (Extension extension: extensions)
