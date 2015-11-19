@@ -251,25 +251,6 @@ public final class ParseState
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Modifies the parse state to match that contained within the inputs.
-     */
-    public void load(ParseInputs inputs)
-    {
-        this.start = inputs.start();
-        this.blackStart = inputs.blackStart();
-        this.precedence = inputs.precedence();
-        this.recordErrors = inputs.recordErrors();
-
-        Array<Object> customInputs = inputs.customInputs();
-        int size = customInputs.size();
-        for (int i = 0; i < size; ++i) {
-            customStates[i].load(customInputs.get(i));
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
      * Advances the end and black end positions by n characters.
      */
     public void advance(int n)
@@ -332,56 +313,30 @@ public final class ParseState
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void commit()
+    public ParseInputs inputs(ParsingExpression pe)
     {
-        start = end;
-        blackStart = blackEnd;
-        treeChildrenCount = tree.childrenCount();
-
-        for (CustomState state: customStates)  {
-            state.commit(this);
-        }
+        return ParseInputs.create(
+            pe,
+            start,
+            blackStart,
+            precedence,
+            recordErrors,
+            Array.map(customStates, x -> x.inputs(this)));
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public void discard()
+    public void load(ParseInputs inputs)
     {
-        end = start;
-        blackEnd = blackStart;
-        tree.truncate(treeChildrenCount);
+        this.start = inputs.start();
+        this.blackStart = inputs.blackStart();
+        this.precedence = inputs.precedence();
+        this.recordErrors = inputs.recordErrors();
 
-        for (CustomState state: customStates) {
-            state.discard(this);
-        }
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public ParseChanges extract()
-    {
-        return new ParseChanges(
-            end,
-            blackEnd,
-            tree.children.copyFromIndex(treeChildrenCount),
-
-            Array.map(customStates, x -> x.extract(this)));
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public void merge(ParseChanges changes)
-    {
-        end = changes.end;
-        blackEnd = changes.blackEnd;
-
-        if (changes.children != null)  {
-            tree.addAll(changes.children);
-        }
-
-        int size = changes.customChanges.size();
-        for (int i = 0; i < size; ++i)  {
-            customStates[i].merge(changes.customChanges.get(i), this);
+        Array<Object> customInputs = inputs.customInputs();
+        int size = customInputs.size();
+        for (int i = 0; i < size; ++i) {
+            customStates[i].load(customInputs.get(i));
         }
     }
 
@@ -430,15 +385,57 @@ public final class ParseState
 
     // ---------------------------------------------------------------------------------------------
 
-    public ParseInputs inputs(ParsingExpression pe)
+    public void discard()
     {
-        return ParseInputs.create(
-            pe,
-            start,
-            blackStart,
-            precedence,
-            recordErrors,
-            Array.map(customStates, x -> x.inputs(this)));
+        end = start;
+        blackEnd = blackStart;
+        tree.truncate(treeChildrenCount);
+
+        for (CustomState state: customStates) {
+            state.discard(this);
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void commit()
+    {
+        start = end;
+        blackStart = blackEnd;
+        treeChildrenCount = tree.childrenCount();
+
+        for (CustomState state: customStates)  {
+            state.commit(this);
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public ParseChanges extract()
+    {
+        return new ParseChanges(
+            end,
+            blackEnd,
+            tree.children.copyFromIndex(treeChildrenCount),
+
+            Array.map(customStates, x -> x.extract(this)));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public void merge(ParseChanges changes)
+    {
+        end = changes.end;
+        blackEnd = changes.blackEnd;
+
+        if (changes.children != null)  {
+            tree.addAll(changes.children);
+        }
+
+        int size = changes.customChanges.size();
+        for (int i = 0; i < size; ++i)  {
+            customStates[i].merge(changes.customChanges.get(i), this);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

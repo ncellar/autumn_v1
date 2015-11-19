@@ -24,6 +24,7 @@ https://github.com/norswap/autumn/blob/master/src/com/norswap/autumn/parsing/sta
 
 ## Building
 
+    make fetchpom
     make build
 
 ... will output the class files under the `out/dev` directory.

@@ -2,14 +2,13 @@ package com.norswap.autumn.parsing.extensions.leftrec;
 
 import com.norswap.autumn.parsing.GrammarBuilderExtensionView;
 import com.norswap.autumn.parsing.extensions.Extension;
-import com.norswap.autumn.parsing.graph.LeftRecursionHandler;
 import com.norswap.autumn.parsing.graph.NullabilityCalculator;
 import com.norswap.autumn.parsing.state.CustomState;
 import com.norswap.autumn.parsing.state.CustomStateIndex;
 
 /**
  * Extension enabling left-recursion in the grammar. The extension automatically detect and breaks
- * left-recursive loops amongst rules (using {@link LeftRecursionHandler}.
+ * left-recursive loops amongst rules (using {@link LeftRecursionVisitor}.
  */
 public final class LeftRecursionExtension implements Extension
 {
@@ -33,7 +32,7 @@ public final class LeftRecursionExtension implements Extension
         NullabilityCalculator calc = new NullabilityCalculator();
         grammar.compute(calc);
 
-        LeftRecursionHandler handler = new LeftRecursionHandler(true, calc);
+        LeftRecursionVisitor handler = new LeftRecursionVisitor(true, calc);
         grammar.transform(handler);
     }
 

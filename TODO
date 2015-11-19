@@ -1,17 +1,8 @@
 --------------------------------------------------------------------------------
 TODO NOW
 
-    - discard marker interfaces in CustomState
-    - seeds inputs: should be a clone?
-
-    - annotation processing support in makefile
-    - install IntelliJ 15
-
     - more common parse state patterns
-        - pure input
-        - copying output
-        - accumulating (like the parse trees)
-        - both input and output
+        - look for more
 
     - grammar syntax changes
         - tokenizer X =
@@ -44,6 +35,19 @@ TODO NOW
 
     - generators for state/input/etc boilerplate
 
+TODO NOTES
+
+    - state.uncommit + state.discard == state.restore
+    - extensibility on two axis: new combinators + custom state
+
+    - parsec choice combinator doesn't backtrack unless your use try
+        - is explicit backtracking control a good idea? (use <|>)
+        - related to cut (although simpler implem)
+
+    - look at parsec etc for error handling
+        - probably should have a Error(msg) parsing expression that fails with a message
+        - interplay with cutting/limited backtracking? to commit to certain alternatives
+
 TODO DEBUGGER
 
     - rework package
@@ -63,7 +67,7 @@ TODO DEBUGGER
 TODO GUMPTION
 
     - use Array instead of [] for first and children in PE
-    - insert $ in Java8 (rule-level only) (-> 544)
+    - insert $ in Java8 grammar (rule-level only) (-> 544)
 
 TODO FURTHER SMALL
 

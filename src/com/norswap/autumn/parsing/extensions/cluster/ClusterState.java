@@ -6,7 +6,7 @@ import com.norswap.autumn.parsing.extensions.Seeds;
 import com.norswap.autumn.parsing.state.CustomState;
 import com.norswap.autumn.parsing.state.ParseChanges;
 import com.norswap.autumn.parsing.state.ParseState;
-import com.norswap.autumn.parsing.state.patterns.Output;
+import com.norswap.autumn.parsing.state.patterns.ValueOutput;
 import com.norswap.util.Array;
 import com.norswap.util.annotations.Nullable;
 
@@ -46,7 +46,7 @@ public final class ClusterState implements CustomState
     /**
      * The current cluster alternate; set by {@link ExpressionCluster} and read by {@link Filter}.
      */
-    private Output<ParsingExpression> alternate = new Output<>();
+    private ValueOutput<ParsingExpression> alternate = new ValueOutput<>();
 
     /**
      * Maps from expression clusters to their current precedence.

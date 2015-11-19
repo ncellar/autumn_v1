@@ -1,4 +1,4 @@
-package com.norswap.autumn.parsing.graph;
+package com.norswap.autumn.parsing.extensions.leftrec;
 
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.extensions.cluster.ExpressionCluster;
@@ -28,7 +28,7 @@ import static com.norswap.autumn.parsing.ParsingExpressionFactory.leftRecursive;
  * top-down left-to-right walk of the graph.
  * <p>
  * The visitor is aware of pre-existent {@link LeftRecursive} an {@link ExpressionCluster} nodes and
- * does not detect already cycles anew.
+ * does not detect already broken cycles anew.
  * <p>
  * To handle these nodes, we map each expression to the recursion depth at which it occurs. We also
  * record the recursion depth of each encountered LeftRecursive / ExpressionCluster node. When
@@ -36,7 +36,7 @@ import static com.norswap.autumn.parsing.ParsingExpressionFactory.leftRecursive;
  * encountered LeftRecursive node, it means that the cycle goes through the LeftRecursive node and
  * is thus already broken; so we do not record it.
  */
-public final class LeftRecursionHandler extends GraphVisitor<ParsingExpression>
+public final class LeftRecursionVisitor extends GraphVisitor<ParsingExpression>
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -45,7 +45,7 @@ public final class LeftRecursionHandler extends GraphVisitor<ParsingExpression>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public LeftRecursionHandler(boolean replace, Predicate<ParsingExpression> nullability)
+    public LeftRecursionVisitor(boolean replace, Predicate<ParsingExpression> nullability)
     {
         this.replace = replace;
         this.nullability = nullability;

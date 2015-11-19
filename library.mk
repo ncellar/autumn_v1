@@ -1,6 +1,7 @@
 o?=dev
 LIBS?=
 OUTDIR?=out/$o
+GENDIR?=generated
 MVN_OUTPUT?=deps/fetched
 JVM_ARGS?=
 
@@ -93,12 +94,12 @@ help:
 # wildcard expansion. The wildcard must be processed by javac.
 
 build:
-	mkdir -p $(OUTDIR)
+	mkdir -p $(OUTDIR) $(GENDIR)
 	if [ -d resources ]; then cp -R resources/. $(OUTDIR); fi
-	javac -Xlint:unchecked $(DEBUG) -d $(OUTDIR) -cp "deps/jar/*" `find src $(LIBS) -name *.java`
+	javac -Xlint:unchecked $(DEBUG) -d $(OUTDIR) -s $(GENDIR) -cp "deps/jar/*" `find src $(LIBS) -name *.java`
 
 clean:
-	rm -rf $(OUTDIR)
+	rm -rf $(OUTDIR) $(GENDIR)
 
 run:
 	java -cp "$(OUTDIR)$(SEP)deps/jar/*$(SEP)$(OUTDIR)/resources" $(JVM_ARGS) $t $a

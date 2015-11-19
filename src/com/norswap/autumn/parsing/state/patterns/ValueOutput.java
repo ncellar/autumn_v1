@@ -4,14 +4,15 @@ import com.norswap.autumn.parsing.state.CustomState;
 import com.norswap.autumn.parsing.state.ParseState;
 
 /**
- * This class implements a fundamental parse state pattern: the pure output. This is a piece of
- * state which is set by a parsing expression with the intent for it to be consumed by one of its
- * parent.
+ * This class implements the pure output parse state pattern. This is a piece of state which is set
+ * by a parsing expression with the intent for it to be consumed by one of its parent.
+ * <p>
+ * This implementation assumes the state is held in an immutable value of type {@link T}.
  * <p>
  * The value can be overwritten by other expressions, but if the expression is part of a failing
  * branch, the last succeeding value will ultimately prevail.
  */
-public class Output<T> implements CustomState
+public class ValueOutput<T> implements CustomState
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
