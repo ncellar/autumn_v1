@@ -60,15 +60,7 @@ public final class Printer extends ParsingExpressionVisitor
         String data = pe.ownDataString();
 
         sink.accept(Strings.times(depth, "-|"));
-        sink.accept(pe.getClass().getSimpleName());
-        sink.accept(" (");
-        sink.accept(nameOrHashCode(pe));
-        sink.accept(")");
-
-        if (!data.isEmpty())
-        {
-            sink.accept(" [" + data + "]");
-        }
+        sink.accept(pe.toStringOneLine());
 
         if (!stack.isEmpty())
         {

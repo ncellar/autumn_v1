@@ -3,6 +3,7 @@ package com.norswap.autumn.parsing.extensions;
 import com.norswap.autumn.parsing.GrammarBuilderExtensionView;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.state.CustomState;
+import com.norswap.autumn.parsing.state.ParseState;
 
 /**
  * Interfaces that extensions to the parser must implement.
@@ -29,6 +30,20 @@ public interface Extension
      * Applies transformation to the given grammar. See {@link GrammarBuilderExtensionView}.
      */
     default void transform(GrammarBuilderExtensionView grammar) {}
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Returns the index at with the custom state for this extension can be found in {@link ParseState#customStates}.
+     * This index should be made static to the extension and must be obtained by a call to {@link
+     * CustomStateIndex#allocate}.
+     * <p>
+     * The default return value (-1) indicates the extension does not require custom state.
+     */
+    default int stateIndex()
+    {
+        return -1;
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

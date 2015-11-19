@@ -321,7 +321,7 @@ public final class ParseState
             blackStart,
             precedence,
             recordErrors,
-            Array.map(customStates, x -> x.inputs(this)));
+            Array.map(customStates, x -> x == null ? null : x.inputs(this)));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -336,7 +336,7 @@ public final class ParseState
         Array<Object> customInputs = inputs.customInputs();
         int size = customInputs.size();
         for (int i = 0; i < size; ++i) {
-            customStates[i].load(customInputs.get(i));
+            if (customStates[i] != null) customStates[i].load(customInputs.get(i));
         }
     }
 
@@ -350,7 +350,7 @@ public final class ParseState
             end,
             blackEnd,
             treeChildrenCount,
-            JArrays.map(customStates, x -> x.snapshot(this)));
+            JArrays.map(customStates, x -> x == null ? null : x.snapshot(this)));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -366,7 +366,7 @@ public final class ParseState
         tree.truncate(treeChildrenCount);
 
         for (int i = 0; i < customStates.length; i++) {
-            customStates[i].restore(snapshot.customSnapshots[i], this);
+            if (customStates[i] != null) customStates[i].restore(snapshot.customSnapshots[i], this);
         }
     }
 
@@ -379,7 +379,7 @@ public final class ParseState
         treeChildrenCount   = snapshot.treeChildrenCount;
 
         for (int i = 0; i < customStates.length; ++i) {
-            customStates[i].uncommit(snapshot.customSnapshots[i], this);
+            if (customStates[i] != null) customStates[i].uncommit(snapshot.customSnapshots[i], this);
         }
     }
 
@@ -392,7 +392,7 @@ public final class ParseState
         tree.truncate(treeChildrenCount);
 
         for (CustomState state: customStates) {
-            state.discard(this);
+            if (state != null) state.discard(this);
         }
     }
 
@@ -405,7 +405,7 @@ public final class ParseState
         treeChildrenCount = tree.childrenCount();
 
         for (CustomState state: customStates)  {
-            state.commit(this);
+            if (state != null) state.commit(this);
         }
     }
 
@@ -418,7 +418,7 @@ public final class ParseState
             blackEnd,
             tree.children.copyFromIndex(treeChildrenCount),
 
-            Array.map(customStates, x -> x.extract(this)));
+            Array.map(customStates, x -> x == null ? null : x.extract(this)));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -434,7 +434,7 @@ public final class ParseState
 
         int size = changes.customChanges.size();
         for (int i = 0; i < size; ++i)  {
-            customStates[i].merge(changes.customChanges.get(i), this);
+            if (customStates[i] != null) customStates[i].merge(changes.customChanges.get(i), this);
         }
     }
 

@@ -1,11 +1,11 @@
 package com.norswap.autumn.parsing;
 
-import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.graph.Copier;
 import com.norswap.autumn.parsing.graph.Nullability;
 import com.norswap.autumn.parsing.graph.Printer;
+import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.util.DeepCopy;
-
+import static java.lang.String.format;
 import java.util.function.Predicate;
 
 /**
@@ -88,8 +88,8 @@ public abstract class ParsingExpression implements DeepCopy
     public final String nameOrHashcode()
     {
         return name != null
-            ? name + " - " + String.format("%X", hashCode())
-            : String.format("%X", hashCode());
+            ? name + " - " + format("%X", hashCode())
+            : format("%X", hashCode());
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -100,7 +100,11 @@ public abstract class ParsingExpression implements DeepCopy
      */
     public final String toStringOneLine()
     {
-        return String.format("%s (%s)", getClass().getSimpleName(), nameOrHashcode());
+        String data = ownDataString();
+        return format("%s (%s)%s",
+            getClass().getSimpleName(),
+            nameOrHashcode(),
+            data.isEmpty() ? "" : format(" [%s]", data));
     }
 
     // ---------------------------------------------------------------------------------------------

@@ -116,15 +116,29 @@ public final class GrammarBuilder implements GrammarBuilderExtensionView
             transform(new ReferenceResolver());
         }
 
+        Extension leftrec = null;
+        Extension cluster = null;
+
         if (defaultExtensions)
         {
-            withExtension(new LeftRecursionExtension());
-            withExtension(new ClusterExtension());
+            leftrec = new LeftRecursionExtension();
+            cluster = new ClusterExtension();
+
+            // Default extensions must be added first. Especially leftrec, so that other extensions
+            // can see the LeftRecursive nodes.
+            leftrec.transform(this);
+            cluster.transform(this);
         }
 
         for (Extension extension: extensions)
         {
             extension.transform(this);
+        }
+
+        if (defaultExtensions)
+        {
+            extensions.add(leftrec);
+            extensions.add(cluster);
         }
 
         return new Grammar(root, rules, whitespace, processLeadingWhitespace, extensions);

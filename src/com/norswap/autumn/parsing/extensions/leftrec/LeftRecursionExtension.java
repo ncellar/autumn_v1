@@ -4,7 +4,7 @@ import com.norswap.autumn.parsing.GrammarBuilderExtensionView;
 import com.norswap.autumn.parsing.extensions.Extension;
 import com.norswap.autumn.parsing.graph.NullabilityCalculator;
 import com.norswap.autumn.parsing.state.CustomState;
-import com.norswap.autumn.parsing.state.CustomStateIndex;
+import com.norswap.autumn.parsing.extensions.CustomStateIndex;
 
 /**
  * Extension enabling left-recursion in the grammar. The extension automatically detect and breaks
@@ -34,6 +34,14 @@ public final class LeftRecursionExtension implements Extension
 
         LeftRecursionVisitor handler = new LeftRecursionVisitor(true, calc);
         grammar.transform(handler);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public int stateIndex()
+    {
+        return INDEX;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

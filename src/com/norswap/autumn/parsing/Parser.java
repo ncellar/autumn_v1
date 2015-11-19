@@ -30,8 +30,6 @@ public final class Parser implements Cloneable
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private final @Immutable Map<Class<? extends Extension>, Integer> indices = new HashMap<>();
-
     private ParseState state;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -44,12 +42,6 @@ public final class Parser implements Cloneable
         this.config = config;
         this.whitespace = grammar.whitespace;
         this.processLeadingWhitespace = grammar.processLeadingWhitespace;
-
-        int size = grammar.extensions.size();
-        for (int i = 0; i < size; ++i)
-        {
-            indices.put(grammar.extensions.get(i).getClass(), i);
-        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,10 +61,21 @@ public final class Parser implements Cloneable
      */
     public ParseResult parse(ParseInputs inputs)
     {
+        Array<CustomState> indexedStates = new Array<>();
+
+        for (Extension extension: grammar.extensions)
+        {
+            int index = extension.stateIndex();
+
+            if (index != -1) {
+                indexedStates.put(index, extension.customParseState());
+            }
+        }
+
         state = new ParseState(
             config.errorState(),
             config.memoHandler(),
-            grammar.extensions.mapToArray(Extension::customParseState, CustomState[]::new));
+            indexedStates.toArray(CustomState[]::new));
 
         if (inputs != null)
         {
@@ -91,7 +94,7 @@ public final class Parser implements Cloneable
             state.end >= 0,
             state.end,
             state.tree.build(),
-            Array.map(state.customStates, x -> x.extract(state)),
+            Array.map(state.customStates, x -> x == null ? null : x.extract(state)),
             state.errors.report(source));
 
         if (state.end < 0)
@@ -101,19 +104,6 @@ public final class Parser implements Cloneable
 
         state = null;
         return out;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Returns the custom state associated with the given extension. This is generally called from a
-     * custom parsing expression to acquire a reference to the relevant custom state on-demand. The
-     * returned state should be cached to avoid the lookup overhead.
-     */
-    @SuppressWarnings("unchecked")
-    public <T extends CustomState> T state(Class<? extends Extension> klass)
-    {
-        return (T) state.customStates[indices.get(klass)];
     }
 
     // ---------------------------------------------------------------------------------------------

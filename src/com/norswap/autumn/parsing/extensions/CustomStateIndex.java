@@ -1,4 +1,4 @@
-package com.norswap.autumn.parsing.state;
+package com.norswap.autumn.parsing.extensions;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
