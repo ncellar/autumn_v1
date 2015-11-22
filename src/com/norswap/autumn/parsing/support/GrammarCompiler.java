@@ -7,7 +7,6 @@ import com.norswap.autumn.parsing.Whitespace;
 import com.norswap.autumn.parsing.extensions.cluster.ExpressionCluster.Group;
 import com.norswap.autumn.parsing.extensions.cluster.Filter;
 import com.norswap.autumn.parsing.ParsingExpression;
-import com.norswap.autumn.parsing.ParsingExpressionFactory;
 import com.norswap.autumn.parsing.expressions.Reference;
 import com.norswap.util.Array;
 import com.norswap.util.Streams;
@@ -28,10 +27,9 @@ public final class GrammarCompiler
     @FunctionalInterface
     private interface Grouper extends Function<ParsingExpression[], ParsingExpression> {}
 
-    private static ParsingExpressionFactory F = new ParsingExpressionFactory();
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    private Array<ParsingExpression> rules = new Array<>();
     private Array<ParsingExpression> namedClusterAlternates = new Array<>();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -52,82 +50,111 @@ public final class GrammarCompiler
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * TODO edit
      * Takes the parse tree obtained from a grammar file, and return an array of parsing
      * expressions, corresponding to the grammar rules defined in the grammar.
-     *
+     * <p>
      * Note that the references inside these expressions are not resolved.
      */
     public Array<ParsingExpression> run(ParseTree tree)
     {
-        Array<ParsingExpression> out = new Array<>(
-            Streams.from(tree.group("rules"))
-                .map(this::compileRule).toArray(ParsingExpression[]::new));
-
-        out.addAll(namedClusterAlternates);
-        return out;
+        tree.group("decls").forEach(this::compileDeclaration);
+        // TODO ?
+        rules.addAll(namedClusterAlternates);
+        return rules;
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    private ParsingExpression compileRule(ParseTree rule)
+    private void compileDeclaration(ParseTree declaration)
     {
-        ParsingExpression topChoice = rule.has("cluster")
-            ? compileCluster(rule.value("ruleName"), rule.get("cluster"))
-            : compilePE(rule.get("expr").child());
-
-        return decorateAssignment(rule, topChoice);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    private ParsingExpression decorateAssignment(ParseTree assignment, ParsingExpression pe)
-    {
-        if (assignment.has("dumb"))
+        if (declaration.hasTag("rule"))
         {
-            pe = dumb(pe);
+            compileRule(declaration);
         }
-
-        if (assignment.has("token"))
+        else if (declaration.hasTag("declSyntaxDef"))
         {
-            pe = token(pe);
+            // TODO
         }
-
-        String ruleName = assignment.value("ruleName");
-        pe = compileCapture(ruleName, pe, assignment.group("captureSuffixes"));
-        return named$(ruleName, pe);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    private ParsingExpression compileOneOrGroup(
-        Compiler itemCompiler, Grouper grouper, ParseTree tree)
-    {
-        if (tree.children().size() == 1)
+        else if (declaration.hasTag("exprSyntaxDef"))
         {
-            return itemCompiler.apply(tree.child());
+            // TODO
         }
         else
         {
-            return grouper.apply(Streams.from(tree)
-                .map(itemCompiler)
-                .toArray(ParsingExpression[]::new));
+            error("Unknown top-level declaration: %s", declaration);
+        }
+    }
+    // ---------------------------------------------------------------------------------------------
+
+    private void compileRule(ParseTree rule)
+    {
+        ParseTree lhs = rule.get("lhs");
+        ParseTree rhs = rule.get("rhs");
+        ParsingExpression pe;
+
+        if (rhs.hasTag("parsingExpression"))
+        {
+            pe = compilePE(rhs.child());
+            pe = decorateRule(lhs, pe);
+            rules.add(pe);
+        }
+        else if (rhs.hasTag("exprCluster"))
+        {
+            Array<ParsingExpression> namedAlternates = new Array<>();
+
+            pe = compileCluster(rhs, namedAlternates);
+            pe = decorateRule(lhs, pe);
+
+            for (ParsingExpression alt: namedAlternates)
+            {
+                alt = named$(pe.name + "." + alt.name, alt);
+                namedClusterAlternates.push(alt);
+            }
+
+            rules.add(pe);
+        }
+        else
+        {
+            error("Unknown rule right-hand side: %s", rule);
         }
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    private ParsingExpression compileCluster(String clusterName, ParseTree expression)
+    private ParsingExpression decorateRule(ParseTree lhs, ParsingExpression pe)
     {
-        Array<Group> groups = new Array<>(group(1, false, false));
+        if (lhs.has("dumb"))
+            pe = dumb(pe);
+
+        if (lhs.has("token"))
+            pe = token(pe);
+
+        String ruleName = lhs.value("ruleName");
+
+        return named$(ruleName,
+            compileCapture(ruleName, pe, lhs.group("captureSuffixes")));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private ParsingExpression compileCluster(
+        ParseTree expression,
+        Array<ParsingExpression> outNamedAlternates)
+    {
+        // Current precedence level, alternates being collected, and group where the alternates
+        // must be added.
         int precedence = 1;
         Array<ParsingExpression> alts = new Array<>();
+        Array<Group> groups = new Array<>(group(1, false, false));
 
-        for (ParseTree alt: expression.group("alts"))
+        for (ParseTree entry: expression.group("entries"))
         {
-            if (alt.hasTag("directive"))
+            if (entry.hasTag("clusterDirective"))
             {
                 if (!alts.isEmpty())
                 {
+                    // Add the alternates to the current group and prepare for the next group.
                     groups.peek().operands = alts.toArray(ParsingExpression[]::new);
                     alts = new Array<>();
                     ++precedence;
@@ -137,7 +164,7 @@ public final class GrammarCompiler
                     groups.pop();
                 }
 
-                switch (alt.value)
+                switch (entry.value)
                 {
                     case "@+":
                         groups.push(group(precedence, false, false));
@@ -152,33 +179,31 @@ public final class GrammarCompiler
                         break;
 
                     default:
-                        throw new Error("unknown directive");
+                        error("Unknown cluster directive: %s", entry);
+                }
+            }
+            else if (entry.hasTag("clusterArrow"))
+            {
+                ParsingExpression pe = compilePE(entry.get("expr").child());
+
+                if (entry.has("lhs"))
+                {
+                    pe = decorateRule(entry.get("lhs"), pe);
+                    outNamedAlternates.push(pe);
                 }
 
-                continue;
+                alts.push(pe);
             }
-
-            // arrows
-
-            ParsingExpression pe = compilePE(alt.get("expr").child());
-
-            if (alt.has("ruleName"))
+            else
             {
-                pe = decorateAssignment(alt, pe);
-                pe = named$(clusterName + "." + pe.name, pe);
-
-                namedClusterAlternates.push(pe);
+                error("Unknown cluster entry: %s", entry);
             }
-
-            alts.push(pe);
         }
 
-        if (!alts.isEmpty())
-        {
+        if (!alts.isEmpty()) {
             groups.peek().operands = alts.toArray(ParsingExpression[]::new);
         }
-        else
-        {
+        else {
             groups.pop();
         }
 
@@ -232,8 +257,7 @@ public final class GrammarCompiler
 
         if (expr == null)
         {
-            throw new RuntimeException(
-                "Dollar ($) capture name used in conjuction with a marker.");
+            error("Dollar ($) capture name used in conjuction with a marker.");
         }
 
         if (expr instanceof Filter)
@@ -243,8 +267,7 @@ public final class GrammarCompiler
 
         if (!(expr instanceof Reference))
         {
-            throw new RuntimeException(
-                "Dollar ($) capture name is a suffix of something which is not an identifier");
+            error("Dollar ($) capture name is a suffix of something which is not an identifier");
         }
 
         return ((Reference)expr).target;
@@ -257,8 +280,10 @@ public final class GrammarCompiler
      * <p>
      * If the child field is null, this is a marker capture.
      */
-    private ParsingExpression compileCapture
-        (String name, ParsingExpression child, List<ParseTree> suffixes)
+    private ParsingExpression compileCapture(
+        String ruleName,
+        ParsingExpression child,
+        List<ParseTree> suffixes)
     {
         boolean first = true;
 
@@ -278,27 +303,27 @@ public final class GrammarCompiler
                 case "capture":
                     if (!first)
                     {
-                        throw new RuntimeException("Capture suffix (:) not appearing as first suffix.");
+                        error("Capture suffix (:) not appearing as first suffix.");
                     }
                     out = capture(suffix.has("captureText"), out);
                     break;
 
                 case "accessor":
-                    out = accessor$(name(name, child, suffix), out);
+                    out = accessor$(name(ruleName, child, suffix), out);
                     ++accessors;
                     break;
 
                 case "group":
-                    out = group$(name(name, child, suffix), out);
+                    out = group$(name(ruleName, child, suffix), out);
                     ++accessors;
                     break;
 
                 case "tag":
-                    out = tag$(name(name, child, suffix), out);
+                    out = tag$(name(ruleName, child, suffix), out);
                     break;
 
                 default:
-                    throw new RuntimeException("Unknown capture type: " + suffix.accessor);
+                    error("Unknown capture type: %s", suffix.accessor);
             }
 
             first = false;
@@ -306,7 +331,7 @@ public final class GrammarCompiler
 
         if (accessors > 1)
         {
-            throw new RuntimeException("More than one accessor or group specification.");
+            error("More than one accessor or group specification.");
         }
 
         return out;
@@ -406,8 +431,22 @@ public final class GrammarCompiler
                 return literal(unescape(tree.value("literal")));
 
             default:
-                throw new RuntimeException("Parsing expression with unknown name: " + tree.accessor);
+                error("Parsing expression with unknown name: %s", tree.accessor);
+                return null; // unreachable
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private void error(String format, Object... items)
+    {
+        for (int i = 0; i < items.length; ++i)
+        {
+            if (items[i] instanceof ParseTree)
+                items[i] = ((ParseTree) items[i]).nodeToString();
+        }
+
+        throw new RuntimeException(String.format(format, items));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

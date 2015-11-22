@@ -15,34 +15,34 @@ public final class GrammarGrammar
 
     // TOKENS
 
-    and         = tok("&"),
-    bang        = tok("!"),
-    equal       = tok("="),
-    plus        = tok("+"),
-    qMark       = tok("?"),
-    colon       = tok(":"),
-    semi        = tok(";"),
-    slash       = tok("/"),
-    star        = tok("*"),
-    tilda       = tok("~"),
-    lBrace      = tok("{"),
-    rBrace      = tok("}"),
-    lParen      = tok("("),
-    rParen      = tok(")"),
-    underscore  = tok("_"),
-    starPlus    = tok("*+"),
-    plusPlus    = tok("++"),
-    arrow       = tok("->"),
-    lAnBra      = tok("<"),
-    rAnBra      = tok(">"),
-    comma       = tok(","),
-    commaPlus   = tok(",+"),
-    minus       = tok("-"),
-    hash        = tok("#"),
-    dollar      = tok("$"),
-    dot         = tok("."),
-    percent     = tok("%"),
-    hat         = tok("^"),
+    and         = strtok("&"),
+    bang        = strtok("!"),
+    equal       = strtok("="),
+    plus        = strtok("+"),
+    qMark       = strtok("?"),
+    colon       = strtok(":"),
+    semi        = strtok(";"),
+    slash       = strtok("/"),
+    star        = strtok("*"),
+    tilda       = strtok("~"),
+    lBrace      = strtok("{"),
+    rBrace      = strtok("}"),
+    lParen      = strtok("("),
+    rParen      = strtok(")"),
+    underscore  = strtok("_"),
+    starPlus    = strtok("*+"),
+    plusPlus    = strtok("++"),
+    arrow       = strtok("->"),
+    lAnBra      = strtok("<"),
+    rAnBra      = strtok(">"),
+    comma       = strtok(","),
+    commaPlus   = strtok(",+"),
+    minus       = strtok("-"),
+    hash        = strtok("#"),
+    dollar      = strtok("$"),
+    dot         = strtok("."),
+    percent     = strtok("%"),
+    hat         = strtok("^"),
 
     // NAMES AND LITERALS
 
@@ -59,7 +59,7 @@ public final class GrammarGrammar
         = choice(letter, digit, literal("_")),
 
     num
-        = token(oneMore(digit)),
+        = named$("num", token(oneMore(digit))),
 
     exprLit     = keyword("expr"),
     dropLit     = keyword("drop"),
@@ -87,6 +87,9 @@ public final class GrammarGrammar
     identifier
         = sequence(not(reserved), letter, zeroMore(nameChar)),
 
+    qualifiedIdentifier
+        = aloSeparated(identifier, dot),
+
     escapedIdentifier
         = sequence(literal("'"), aloUntil(any(), literal("'"))),
 
@@ -98,47 +101,52 @@ public final class GrammarGrammar
 
     // PARSING EXPRESSIONS
 
-    range       = named$("range", token(
-        literal("["),
-        captureText("first", character),
-        literal("-"),
-        captureText("last", character),
-        literal("]"))),
+    range
+        = named$("range", token(
+            literal("["),
+            captureText("first", character),
+            literal("-"),
+            captureText("last", character),
+            literal("]"))),
 
-    charSet     = named$("charSet", token(
-                    literal("["),
-                    captureText("charSet", oneMore(
-                        not(literal("]")),
-                        character)),
-                    literal("]"))),
+    charSet
+        = named$("charSet", token(
+            literal("["),
+            captureText("charSet", oneMore(
+                not(literal("]")),
+                character)),
+            literal("]"))),
 
-    notCharSet  = named$("notCharSet", token(
-        literal("^["),
-        captureText("notCharSet", oneMore(not(literal("]"), character))),
-        literal("]"))),
+    notCharSet
+        = named$("notCharSet", token(
+            literal("^["),
+            captureText("notCharSet", oneMore(not(literal("]"), character))),
+            literal("]"))),
 
-    stringLit   = named$("stringLit", token(
-                    literal("\""),
-                    captureText("literal", zeroMore(not(literal("\"")), character)),
-                    literal("\""))),
+    stringLit
+        = named$("stringLit", token(
+            literal("\""),
+            captureText("literal", zeroMore(not(literal("\"")), character)),
+            literal("\""))),
 
-    reference   = sequence(
-        captureText("name", name),
-        optional(
-            token("allow"),
-            lBrace,
-            aloSeparated(captureTextGrouped("allowed", name), comma),
-            rBrace),
-        optional(
-            token("forbid"),
-            lBrace,
-            aloSeparated(captureTextGrouped("forbidden", name), comma),
-            rBrace)),
+    reference
+        = sequence(
+            captureText("name", name),
+            optional(
+                strtok("allow"),
+                lBrace,
+                aloSeparated(captureTextGrouped("allowed", name), comma),
+                rBrace),
+            optional(
+                strtok("forbid"),
+                lBrace,
+                aloSeparated(captureTextGrouped("forbidden", name), comma),
+                rBrace)),
 
     captureSuffix
         = group$("captureSuffixes", capture(choice(
         capture("capture",
-            token(literal(":"), optional(capture("captureText", literal("+"))))),
+            token(sequence(literal(":"), optional(capture("captureText", literal("+")))))),
         capture("accessor",
             sequence(minus, nameOrDollar)),
         capture("group",
@@ -146,12 +154,12 @@ public final class GrammarGrammar
         capture("tag",
             sequence(tilda, nameOrDollar))))),
 
-    expr = reference("expr"),
+    expr = reference("parsingExpression"),
 
     // EXPRESSIONS
 
     parsingExpression
-        = named$("expr", cluster(
+        = named$("parsingExpression", cluster(
 
         // NOTE(norswap)
         // Using left associativity for choice and sequence ensures that sub-expressions
@@ -197,47 +205,71 @@ public final class GrammarGrammar
         // RULES & CLUSTERS
 
         ruleLeftHandSide =
-            named$("ruleLeftHandSide", sequence(
+            named$("ruleLeftHandSide", capture(sequence(
                 captureText("ruleName", name),
                 zeroMore(captureSuffix),
                 optional(capture("dumb", hat)),
                 optional(capture("token", percent)),
-                equal)),
+                equal))),
+
+        lhs =
+            accessor$("lhs", ruleLeftHandSide),
 
         clusterArrow =
-            named$("arrow", tag$("arrow", capture(sequence(
+            nametag$("clusterArrow", capture(sequence(
                 arrow,
-                optional(ruleLeftHandSide),
-                capture("expr", forbid$(parsingExpression, reference("choice"))))))),
+                optional(lhs),
+                capture("expr", forbid$(parsingExpression, reference("choice")))))),
 
         clusterDirective =
-            named$("directive", tag$("directive", captureText(choice(
+            nametag$("clusterDirective", captureText(choice(
                     keyword("@+"),
                     keyword("@+_left_assoc"),
-                    keyword("@+_left_recur"))))),
-
-        // TOP LEVEL
+                    keyword("@+_left_recur")))),
 
         exprCluster =
-            named$("cluster", capture("cluster", sequence(
+            nametag$("exprCluster", capture(
                 exprLit,
-                oneMore(group$("alts", choice(clusterArrow, clusterDirective)))))),
+                group$("entries", oneMore(choice(clusterArrow, clusterDirective))))),
 
-        syntaxDef = null,
+        // SYNTAX EXTENSIONS
+
+        syntaxRhs =
+            null,
+
+        // TOP LEVEL DECLARATIONS
+
+        declSyntaxDef =
+            nametag$("declSyntaxDef",
+                sequence(keyword("decl"), keyword("syntax"), equal, qualifiedIdentifier)),
+
+        exprSyntaxDef =
+            nametag$("declSyntaxDef",
+                sequence(keyword("expr"), keyword("syntax"), equal, qualifiedIdentifier)),
 
         rule =
-            named$("rule", sequence(
-                ruleLeftHandSide,
-                choice(
-                    //syntaxDef,
+            nametag$("rule", capture(
+                lhs,
+                accessor$("rhs", choice(
                     exprCluster,
-                    capture("expr", parsingExpression)),
+                    tag$("parsingExpression", capture(parsingExpression)))))),
+
+        decl =
+            named$("decl", sequence(
+                choice(rule, declSyntaxDef, exprSyntaxDef),
                 semi)),
 
         root =
-            named$("grammar", oneMore(captureGrouped("rules", rule)));
+            named$("grammar", group$("decls", oneMore(decl)));
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private static ParsingExpression nametag$(String string, ParsingExpression pe)
+    {
+        return named$(string, tag$(string, pe));
+    }
+
+    // ---------------------------------------------------------------------------------------------
 
     private static ParsingExpression keyword(String string)
     {
@@ -246,7 +278,7 @@ public final class GrammarGrammar
 
     // ---------------------------------------------------------------------------------------------
 
-    private static ParsingExpression tok(String string)
+    private static ParsingExpression strtok(String string)
     {
         return named$(string, token(string));
     }

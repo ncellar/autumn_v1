@@ -15,6 +15,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  * An enriched version of {@link java.util.ArrayList}.
@@ -148,11 +149,18 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
     /**
      * Creates a new array containing all the items iterated over by the passed iterable.
      */
-    public static <T> Array<T> from(Iterable<? extends T> iterable)
+    public static <T> Array<T> fromIterable(Iterable<? extends T> iterable)
     {
         Array<T> out = new Array<>();
         out.addAll(iterable);
         return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static <T> Array<T> fromStream(Stream<T> stream)
+    {
+        return fromUnsafe(stream.toArray(Object[]::new));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -253,6 +261,22 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
         return out;
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Return an array which is a concatenation of all the given arrays.
+     */
+    public static <T> Array<T> concat(Array<? extends Array<? extends T>> arrays)
+    {
+        Array<T> out = new Array<>();
+
+        for (Array<? extends T> array: arrays)
+        {
+            out.addAll(array);
+        }
+
+        return out;
+    }
 
     // ---------------------------------------------------------------------------------------------
 
@@ -636,6 +660,28 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
         }
 
         return size != next;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Like {@link #addAll(Collection)}, but for java arrays.
+     * <p>
+     * If {@code array} is null, it will be treated as empty.
+     */
+    public boolean addAll(T[] array)
+    {
+        int dstPos = next;
+        int size = array == null ? 0 : array.length;
+
+        if (size == 0)
+        {
+            return false;
+        }
+
+        ensureSize(next + size);
+        copy(array, 0, dstPos, size);
+        return true;
     }
 
     // ---------------------------------------------------------------------------------------------

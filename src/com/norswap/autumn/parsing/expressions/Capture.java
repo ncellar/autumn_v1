@@ -6,9 +6,9 @@ import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.expressions.abstrakt.UnaryParsingExpression;
 import com.norswap.autumn.parsing.tree.BuildParseTree;
 import com.norswap.util.Array;
-import com.norswap.util.annotations.NonNull;
 
 import static com.norswap.autumn.parsing.ParsingExpressionFlags.*; // PEF_*
+import com.norswap.util.annotations.NonNull;
 
 /**
  * Invokes its operand on the input, succeeding if the operand does, with the same end position.
@@ -27,14 +27,35 @@ public final class Capture extends UnaryParsingExpression
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public String accessor;
+    public String kind;
     public Array<String> tags;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public Capture(ParsingExpression operand, String accessor, @NonNull Array<String> tags, int flags)
+    public Capture(
+        ParsingExpression operand,
+        String accessor,
+        String kind,
+        @NonNull Array<String> tags,
+        int flags)
     {
         this.operand = operand;
         this.accessor = accessor;
+        this.kind = kind;
+        this.tags = tags;
+        this.flags = flags;
+    }
+
+    // TODO tmp without kind
+    public Capture(
+        ParsingExpression operand,
+        String accessor,
+        @NonNull Array<String> tags,
+        int flags)
+    {
+        this.operand = operand;
+        this.accessor = accessor;
+        this.kind = kind;
         this.tags = tags;
         this.flags = flags;
     }
@@ -138,16 +159,6 @@ public final class Capture extends UnaryParsingExpression
         return String.format("accessor: %s, tags: %s, capture: %s",
             accessor, tags,
             shouldCaptureText() ? "text" : shouldGroup() ? "group" : shouldCapture());
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    @Override
-    public ParsingExpression[] children()
-    {
-        return operand != null
-            ? super.children()
-            : new ParsingExpression[0];
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

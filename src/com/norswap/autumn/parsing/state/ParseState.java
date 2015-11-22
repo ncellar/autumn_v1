@@ -416,8 +416,7 @@ public final class ParseState
         return new ParseChanges(
             end,
             blackEnd,
-            tree.children.copyFromIndex(treeChildrenCount),
-
+            tree.childrenFromIndex(treeChildrenCount),
             Array.map(customStates, x -> x == null ? null : x.extract(this)));
     }
 

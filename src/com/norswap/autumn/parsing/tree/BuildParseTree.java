@@ -1,6 +1,7 @@
 package com.norswap.autumn.parsing.tree;
 
 import com.norswap.util.Array;
+import com.norswap.util.annotations.NonNull;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -18,11 +19,13 @@ public final class BuildParseTree
 
     public String accessor;
 
-    public Array<String> tags;
+    public String kind;
 
     public String value;
 
-    public Array<BuildParseTree> children;
+    public Array<String> tags;
+
+    private final @NonNull Array<BuildParseTree> children;
 
     public BuildParseTree wrappee;
 
@@ -34,6 +37,7 @@ public final class BuildParseTree
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    // CHILDREN DELEGATION
 
     public int childrenCount()
     {
@@ -44,11 +48,6 @@ public final class BuildParseTree
 
     public void add(BuildParseTree child)
     {
-        if (children == null)
-        {
-            children = new Array<>();
-        }
-
         children.add(child);
     }
 
@@ -56,11 +55,6 @@ public final class BuildParseTree
 
     public void addAll(Array<BuildParseTree> array)
     {
-        if (children == null)
-        {
-            children = new Array<>();
-        }
-
         children.addAll(array);
     }
 
@@ -86,6 +80,13 @@ public final class BuildParseTree
     }
 
     // ---------------------------------------------------------------------------------------------
+
+    public Array<BuildParseTree> childrenFromIndex(int i)
+    {
+        return children.copyFromIndex(i);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public ParseTree build()
     {
@@ -115,6 +116,7 @@ public final class BuildParseTree
             : new ParseTree(
                 accessor,
                 value,
+                null, // TODO kind
                 tagSet == null ? Collections.emptySet() : new LinkedHashSet<>(tagSet),
                 children == null ? Array.empty() : children.map(BuildParseTree::build));
     }

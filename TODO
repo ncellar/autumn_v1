@@ -1,10 +1,15 @@
 --------------------------------------------------------------------------------
 TODO NOW
 
-    - more common parse state patterns
-        - look for more
+    - finish capture system overhaul
+        - currently working in BuildParseTree
 
-    - grammar syntax changes
+    - extensions can define syntactic extension
+        - declarations: decl <name> <pe> ;
+        - expressions: `<name> { <pe> }
+
+        - isolate syntax of clusters in extension?
+
         - tokenizer X =
         - how to set the current tokenizer?
             `tokenizer(X)`
@@ -24,8 +29,6 @@ TODO NOW
         - dumb operator
             `fast(X)`
         - remove ^= and %= operators
-        - how to extend toplevel syntax
-        - syntax X = <java operator> ;
 
     - tokenizers
         - token PE linked to a tokenizer + type
@@ -83,6 +86,12 @@ TODO FURTHER SMALL
     - repeating locators (which can locate multiple locations if invoked repeatedly)
 
     - better string printing for short expressions
+
+    - add a "kind" field to parse trees?
+
+    - reorganize imports
+
+    - more common parse state patterns
 
 TODO FURTHER BIG
 

@@ -33,6 +33,13 @@ public final class ParsingExpressionFactory
 
     // ---------------------------------------------------------------------------------------------
 
+    public static Capture capture(ParsingExpression... seq)
+    {
+        return capture(sequence(seq));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     public static Capture captureText(ParsingExpression operand)
     {
         return new Capture(operand, null, Array.empty(), PEF_CAPTURE | PEF_CAPTURE_TEXT);
