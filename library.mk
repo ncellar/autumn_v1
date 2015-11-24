@@ -105,7 +105,7 @@ run:
 	java -cp "$(OUTDIR)$(SEP)deps/jar/*$(SEP)$(OUTDIR)/resources" $(JVM_ARGS) $t $a
 
 trace:
-	java -cp "$(OUTDIR)$(SEP)deps/*$(SEP)$(OUTDIR)/resources" -agentlib:hprof=cpu=samples $t $a
+	java -cp "$(OUTDIR)$(SEP)deps/*$(SEP)$(OUTDIR)/resources" -agentlib:hprof=cpu=samples,interval=1 $t $a
 
 fetch:
 	mkdir -p $(MVN_OUTPUT)

@@ -13,7 +13,6 @@ import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.state.errors.DefaultErrorState;
 import com.norswap.autumn.parsing.state.errors.ErrorState;
 import com.norswap.util.Array;
-import com.norswap.util.JArrays;
 
 /**
  * An instance of this class is passed to every parsing expression invocation {@link
@@ -344,13 +343,19 @@ public final class ParseState
 
     public ParseStateSnapshot snapshot()
     {
+        Object[] snapshots = new Object[customStates.length];
+
+        for (int i = 0; i < customStates.length; ++i)
+            if (customStates[i] != null)
+                snapshots[i] = customStates[i].snapshot(this);
+
         return new ParseStateSnapshot(
             start,
             blackStart,
             end,
             blackEnd,
             treeChildrenCount,
-            JArrays.map(customStates, x -> x == null ? null : x.snapshot(this)));
+            snapshots);
     }
 
     // ---------------------------------------------------------------------------------------------
