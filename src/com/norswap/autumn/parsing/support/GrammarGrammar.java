@@ -2,7 +2,6 @@ package com.norswap.autumn.parsing.support;
 
 import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParsingExpression;
-
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
 
 public final class GrammarGrammar
@@ -135,16 +134,16 @@ public final class GrammarGrammar
             optional(
                 strtok("allow"),
                 lBrace,
-                aloSeparated(captureTextGrouped("allowed", name), comma),
+                aloSeparated(captureText($(group("allowed")), name), comma),
                 rBrace),
             optional(
                 strtok("forbid"),
                 lBrace,
-                aloSeparated(captureTextGrouped("forbidden", name), comma),
+                aloSeparated(captureText($(group("forbidden")), name), comma),
                 rBrace)),
 
     captureSuffix
-        = group$("captureSuffixes", capture(choice(
+        = capture($(group("captureSuffixes")), choice(
         capture("capture",
             token(sequence(literal(":"), optional(capture("captureText", literal("+")))))),
         capture("accessor",
@@ -152,7 +151,7 @@ public final class GrammarGrammar
         capture("group",
             sequence(hash, nameOrDollar)),
         capture("tag",
-            sequence(tilda, nameOrDollar))))),
+            sequence(tilda, nameOrDollar)))),
 
     expr = reference("parsingExpression"),
 
@@ -204,33 +203,30 @@ public final class GrammarGrammar
 
         // RULES & CLUSTERS
 
-        ruleLeftHandSide =
-            named$("ruleLeftHandSide", capture(sequence(
+        lhs =
+            named$("lhs", capture("lhs", sequence(
                 captureText("ruleName", name),
                 zeroMore(captureSuffix),
                 optional(capture("dumb", hat)),
                 optional(capture("token", percent)),
                 equal))),
 
-        lhs =
-            accessor$("lhs", ruleLeftHandSide),
-
         clusterArrow =
-            nametag$("clusterArrow", capture(sequence(
+            nametag("clusterArrow", sequence(
                 arrow,
                 optional(lhs),
-                capture("expr", forbid$(parsingExpression, reference("choice")))))),
+                capture("expr", forbid$(parsingExpression, reference("choice"))))),
 
         clusterDirective =
-            nametag$("clusterDirective", captureText(choice(
+            nametagText("clusterDirective", choice(
                     keyword("@+"),
                     keyword("@+_left_assoc"),
-                    keyword("@+_left_recur")))),
+                    keyword("@+_left_recur"))),
 
         exprCluster =
-            nametag$("exprCluster", capture(
+            nametag("exprCluster", sequence(
                 exprLit,
-                group$("entries", oneMore(choice(clusterArrow, clusterDirective))))),
+                group("entries", oneMore(choice(clusterArrow, clusterDirective))))),
 
         // SYNTAX EXTENSIONS
 
@@ -240,19 +236,19 @@ public final class GrammarGrammar
         // TOP LEVEL DECLARATIONS
 
         declSyntaxDef =
-            nametag$("declSyntaxDef",
+            nametag("declSyntaxDef",
                 sequence(keyword("decl"), keyword("syntax"), equal, qualifiedIdentifier)),
 
         exprSyntaxDef =
-            nametag$("declSyntaxDef",
+            nametag("declSyntaxDef",
                 sequence(keyword("expr"), keyword("syntax"), equal, qualifiedIdentifier)),
 
         rule =
-            nametag$("rule", capture(
+            nametag("rule", sequence(
                 lhs,
-                accessor$("rhs", choice(
+                accessor("rhs", choice(
                     exprCluster,
-                    tag$("parsingExpression", capture(parsingExpression)))))),
+                    tag("parsingExpression", capture(parsingExpression)))))),
 
         decl =
             named$("decl", sequence(
@@ -260,13 +256,20 @@ public final class GrammarGrammar
                 semi)),
 
         root =
-            named$("grammar", group$("decls", oneMore(decl)));
+            named$("grammar", group("decls", oneMore(decl)));
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static ParsingExpression nametag$(String string, ParsingExpression pe)
+    private static ParsingExpression nametag(String string, ParsingExpression pe)
     {
-        return named$(string, tag$(string, pe));
+        return named$(string, capture($(tag(string)), pe));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private static ParsingExpression nametagText(String string, ParsingExpression pe)
+    {
+        return named$(string, captureText($(tag(string)), pe));
     }
 
     // ---------------------------------------------------------------------------------------------

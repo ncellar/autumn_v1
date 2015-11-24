@@ -2,8 +2,11 @@ package com.norswap.autumn.parsing.support;
 
 import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.GrammarBuilder;
-import com.norswap.autumn.parsing.tree.ParseTree;
 import com.norswap.autumn.parsing.Whitespace;
+import com.norswap.autumn.parsing.expressions.Success;
+import com.norswap.autumn.parsing.expressions.Capture;
+import com.norswap.autumn.parsing.capture.Decoration;
+import com.norswap.autumn.parsing.capture.ParseTree;
 import com.norswap.autumn.parsing.extensions.cluster.ExpressionCluster.Group;
 import com.norswap.autumn.parsing.extensions.cluster.Filter;
 import com.norswap.autumn.parsing.ParsingExpression;
@@ -131,9 +134,12 @@ public final class GrammarCompiler
             pe = token(pe);
 
         String ruleName = lhs.value("ruleName");
+        List<ParseTree> captureSuffixes = lhs.group("captureSuffixes");
 
         return named$(ruleName,
-            compileCapture(ruleName, pe, lhs.group("captureSuffixes")));
+            captureSuffixes == null || captureSuffixes.isEmpty()
+                ? pe
+                : compileCapture(ruleName, pe, captureSuffixes));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -285,14 +291,13 @@ public final class GrammarCompiler
         ParsingExpression child,
         List<ParseTree> suffixes)
     {
-        boolean first = true;
-
         // A marker implies capture!
-        ParsingExpression out = child == null
-            ? capture((first = false), null)
-            : child;
+        boolean capture = child == null;
+        boolean captureText = false;
 
         int accessors = 0;
+        boolean first = true;
+        Array<Decoration> decorations = new Array<>();
 
         for (ParseTree suffix: suffixes)
         {
@@ -305,21 +310,22 @@ public final class GrammarCompiler
                     {
                         error("Capture suffix (:) not appearing as first suffix.");
                     }
-                    out = capture(suffix.has("captureText"), out);
+                    capture = true;
+                    captureText = suffix.has("captureText");
                     break;
 
                 case "accessor":
-                    out = accessor$(name(ruleName, child, suffix), out);
+                    decorations.add(accessor(name(ruleName, child, suffix)));
                     ++accessors;
                     break;
 
                 case "group":
-                    out = group$(name(ruleName, child, suffix), out);
+                    decorations.add(group(name(ruleName, child, suffix)));
                     ++accessors;
                     break;
 
                 case "tag":
-                    out = tag$(name(ruleName, child, suffix), out);
+                    decorations.add(tag(name(ruleName, child, suffix)));
                     break;
 
                 default:
@@ -330,11 +336,13 @@ public final class GrammarCompiler
         }
 
         if (accessors > 1)
-        {
             error("More than one accessor or group specification.");
-        }
 
-        return out;
+        return new Capture(
+            capture,
+            captureText,
+            child == null ? new Success() : child,
+            decorations.toArray(Decoration[]::new));
     }
 
     // ---------------------------------------------------------------------------------------------

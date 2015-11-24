@@ -1,6 +1,6 @@
 package com.norswap.autumn.parsing.state;
 
-import com.norswap.autumn.parsing.tree.BuildParseTree;
+import com.norswap.autumn.parsing.capture.BuildParseTree;
 import com.norswap.util.Array;
 
 /**

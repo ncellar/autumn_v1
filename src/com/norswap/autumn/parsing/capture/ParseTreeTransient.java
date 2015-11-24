@@ -1,4 +1,4 @@
-package com.norswap.autumn.parsing.expressions.capture;
+package com.norswap.autumn.parsing.capture;
 
 import com.norswap.util.Array;
 
@@ -13,6 +13,14 @@ public final class ParseTreeTransient
     public String kind;
     public Set<String> tags;
     public Array<ParseTree> children;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public String toString()
+    {
+        return new ParseTree(this).toString();
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

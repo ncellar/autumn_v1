@@ -1,16 +1,13 @@
 package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.parsing.config.ParserConfiguration;
+import com.norswap.autumn.parsing.capture.ParseTree;
 import com.norswap.autumn.parsing.extensions.Extension;
 import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.state.CustomState;
 import com.norswap.autumn.parsing.state.ParseInputs;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.util.Array;
-import com.norswap.util.annotations.Immutable;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public final class Parser implements Cloneable
 {
@@ -93,7 +90,7 @@ public final class Parser implements Cloneable
             state.end == source.length(),
             state.end >= 0,
             state.end,
-            state.tree.build(),
+            new ParseTree(state.tree.build().first()),
             Array.map(state.customStates, x -> x == null ? null : x.extract(state)),
             state.errors.report(source));
 

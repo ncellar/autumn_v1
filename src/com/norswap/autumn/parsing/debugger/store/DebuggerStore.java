@@ -11,6 +11,7 @@ import com.norswap.autumn.parsing.debugger.Invocation;
 import com.norswap.autumn.parsing.debugger.NodeInfo;
 import com.norswap.autumn.parsing.debugger.WindowModel;
 import com.norswap.autumn.parsing.expressions.Capture;
+import com.norswap.autumn.parsing.capture.ParseTree;
 import com.norswap.autumn.parsing.state.ParseChanges;
 import com.norswap.autumn.parsing.state.ParseInputs;
 import com.norswap.autumn.parsing.state.ParseState;
@@ -103,7 +104,7 @@ public final class DebuggerStore
 
     /**
      * This stack tracks the index associated to each {@link Capture} node encountered under the
-     * target node, but not including nodes under a "capturing" ({@link Capture#shouldCapture()}
+     * target node, but not including nodes under a "capturing" ({@link Capture#capture}
      * capture node. The index tracks the order in which these nodes are encountered.
      * <p>
      * The reason this stack is needed is because the encounter order must be determined before
@@ -317,7 +318,7 @@ public final class DebuggerStore
 
                 captureIndices.push(captureCounter ++);
 
-                gStatus = ((Capture) pe).shouldCapture()
+                gStatus = ((Capture) pe).capture
                     ? GatherStatus.CAPTURING
                     : GatherStatus.ANNOTATING;
 
@@ -362,7 +363,7 @@ public final class DebuggerStore
 
         captureIndices.push(captureCounter ++);
 
-        return ((Capture) pe).shouldCapture()
+        return ((Capture) pe).capture
             ? GatherStatus.CAPTURING
             : GatherStatus.DESCENDANT;
     }
@@ -456,7 +457,7 @@ public final class DebuggerStore
                 inputs.start() == 0 && state.end == debugger.parser.source.length(),
                 state.end >= 0,
                 state.end,
-                changes.children.get(0).build(),
+                new ParseTree(changes.children.get(0).build().first()),
                 changes.customChanges,
                 state.errors.changes().report(debugger.parser.source)));
     }

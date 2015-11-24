@@ -1,6 +1,6 @@
-package com.norswap.autumn.parsing.expressions.capture;
+package com.norswap.autumn.parsing.capture;
 
-import com.norswap.autumn.parsing.tree.BuildParseTree;
+import com.norswap.autumn.parsing.capture.ParseTreeTransient;
 
 public interface Decoration
 {

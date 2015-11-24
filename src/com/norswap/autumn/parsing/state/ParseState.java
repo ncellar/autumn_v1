@@ -7,11 +7,11 @@ import com.norswap.autumn.parsing.config.ParserConfiguration;
 import com.norswap.autumn.parsing.expressions.Not;
 import com.norswap.autumn.parsing.expressions.Precedence;
 import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.capture.BuildParseTree;
 import com.norswap.autumn.parsing.extensions.Extension;
 import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.state.errors.DefaultErrorState;
 import com.norswap.autumn.parsing.state.errors.ErrorState;
-import com.norswap.autumn.parsing.tree.BuildParseTree;
 import com.norswap.util.Array;
 import com.norswap.util.JArrays;
 
@@ -241,7 +241,7 @@ public final class ParseState
         MemoHandler memoHandler,
         CustomState[] customStates)
     {
-        this.tree = new BuildParseTree();
+        this.tree = new BuildParseTree(true, null);
         this.memo = memoHandler;
         this.errors = errorState;
         this.recordErrors = true;
@@ -428,7 +428,7 @@ public final class ParseState
         blackEnd = changes.blackEnd;
 
         if (changes.children != null)  {
-            tree.addAll(changes.children);
+            tree.addChildren(changes.children);
         }
 
         int size = changes.customChanges.size();

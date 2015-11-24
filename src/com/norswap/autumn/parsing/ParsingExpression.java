@@ -36,8 +36,7 @@ public abstract class ParsingExpression implements DeepCopy
     public int parseDumb(Parser parser, int position)
     {
         throw new UnsupportedOperationException(
-            "Parsing expression [" + this + "] of class "
-            + this.getClass().getSimpleName()
+            "Parsing expression [" + this + "]"
             + " doesn't support dumb parsing.");
     }
 
@@ -74,9 +73,7 @@ public abstract class ParsingExpression implements DeepCopy
     @Override
     public String toString()
     {
-        // TODO
-        //return toStringShort();
-        return toStringOneLine();
+        return toStringShort();
     }
 
     // ---------------------------------------------------------------------------------------------

@@ -1,8 +1,10 @@
 --------------------------------------------------------------------------------
 TODO NOW
 
-    - finish capture system overhaul
-        - currently working in BuildParseTree
+    - capture system
+        - replace tags with kinds
+        - document
+        - speed up
 
     - extensions can define syntactic extension
         - declarations: decl <name> <pe> ;
@@ -35,8 +37,6 @@ TODO NOW
         - memoization window around position
         - error handling: an error over a token can become "unexpected X"
         - advantage: handles reserved identifiers
-
-    - generators for state/input/etc boilerplate
 
 TODO NOTES
 
@@ -85,13 +85,16 @@ TODO FURTHER SMALL
 
     - repeating locators (which can locate multiple locations if invoked repeatedly)
 
-    - better string printing for short expressions
-
-    - add a "kind" field to parse trees?
+    - compact parsing expression printing (not multiline)
 
     - reorganize imports
 
     - more common parse state patterns
+
+    - abstract the hierarchical string printing pattern
+        (present in different kind of trees for instances)
+
+    - generators for state/input/etc boilerplate
 
 TODO FURTHER BIG
 
@@ -112,8 +115,13 @@ TODO MUCH LATER
       (which is lax in syntax) -> need to define bounding boxes
 
     - semi-parsing
+        - start with per-block error recovery
 
     - performance metrics to guide optimization
         + automatic memoization JIT'ing?
+
+    - value stack?
+
+    - delayed semantic actions?
 
 --------------------------------------------------------------------------------

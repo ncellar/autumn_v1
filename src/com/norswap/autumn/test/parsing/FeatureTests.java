@@ -1,7 +1,7 @@
 package com.norswap.autumn.test.parsing;
 
-import com.norswap.autumn.parsing.tree.ParseTree;
 import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.capture.ParseTree;
 import com.norswap.autumn.test.Ensure;
 import com.norswap.autumn.test.TestRunner;
 
@@ -10,6 +10,7 @@ import java.util.List;
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
 import static com.norswap.autumn.test.parsing.Common.*;
 import static com.norswap.autumn.test.parsing.ParseTreeBuilder.$;
+import static com.norswap.autumn.parsing.ParsingExpressionFactory.$;
 
 public final class FeatureTests
 {
@@ -34,8 +35,6 @@ public final class FeatureTests
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    // ---------------------------------------------------------------------------------------------
 
     ParsingExpression
 
@@ -148,7 +147,7 @@ public final class FeatureTests
 
     public void testMultipleCapture()
     {
-        tree = tree(sequence(oneMore(captureTextGrouped("a", literal("a")))), "aaa");
+        tree = tree(sequence(oneMore(captureText($(group("a")), literal("a")))), "aaa");
         List<ParseTree> aResults = tree.group("a");
 
         Ensure.equals(aResults.size(), 3);

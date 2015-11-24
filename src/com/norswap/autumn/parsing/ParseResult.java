@@ -1,7 +1,7 @@
 package com.norswap.autumn.parsing;
 
+import com.norswap.autumn.parsing.capture.ParseTree;
 import com.norswap.autumn.parsing.state.errors.ErrorReport;
-import com.norswap.autumn.parsing.tree.ParseTree;
 import com.norswap.util.Array;
 
 /**

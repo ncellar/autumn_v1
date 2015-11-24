@@ -1,37 +1,24 @@
-package com.norswap.autumn.parsing.tree;
+package com.norswap.autumn.parsing.capture;
 
 import com.norswap.util.Array;
 import com.norswap.util.Strings;
-import com.norswap.util.annotations.NonNull;
 
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.Objects;
 import java.util.Set;
 
 import static com.norswap.util.JObjects.hash;
+import static com.norswap.util.JObjects.same;
 
-/**
- * A node of the final parse tree, that can be queried by the user to build some other trees and
- * data structures.
- * <p>
- * Beware that most of the methods can return null if asking for something that isn't there.
- * <p>
- * Such a tree is acquired by calling {@link BuildParseTree#build} on an instance of {@link
- * BuildParseTree}.
- */
-public final class ParseTree implements Iterable<ParseTree>
+public final class ParseTree  implements Iterable<ParseTree>
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public final String accessor;
-
     public final String value;
-
     public final String kind;
-
-    private final @NonNull Set<String> tags;
-
-    private final @NonNull Array<ParseTree> children;
+    private final Set<String> tags;
+    private final Array<ParseTree> children;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -39,40 +26,65 @@ public final class ParseTree implements Iterable<ParseTree>
         String accessor,
         String value,
         String kind,
-        @NonNull Set<String> tags,
-        @NonNull Array<ParseTree> children)
+        Set<String> tags,
+        Array<ParseTree> children)
     {
         this.accessor = accessor;
         this.value = value;
-        this.tags = tags;
         this.kind = kind;
+        this.tags = tags;
         this.children = children;
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    public ParseTree(ParseTreeTransient transientTree)
+    {
+        this.accessor = transientTree.accessor;
+        this.value = transientTree.value;
+        this.kind = transientTree.kind;
+        this.tags = transientTree.tags;
+        this.children = transientTree.children;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    // TAGS
 
     /**
      * Does this node have the given tag?
      */
     public boolean hasTag(String tag)
     {
-        return tags.contains(tag);
+        return tags != null && tags.contains(tag);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // CHILDREN: ACCESSORS
+
+    /**
+     * Does the tree have a child with the given accessor?
+     */
+    public boolean has(String accessor)
+    {
+        return get(accessor) != null;
     }
 
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Returns the first child with the given accessor, or null.
+     * Returns the child with the given accessor, or null.
      */
     public ParseTree get(String accessor)
     {
-        return children.first(x -> x.accessor.equals(accessor));
+        return children == null
+            ? null
+            : children.first(x -> x.accessor.equals(accessor));
     }
 
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Returns the value of the first child with the given accessor, or null.
+     * Returns the value of the child with the given accessor, or null.
      */
     public String value(String accessor)
     {
@@ -83,31 +95,49 @@ public final class ParseTree implements Iterable<ParseTree>
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Returns all the children with the given accessor.
+     * Returns the group with the given accessor.
      */
     public Array<ParseTree> group(String accessor)
     {
-        return children.filter(x -> x.accessor.equals(accessor));
+        return children == null
+            ? null
+            : children.filter(x -> x.accessor.equals(accessor));
     }
 
-    // ---------------------------------------------------------------------------------------------
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // CHILDREN: ALL
 
     /**
      * Returns all the children.
      */
     public Array<ParseTree> children()
     {
-        return children;
+        return children == null
+            ? Array.empty()
+            : children;
     }
 
     // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public Iterator<ParseTree> iterator()
+    {
+        return children == null
+            ? Collections.emptyIterator()
+            : children.iterator();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // CHILDREN: POSITIONAL
 
     /**
      * Return the first child, or null.
      */
     public ParseTree child()
     {
-        return children.size() > 0 ? children.get(0) : null;
+        return children == null
+            ? null
+            : children.size() > 0 ? children.get(0) : null;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -117,38 +147,24 @@ public final class ParseTree implements Iterable<ParseTree>
      */
     public ParseTree child(int i)
     {
-        return i >= 0 && i < children.size() ? children.get(i) : null;
+        return children != null && i >= 0 && i < children.size() ? children.get(i) : null;
     }
 
-    // ---------------------------------------------------------------------------------------------
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // CHILDREN: TAGS
 
     /**
      * Return all nodes that have the given tag).
      */
     public Array<ParseTree> tagged(String tag)
     {
-        return children.filter(x -> x.hasTag(tag));
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Does the tree have a child with the given accessor?
-     */
-    public boolean has(String accessor)
-    {
-        return get(accessor) != null;
+        return children == null
+            ? Array.empty()
+            : children.filter(x -> x.hasTag(tag));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    @Override
-    public Iterator<ParseTree> iterator()
-    {
-        return children.iterator();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // TO STRING
 
     public String nodeToString()
     {
@@ -161,6 +177,12 @@ public final class ParseTree implements Iterable<ParseTree>
 
     public void nodeToString(StringBuilder builder)
     {
+        if (accessor == null && tags == null && value == null)
+        {
+            builder.append("--");
+            return;
+        }
+
         if (accessor != null)
         {
             builder.append(accessor);
@@ -211,6 +233,7 @@ public final class ParseTree implements Iterable<ParseTree>
         nodeToString(builder);
         builder.append("\n");
 
+        if (children != null)
         for (ParseTree child: children)
         {
             child.toString(builder, depth + 1);
@@ -228,11 +251,11 @@ public final class ParseTree implements Iterable<ParseTree>
         ParseTree that = (ParseTree) o;
 
         return
-            Objects.equals(accessor,    that.accessor)
-         && Objects.equals(value,       that.value)
-         && Objects.equals(kind,        that.kind)
-         && tags.equals(that.tags)
-         && children.equals(that.children);
+           same(accessor, that.accessor)
+        && same(value,    that.value)
+        && same(kind,     that.kind)
+        && same(tags,      that.tags)
+        && same(children,  that.children);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -243,8 +266,8 @@ public final class ParseTree implements Iterable<ParseTree>
         int result = hash(accessor);
         result = 31 * result + hash(value);
         result = 31 * result + hash(kind);
-        result = 31 * result + tags.hashCode();
-        result = 31 * result + children.hashCode();
+        result = 31 * result + hash(tags);
+        result = 31 * result + hash(children);
         return result;
     }
 

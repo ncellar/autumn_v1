@@ -57,7 +57,7 @@ public class CaptureLocator implements ExecutionLocator
         return pe instanceof Capture
             ?  ++ state.matched == index
                 ? LocateStatus.MATCH
-                : ((Capture) pe).shouldCapture()
+                : ((Capture) pe).capture
                     ? LocateStatus.DEAD_END
                     : LocateStatus.POSSIBLE_PREFIX
             : LocateStatus.POSSIBLE_PREFIX;
