@@ -6,6 +6,7 @@ import com.norswap.autumn.parsing.extensions.Seeds;
 import com.norswap.autumn.parsing.state.CustomState;
 import com.norswap.autumn.parsing.state.ParseChanges;
 import com.norswap.autumn.parsing.state.ParseState;
+import com.norswap.util.Array;
 import com.norswap.util.annotations.Nullable;
 
 import java.util.HashSet;
@@ -24,7 +25,7 @@ public final class LeftRecursionState implements CustomState
     /**
      * Set of expressions in which we can't recurse, in order to ensure left-associativity.
      */
-    private HashSet<LeftRecursive> blocked = new HashSet<>();
+    private Array<LeftRecursive> blocked = new Array<>();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

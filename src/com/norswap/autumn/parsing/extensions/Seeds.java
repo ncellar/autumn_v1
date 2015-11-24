@@ -157,7 +157,12 @@ public final class Seeds implements CustomState, Cloneable
     @Override
     protected Seeds clone()
     {
-        return (Seeds) Exceptions.swallow(() -> super.clone());
+        try {
+            return (Seeds) super.clone();
+        }
+        catch (CloneNotSupportedException e) {
+            throw new Error("impossible");
+        }
     }
 
     // ---------------------------------------------------------------------------------------------

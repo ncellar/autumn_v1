@@ -85,10 +85,10 @@ public final class BuildParseTree
         if (capture && children != null)
             out.first().children = concatenatedChildren.map(ParseTree::new);
 
-        // TODO why can out be null
-
         if (out != null && decorations != null)
-            out.forEach(node -> decorations.forEach(deco -> deco.decorate(node)));
+            for (ParseTreeTransient node: out)
+                for (Decoration deco: decorations)
+                    deco.decorate(node);
 
         return out != null ? out : Array.empty();
     }
