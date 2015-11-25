@@ -1,29 +1,36 @@
-package com.norswap.autumn.parsing.capture.decorations;
+package com.norswap.autumn.parsing.capture;
 
-import com.norswap.autumn.parsing.capture.Decoration;
-import com.norswap.autumn.parsing.capture.ParseTreeTransient;
 import java.util.HashSet;
 
-public final class TagDecoration implements Decoration
+/**
+ * Adds a new kind to the node. If the node has no kind yet, also sets its principal kind. This
+ * means the principal kind will be the one occuring the lowest in the parse tree.
+ */
+public final class DecorateWithKind implements Decorate
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public final String tag;
+    public final String kind;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public TagDecoration(String tag)
+    public DecorateWithKind(String kind)
     {
-        this.tag = tag;
+        this.kind = kind;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void decorate(ParseTreeTransient tree)
+    public void decorate(ParseTree tree)
     {
-        if (tree.tags == null) tree.tags = new HashSet<>();
-        tree.tags.add(tag);
+        if (tree.kinds == null)
+        {
+            tree.kind = kind;
+            tree.kinds = new HashSet<>();
+        }
+
+        tree.kinds.add(kind);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -31,7 +38,7 @@ public final class TagDecoration implements Decoration
     @Override
     public String toString()
     {
-        return "tag(" + tag + ")";
+        return "kind(" + kind + ")";
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

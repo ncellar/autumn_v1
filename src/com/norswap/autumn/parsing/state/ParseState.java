@@ -1,7 +1,7 @@
 package com.norswap.autumn.parsing.state;
 
 import com.norswap.autumn.parsing.ParseResult;
-import com.norswap.autumn.parsing.capture.Decoration;
+import com.norswap.autumn.parsing.capture.Decorate;
 import com.norswap.autumn.parsing.capture.ParseTreeBuild;
 import com.norswap.autumn.parsing.config.DefaultMemoHandler;
 import com.norswap.autumn.parsing.config.MemoHandler;
@@ -241,7 +241,7 @@ public final class ParseState
         MemoHandler memoHandler,
         CustomState[] customStates)
     {
-        this.tree = new ParseTreeBuild(true, new Decoration[0]);
+        this.tree = new ParseTreeBuild(true, new Decorate[0]);
         this.memo = memoHandler;
         this.errors = errorState;
         this.recordErrors = true;

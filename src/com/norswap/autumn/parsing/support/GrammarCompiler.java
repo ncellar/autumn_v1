@@ -5,7 +5,7 @@ import com.norswap.autumn.parsing.GrammarBuilder;
 import com.norswap.autumn.parsing.Whitespace;
 import com.norswap.autumn.parsing.expressions.Success;
 import com.norswap.autumn.parsing.expressions.Capture;
-import com.norswap.autumn.parsing.capture.Decoration;
+import com.norswap.autumn.parsing.capture.Decorate;
 import com.norswap.autumn.parsing.capture.ParseTree;
 import com.norswap.autumn.parsing.extensions.cluster.ExpressionCluster.Group;
 import com.norswap.autumn.parsing.extensions.cluster.Filter;
@@ -72,15 +72,15 @@ public final class GrammarCompiler
 
     private void compileDeclaration(ParseTree declaration)
     {
-        if (declaration.hasTag("rule"))
+        if (declaration.hasKind("rule"))
         {
             compileRule(declaration);
         }
-        else if (declaration.hasTag("declSyntaxDef"))
+        else if (declaration.hasKind("declSyntaxDef"))
         {
             // TODO
         }
-        else if (declaration.hasTag("exprSyntaxDef"))
+        else if (declaration.hasKind("exprSyntaxDef"))
         {
             // TODO
         }
@@ -97,13 +97,13 @@ public final class GrammarCompiler
         ParseTree rhs = rule.get("rhs");
         ParsingExpression pe;
 
-        if (rhs.hasTag("parsingExpression"))
+        if (rhs.hasKind("parsingExpression"))
         {
             pe = compilePE(rhs.child());
             pe = decorateRule(lhs, pe);
             rules.add(pe);
         }
-        else if (rhs.hasTag("exprCluster"))
+        else if (rhs.hasKind("exprCluster"))
         {
             Array<ParsingExpression> namedAlternates = new Array<>();
 
@@ -157,7 +157,7 @@ public final class GrammarCompiler
 
         for (ParseTree entry: expression.group("entries"))
         {
-            if (entry.hasTag("clusterDirective"))
+            if (entry.hasKind("clusterDirective"))
             {
                 if (!alts.isEmpty())
                 {
@@ -189,7 +189,7 @@ public final class GrammarCompiler
                         error("Unknown cluster directive: %s", entry);
                 }
             }
-            else if (entry.hasTag("clusterArrow"))
+            else if (entry.hasKind("clusterArrow"))
             {
                 ParsingExpression pe = compilePE(entry.get("expr").child());
 
@@ -298,7 +298,7 @@ public final class GrammarCompiler
 
         int accessors = 0;
         boolean first = true;
-        Array<Decoration> decorations = new Array<>();
+        Array<Decorate> decorations = new Array<>();
 
         for (ParseTree suffix: suffixes)
         {
@@ -325,8 +325,8 @@ public final class GrammarCompiler
                     ++accessors;
                     break;
 
-                case "tag":
-                    decorations.add(tag(name(ruleName, child, suffix)));
+                case "kind":
+                    decorations.add(kind(name(ruleName, child, suffix)));
                     break;
 
                 default:
@@ -343,7 +343,7 @@ public final class GrammarCompiler
             capture,
             captureText,
             child == null ? new Success() : child,
-            decorations.toArray(Decoration[]::new));
+            decorations.toArray(Decorate[]::new));
     }
 
     // ---------------------------------------------------------------------------------------------

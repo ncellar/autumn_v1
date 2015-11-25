@@ -10,15 +10,18 @@ import java.util.Set;
 import static com.norswap.util.JObjects.hash;
 import static com.norswap.util.JObjects.same;
 
+/**
+ * A parse tree node, as seen by the parser's user.
+ */
 public final class ParseTree
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public final String accessor;
-    public final String value;
-    public final String kind;
-    private final Set<String> tags;
-    private final @NonNull ParseTree[] children;
+    public String accessor;
+    public String value;
+    public String kind;
+    Set<String> kinds;
+    @NonNull ParseTree[] children;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -26,36 +29,33 @@ public final class ParseTree
         String accessor,
         String value,
         String kind,
-        Set<String> tags,
+        Set<String> kinds,
         @NonNull ParseTree[] children)
     {
         this.accessor = accessor;
         this.value = value;
         this.kind = kind;
-        this.tags = tags;
+        this.kinds = kinds;
         this.children = children;
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public ParseTree(ParseTreeTransient transientTree)
+    ParseTree(String value, @NonNull ParseTree[] children)
     {
-        this.accessor = transientTree.accessor;
-        this.value = transientTree.value;
-        this.kind = transientTree.kind;
-        this.tags = transientTree.tags;
-        this.children = transientTree.children;
+        this.value = value;
+        this.children = children;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // TAGS
+    // KINDS
 
     /**
-     * Does this node have the given tag?
+     * Does this node have the given kind?
      */
-    public boolean hasTag(String tag)
+    public boolean hasKind(String kind)
     {
-        return tags != null && tags.contains(tag);
+        return kinds != null && kinds.contains(kind);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -133,14 +133,14 @@ public final class ParseTree
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // CHILDREN: TAGS
+    // CHILDREN: KINDS
 
     /**
-     * Return all nodes that have the given tag).
+     * Return all nodes that have the given kind.
      */
-    public Array<ParseTree> tagged(String tag)
+    public Array<ParseTree> allWithKind(String kind)
     {
-        return JArrays.filter(children, x -> x.hasTag(tag));
+        return JArrays.filter(children, x -> x.hasKind(kind));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -157,7 +157,7 @@ public final class ParseTree
 
     public void nodeToString(StringBuilder builder)
     {
-        if (accessor == null && tags == null && value == null)
+        if (accessor == null && kinds == null && value == null)
         {
             builder.append("--");
             return;
@@ -167,19 +167,19 @@ public final class ParseTree
         {
             builder.append(accessor);
 
-            if (tags == null && value != null)
+            if (kinds == null && value != null)
             {
                 builder.append(" - ");
             }
-            else if (tags != null)
+            else if (kinds != null)
             {
                 builder.append(" ");
             }
         }
 
-        if (tags != null)
+        if (kinds != null)
         {
-            builder.append(tags);
+            builder.append(kinds);
 
             if (value != null)
             {
@@ -233,7 +233,7 @@ public final class ParseTree
            same(accessor,  that.accessor)
         && same(value,     that.value)
         && same(kind,      that.kind)
-        && same(tags,      that.tags)
+        && same(kinds,      that.kinds)
         && same(children,  that.children);
     }
 
@@ -245,7 +245,7 @@ public final class ParseTree
         int result = hash(accessor);
         result = 31 * result + hash(value);
         result = 31 * result + hash(kind);
-        result = 31 * result + hash(tags);
+        result = 31 * result + hash(kinds);
         result = 31 * result + hash(children);
         return result;
     }

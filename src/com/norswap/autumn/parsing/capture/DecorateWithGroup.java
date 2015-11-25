@@ -1,9 +1,10 @@
-package com.norswap.autumn.parsing.capture.decorations;
+package com.norswap.autumn.parsing.capture;
 
-import com.norswap.autumn.parsing.capture.Decoration;
-import com.norswap.autumn.parsing.capture.ParseTreeTransient;
-
-public class GroupDecoration implements Decoration
+/**
+ * Sets the group the node belongs to. This means the node will end up belonging to the group
+ * appearing the higher in the parse tree.
+ */
+public class DecorateWithGroup implements Decorate
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -11,7 +12,7 @@ public class GroupDecoration implements Decoration
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public GroupDecoration(String group)
+    public DecorateWithGroup(String group)
     {
         this.group = group;
     }
@@ -19,7 +20,7 @@ public class GroupDecoration implements Decoration
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void decorate(ParseTreeTransient tree)
+    public void decorate(ParseTree tree)
     {
         tree.accessor = group;
     }

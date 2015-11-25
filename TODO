@@ -1,10 +1,6 @@
 --------------------------------------------------------------------------------
 TODO NOW
 
-    - capture system
-        - replace tags with kinds
-        - document
-
     - extensions can define syntactic extension
         - declarations: decl <name> <pe> ;
         - expressions: `<name> { <pe> }
@@ -94,6 +90,8 @@ TODO FURTHER SMALL
         (present in different kind of trees for instances)
 
     - generators for state/input/etc boilerplate
+
+    - separate accessors and groups better or make an understandble parse tree build error
 
 TODO FURTHER BIG
 

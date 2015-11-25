@@ -1,9 +1,11 @@
 package com.norswap.autumn.parsing;
 
+import com.norswap.autumn.parsing.capture.DecorateWithAccessor;
+import com.norswap.autumn.parsing.capture.DecorateWithGroup;
+import com.norswap.autumn.parsing.capture.DecorateWithKind;
 import com.norswap.autumn.parsing.expressions.*;
 import com.norswap.autumn.parsing.expressions.Capture;
-import com.norswap.autumn.parsing.capture.Decoration;
-import com.norswap.autumn.parsing.capture.decorations.*;
+import com.norswap.autumn.parsing.capture.Decorate;
 import com.norswap.autumn.parsing.extensions.cluster.ExpressionCluster;
 import com.norswap.autumn.parsing.extensions.cluster.ExpressionCluster.Group;
 import com.norswap.autumn.parsing.expressions.Whitespace;
@@ -18,7 +20,7 @@ public final class ParsingExpressionFactory
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // CAPTURES
 
-    public static Capture capture(Decoration[] decorations, ParsingExpression operand)
+    public static Capture capture(Decorate[] decorations, ParsingExpression operand)
     {
         return new Capture(true, false, operand, decorations);
     }
@@ -27,7 +29,7 @@ public final class ParsingExpressionFactory
 
     public static Capture capture(ParsingExpression operand)
     {
-        return capture(new Decoration[0], operand);
+        return capture(new Decorate[0], operand);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -39,7 +41,7 @@ public final class ParsingExpressionFactory
 
     // ---------------------------------------------------------------------------------------------
 
-    public static Capture captureText(Decoration[] decorations, ParsingExpression operand)
+    public static Capture captureText(Decorate[] decorations, ParsingExpression operand)
     {
         return new Capture(true, true, operand, decorations);
     }
@@ -48,7 +50,7 @@ public final class ParsingExpressionFactory
 
     public static Capture captureText(ParsingExpression operand)
     {
-        return captureText(new Decoration[0], operand);
+        return captureText(new Decorate[0], operand);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -60,51 +62,51 @@ public final class ParsingExpressionFactory
 
     // ---------------------------------------------------------------------------------------------
 
-    public static Capture set(Decoration[] decorations, ParsingExpression operand)
+    public static Capture set(Decorate[] decorations, ParsingExpression operand)
     {
         return new Capture(false, false, operand, decorations);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public static Capture marker(Decoration[] decorations)
+    public static Capture marker(Decorate[] decorations)
     {
         return capture(decorations, new Success());
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public static Decoration[] $(Decoration... decorations)
+    public static Decorate[] $(Decorate... decorations)
     {
         return decorations;
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public static Decoration tag(String tag)
+    public static Decorate kind(String kind)
     {
-        return new TagDecoration(tag);
+        return new DecorateWithKind(kind);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public static Decoration accessor(String accessor)
+    public static Decorate accessor(String accessor)
     {
-        return new AccessorDecoration(accessor);
+        return new DecorateWithAccessor(accessor);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public static Decoration group(String group)
+    public static Decorate group(String group)
     {
-        return new GroupDecoration(group);
+        return new DecorateWithGroup(group);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public static ParsingExpression tag(String name, ParsingExpression operand)
+    public static ParsingExpression kind(String name, ParsingExpression operand)
     {
-        return set($(tag(name)), operand);
+        return set($(kind(name)), operand);
     }
 
     // ---------------------------------------------------------------------------------------------

@@ -1,9 +1,10 @@
-package com.norswap.autumn.parsing.capture.decorations;
+package com.norswap.autumn.parsing.capture;
 
-import com.norswap.autumn.parsing.capture.Decoration;
-import com.norswap.autumn.parsing.capture.ParseTreeTransient;
-
-public final class AccessorDecoration implements Decoration
+/**
+ * Sets the node accessor. This means the accessor will end up being the one appearing the higher in
+ * the parse tree.
+ */
+public final class DecorateWithAccessor implements Decorate
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -11,7 +12,7 @@ public final class AccessorDecoration implements Decoration
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public AccessorDecoration(String accessor)
+    public DecorateWithAccessor(String accessor)
     {
         this.accessor = accessor;
     }
@@ -19,7 +20,7 @@ public final class AccessorDecoration implements Decoration
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void decorate(ParseTreeTransient tree)
+    public void decorate(ParseTree tree)
     {
         tree.accessor = accessor;
     }

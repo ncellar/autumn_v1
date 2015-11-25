@@ -457,7 +457,7 @@ public final class DebuggerStore
                 inputs.start() == 0 && state.end == debugger.parser.source.length(),
                 state.end >= 0,
                 state.end,
-                new ParseTree(changes.children.get(0).build()[0]),
+                changes.children.get(0).build()[0],
                 changes.customChanges,
                 state.errors.changes().report(debugger.parser.source)));
     }

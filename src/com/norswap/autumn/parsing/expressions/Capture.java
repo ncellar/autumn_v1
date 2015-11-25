@@ -4,16 +4,26 @@ import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.capture.ParseTreeBuild;
 import com.norswap.autumn.parsing.expressions.abstrakt.UnaryParsingExpression;
-import com.norswap.autumn.parsing.capture.Decoration;
+import com.norswap.autumn.parsing.capture.Decorate;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.util.annotations.NonNull;
 import java.util.Arrays;
 
+/**
+ * Invokes its operand on the input, succeeding if the operand does, with the same end position.
+ * <p>
+ * This either specifies the capture of its operand or specifies an modification of captures
+ * occuring during the invocation of its operand, via the {@link #decorations} field.
+ * <p>
+ * This parsing expression results in the creation of a new node in the parse tree. Note however
+ * that this parse tree is only a temporary parse tree. See {@link ParseTreeBuild} for
+ * explanations.
+ */
 public class Capture extends UnaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public @NonNull Decoration[] decorations;
+    public @NonNull Decorate[] decorations;
     public boolean capture;
     public boolean captureText;
 
@@ -23,7 +33,7 @@ public class Capture extends UnaryParsingExpression
         boolean capture,
         boolean captureText,
         ParsingExpression operand,
-        @NonNull Decoration... decorations)
+        @NonNull Decorate... decorations)
     {
         this.operand = operand;
         this.capture = capture;

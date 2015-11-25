@@ -150,7 +150,7 @@ public final class GrammarGrammar
             sequence(minus, nameOrDollar)),
         capture("group",
             sequence(hash, nameOrDollar)),
-        capture("tag",
+        capture("kind",
             sequence(tilda, nameOrDollar)))),
 
     expr = reference("parsingExpression"),
@@ -212,19 +212,19 @@ public final class GrammarGrammar
                 equal))),
 
         clusterArrow =
-            nametag("clusterArrow", sequence(
+            namekind("clusterArrow", sequence(
                 arrow,
                 optional(lhs),
                 capture("expr", forbid$(parsingExpression, reference("choice"))))),
 
         clusterDirective =
-            nametagText("clusterDirective", choice(
+            namekindText("clusterDirective", choice(
                     keyword("@+"),
                     keyword("@+_left_assoc"),
                     keyword("@+_left_recur"))),
 
         exprCluster =
-            nametag("exprCluster", sequence(
+            namekind("exprCluster", sequence(
                 exprLit,
                 group("entries", oneMore(choice(clusterArrow, clusterDirective))))),
 
@@ -236,19 +236,19 @@ public final class GrammarGrammar
         // TOP LEVEL DECLARATIONS
 
         declSyntaxDef =
-            nametag("declSyntaxDef",
+            namekind("declSyntaxDef",
                 sequence(keyword("decl"), keyword("syntax"), equal, qualifiedIdentifier)),
 
         exprSyntaxDef =
-            nametag("declSyntaxDef",
+            namekind("declSyntaxDef",
                 sequence(keyword("expr"), keyword("syntax"), equal, qualifiedIdentifier)),
 
         rule =
-            nametag("rule", sequence(
+            namekind("rule", sequence(
                 lhs,
                 accessor("rhs", choice(
                     exprCluster,
-                    tag("parsingExpression", capture(parsingExpression)))))),
+                    kind("parsingExpression", capture(parsingExpression)))))),
 
         decl =
             named$("decl", sequence(
@@ -260,16 +260,16 @@ public final class GrammarGrammar
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static ParsingExpression nametag(String string, ParsingExpression pe)
+    private static ParsingExpression namekind(String string, ParsingExpression pe)
     {
-        return named$(string, capture($(tag(string)), pe));
+        return named$(string, capture($(kind(string)), pe));
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    private static ParsingExpression nametagText(String string, ParsingExpression pe)
+    private static ParsingExpression namekindText(String string, ParsingExpression pe)
     {
-        return named$(string, captureText($(tag(string)), pe));
+        return named$(string, captureText($(kind(string)), pe));
     }
 
     // ---------------------------------------------------------------------------------------------
