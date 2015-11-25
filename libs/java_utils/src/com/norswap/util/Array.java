@@ -1253,7 +1253,11 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
 
     // ---------------------------------------------------------------------------------------------
 
-    public Array<T> filter(Predicate<? super T> p)
+    /**
+     * Returns a new array containing the items of {@code array} satisfying {@code predicate},
+     * in the same order.
+     */
+    public Array<T> filter(Predicate<? super T> predicate)
     {
         Array<T> out = new Array<>();
 
@@ -1262,10 +1266,8 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
             @SuppressWarnings("unchecked")
             T elem = (T) array[i];
 
-            if (p.test(elem))
-            {
+            if (predicate.test(elem))
                 out.add(elem);
-            }
         }
 
         return out;
@@ -1273,17 +1275,18 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
 
     // ---------------------------------------------------------------------------------------------
 
-    public T first(Predicate<? super T> p)
+    /**
+     * Returns the first item of this array to satisfy {@code predicate}, or null if none do.
+     */
+    public T first(Predicate<? super T> predicate)
     {
         for (int i = 0; i < next; ++i)
         {
             @SuppressWarnings("unchecked")
             T elem = (T) array[i];
 
-            if (p.test(elem))
-            {
+            if (predicate.test(elem))
                 return elem;
-            }
         }
 
         return null;
@@ -1291,17 +1294,18 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
 
     // ---------------------------------------------------------------------------------------------
 
-    public T last(Predicate<? super T> p)
+    /**
+     * Returns the first item of this array to satisfy {@code predicate}, or null if none do.
+     */
+    public T last(Predicate<? super T> predicate)
     {
         for (int i = next - 1 ; i >= next; --i)
         {
             @SuppressWarnings("unchecked")
             T elem = (T) array[i];
 
-            if (p.test(elem))
-            {
+            if (predicate.test(elem))
                 return elem;
-            }
         }
 
         return null;

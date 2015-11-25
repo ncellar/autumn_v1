@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -48,23 +49,15 @@ public final class JArrays
 
     // ---------------------------------------------------------------------------------------------
 
-    /**
-     * Concatenate all arrays into a single newly-allocated one, and returns it.
-     * This is a method that is suspiciously absent of Guava, although the primitive pendants
-     * do exist.
-     */
     @SafeVarargs
-    public static <T> T[] concat(T[]... arrays)
+    public static <T> T[] concat(IntFunction<T[]> supplier, T[]... arrays)
     {
         int size = 0;
         for (T[] array : arrays) {
             size += array.length;
         }
 
-        @SuppressWarnings("unchecked")
-        T[] out = arrays.length == 0
-            ? (T[]) new Object[0]
-            : (T[]) java.lang.reflect.Array.newInstance(arrays[0].getClass().getComponentType(), size);
+        T[] out = supplier.apply(size);
 
         int i = 0;
         for (T[] array : arrays)
@@ -79,12 +72,21 @@ public final class JArrays
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Concatenates all items in {@code ts} to the given array.
+     * Concatenate all arrays into a single newly-allocated one, and returns it.
+     * This is a method that is suspiciously absent of Guava, although the primitive pendants
+     * do exist.
      */
     @SafeVarargs
-    public static <T> T[] concat(T[] array, T... ts)
+    @SuppressWarnings("unchecked")
+    public static <T> T[] concat(T[]... arrays)
     {
-        return concat(array, ts);
+        Class<?> type = arrays[0].getClass().getComponentType();
+
+        return concat(
+            size -> size == 0
+                ? (T[]) new Object[0]
+                : (T[]) java.lang.reflect.Array.newInstance(type, size),
+            arrays);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -197,6 +199,48 @@ public final class JArrays
     bimap(T[] src1, U[] src2, IntFunction<R[]> arrayGen, BiFunction<? super T, ? super U, ? extends R> f)
     {
         return bimap(src1, src2, arrayGen.apply(Math.min(src1.length, src2.length)), f);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Returns the first item of {@code array} to satisfy {@code predicate}, or null if none do.
+     */
+    public static <T> T
+    first(T[] array, Predicate<? super T> predicate)
+    {
+        for (int i = 0; i < array.length; ++i)
+        {
+            T elem = array[i];
+
+            if (predicate.test(elem))
+                return elem;
+        }
+
+        return null;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Returns an {@link Array} containing the items of {@code array} satisfying {@code predicate},
+     * in the same order.
+     */
+    public static <T> Array<T>
+    filter(T[] array, Predicate<? super T> predicate)
+    {
+        Array<T> out = new Array<>();
+
+        for (int i = 0; i < array.length; ++i)
+        {
+            @SuppressWarnings("unchecked")
+            T elem = (T) array[i];
+
+            if (predicate.test(elem))
+                out.add(elem);
+        }
+
+        return out;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

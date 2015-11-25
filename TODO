@@ -4,7 +4,6 @@ TODO NOW
     - capture system
         - replace tags with kinds
         - document
-        - speed up
 
     - extensions can define syntactic extension
         - declarations: decl <name> <pe> ;

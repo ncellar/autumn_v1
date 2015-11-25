@@ -1,16 +1,16 @@
 package com.norswap.autumn.parsing.capture;
 
 import com.norswap.util.Array;
+import com.norswap.util.JArrays;
 import com.norswap.util.Strings;
 
-import java.util.Collections;
-import java.util.Iterator;
+import com.norswap.util.annotations.NonNull;
 import java.util.Set;
 
 import static com.norswap.util.JObjects.hash;
 import static com.norswap.util.JObjects.same;
 
-public final class ParseTree  implements Iterable<ParseTree>
+public final class ParseTree
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -18,7 +18,7 @@ public final class ParseTree  implements Iterable<ParseTree>
     public final String value;
     public final String kind;
     private final Set<String> tags;
-    private final Array<ParseTree> children;
+    private final @NonNull ParseTree[] children;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -27,7 +27,7 @@ public final class ParseTree  implements Iterable<ParseTree>
         String value,
         String kind,
         Set<String> tags,
-        Array<ParseTree> children)
+        @NonNull ParseTree[] children)
     {
         this.accessor = accessor;
         this.value = value;
@@ -76,9 +76,7 @@ public final class ParseTree  implements Iterable<ParseTree>
      */
     public ParseTree get(String accessor)
     {
-        return children == null
-            ? null
-            : children.first(x -> x.accessor.equals(accessor));
+        return JArrays.first(children, x -> x.accessor.equals(accessor));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -99,9 +97,7 @@ public final class ParseTree  implements Iterable<ParseTree>
      */
     public Array<ParseTree> group(String accessor)
     {
-        return children == null
-            ? null
-            : children.filter(x -> x.accessor.equals(accessor));
+        return JArrays.filter(children, x -> x.accessor.equals(accessor));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -110,21 +106,9 @@ public final class ParseTree  implements Iterable<ParseTree>
     /**
      * Returns all the children.
      */
-    public Array<ParseTree> children()
+    public ParseTree[] children()
     {
-        return children == null
-            ? Array.empty()
-            : children;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public Iterator<ParseTree> iterator()
-    {
-        return children == null
-            ? Collections.emptyIterator()
-            : children.iterator();
+        return children;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -135,9 +119,7 @@ public final class ParseTree  implements Iterable<ParseTree>
      */
     public ParseTree child()
     {
-        return children == null
-            ? null
-            : children.size() > 0 ? children.get(0) : null;
+        return children.length > 0 ? children[0] : null;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -147,7 +129,7 @@ public final class ParseTree  implements Iterable<ParseTree>
      */
     public ParseTree child(int i)
     {
-        return children != null && i >= 0 && i < children.size() ? children.get(i) : null;
+        return i >= 0 && i < children.length ? children[i] : null;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -158,9 +140,7 @@ public final class ParseTree  implements Iterable<ParseTree>
      */
     public Array<ParseTree> tagged(String tag)
     {
-        return children == null
-            ? Array.empty()
-            : children.filter(x -> x.hasTag(tag));
+        return JArrays.filter(children, x -> x.hasTag(tag));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -233,7 +213,6 @@ public final class ParseTree  implements Iterable<ParseTree>
         nodeToString(builder);
         builder.append("\n");
 
-        if (children != null)
         for (ParseTree child: children)
         {
             child.toString(builder, depth + 1);
@@ -251,9 +230,9 @@ public final class ParseTree  implements Iterable<ParseTree>
         ParseTree that = (ParseTree) o;
 
         return
-           same(accessor, that.accessor)
-        && same(value,    that.value)
-        && same(kind,     that.kind)
+           same(accessor,  that.accessor)
+        && same(value,     that.value)
+        && same(kind,      that.kind)
         && same(tags,      that.tags)
         && same(children,  that.children);
     }

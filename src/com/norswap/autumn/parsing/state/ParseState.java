@@ -1,13 +1,14 @@
 package com.norswap.autumn.parsing.state;
 
 import com.norswap.autumn.parsing.ParseResult;
+import com.norswap.autumn.parsing.capture.Decoration;
+import com.norswap.autumn.parsing.capture.ParseTreeBuild;
 import com.norswap.autumn.parsing.config.DefaultMemoHandler;
 import com.norswap.autumn.parsing.config.MemoHandler;
 import com.norswap.autumn.parsing.config.ParserConfiguration;
 import com.norswap.autumn.parsing.expressions.Not;
 import com.norswap.autumn.parsing.expressions.Precedence;
 import com.norswap.autumn.parsing.ParsingExpression;
-import com.norswap.autumn.parsing.capture.BuildParseTree;
 import com.norswap.autumn.parsing.extensions.Extension;
 import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.state.errors.DefaultErrorState;
@@ -66,10 +67,10 @@ import com.norswap.util.Array;
  * <strong>Memoization</strong>
  * <p>
  * You can also customize the memoization strategy by supplying a custom {@link MemoHandler} to the
- * {@link com.norswap.autumn.parsing.config.ParserConfiguration}. In general, a memoization handler
- * memoizes the {@link ParseChanges} that results from invoking an expression with given {@link
- * ParseInputs}. It is the strategy's responsibility to decide which invocations should be memoized,
- * for how long, and the implementation.
+ * {@link ParserConfiguration}. In general, a memoization handler memoizes the {@link ParseChanges}
+ * that results from invoking an expression with given {@link ParseInputs}. It is the strategy's
+ * responsibility to decide which invocations should be memoized, for how long, and the
+ * implementation.
  * <p>
  * <strong>Snapshots</strong>
  * <p>
@@ -167,8 +168,8 @@ import com.norswap.util.Array;
  * <p>
  * At the end of the parse, the parser will gather the results of the parse in a {@link ParseResult}
  * object. This includes whether the root expression of the grammar matched some input, whether it
- * matched the whole input, the parse tree generated, and an error report. Additionally, for each custom
- * parse state, its final parse changes will also be included in the parse result.
+ * matched the whole input, the parse tree generated, and an error report. Additionally, for each
+ * custom parse state, its final parse changes will also be included in the parse result.
  */
 public final class ParseState
 {
@@ -211,7 +212,7 @@ public final class ParseState
      * The parse tree which is to be the parent of parse trees produced by captures in the parsing
      * expression.
      */
-    public BuildParseTree tree;
+    public ParseTreeBuild tree;
 
     /**
      * The number of committed children of {@link #tree}. Further children are uncommitted.
@@ -240,7 +241,7 @@ public final class ParseState
         MemoHandler memoHandler,
         CustomState[] customStates)
     {
-        this.tree = new BuildParseTree(true, null);
+        this.tree = new ParseTreeBuild(true, new Decoration[0]);
         this.memo = memoHandler;
         this.errors = errorState;
         this.recordErrors = true;

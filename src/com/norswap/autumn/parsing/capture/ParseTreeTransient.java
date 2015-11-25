@@ -1,7 +1,6 @@
 package com.norswap.autumn.parsing.capture;
 
-import com.norswap.util.Array;
-
+import com.norswap.util.annotations.NonNull;
 import java.util.Set;
 
 public final class ParseTreeTransient
@@ -12,7 +11,7 @@ public final class ParseTreeTransient
     public String value;
     public String kind;
     public Set<String> tags;
-    public Array<ParseTree> children;
+    public @NonNull ParseTree[] children;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -1,6 +1,6 @@
 package com.norswap.autumn.parsing.state;
 
-import com.norswap.autumn.parsing.capture.BuildParseTree;
+import com.norswap.autumn.parsing.capture.ParseTreeBuild;
 import com.norswap.util.Array;
 
 /**
@@ -12,7 +12,7 @@ public final class ParseChanges
 
     public final int end;
     public final int blackEnd;
-    public final Array<BuildParseTree> children;
+    public final Array<ParseTreeBuild> children;
     public final Array<Object> customChanges;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -20,7 +20,7 @@ public final class ParseChanges
     public ParseChanges(
         int end,
         int blackEnd,
-        Array<BuildParseTree> children,
+        Array<ParseTreeBuild> children,
         Array<Object> customChanges)
     {
         this.end = end;

@@ -1,20 +1,30 @@
 package com.norswap.autumn.parsing.capture;
 
 import com.norswap.util.Array;
+import com.norswap.util.JArrays;
 import com.norswap.util.Strings;
+import com.norswap.util.annotations.NonNull;
+import java.util.Arrays;
 
-public final class BuildParseTree
+public final class ParseTreeBuild
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public final boolean capture;
 
-    private Array<Decoration> decorations;
-    private Array<BuildParseTree> children;
+    private final @NonNull Decoration[] decorations;
+    private @NonNull Array<ParseTreeBuild> children = EMPTY_BUILD;
+    public String value;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public BuildParseTree(boolean capture, Array<Decoration> decorations)
+    private static final ParseTree[]            EMPTY_TREE      = new ParseTree[0];
+    private static final Array<ParseTreeBuild>  EMPTY_BUILD     = Array.empty();
+    private static final ParseTreeTransient[]   EMPTY_TRANSIENT = new ParseTreeTransient[0];
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public ParseTreeBuild(boolean capture, @NonNull Decoration[] decorations)
     {
         this.capture = capture;
         this.decorations = decorations;
@@ -22,33 +32,25 @@ public final class BuildParseTree
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void addChild(BuildParseTree child)
+    public void addChild(ParseTreeBuild child)
     {
-        if (children == null) children = new Array<>();
+        if (children == EMPTY_BUILD) children = new Array<>();
         children.add(child);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public void addChildren(Array<BuildParseTree> array)
+    public void addChildren(Array<ParseTreeBuild> array)
     {
-        if (children == null) children = new Array<>();
+        if (children == EMPTY_BUILD) children = new Array<>();
         children.addAll(array);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public void addDecoration(Decoration decoration)
-    {
-        if (decorations == null) decorations = new Array<>(1);
-        decorations.add(decoration);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public void truncate(int size)
     {
-        if (children == null) return;
+        if (children == EMPTY_BUILD) return;
         children.truncate(size);
     }
 
@@ -56,42 +58,59 @@ public final class BuildParseTree
 
     public int childrenCount()
     {
-        return children == null ? 0 : children.size();
+        return children.size();
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public Array<BuildParseTree> childrenFromIndex(int i)
+    public Array<ParseTreeBuild> childrenFromIndex(int i)
     {
-        return children != null
+        return children != EMPTY_BUILD
             ? children.copyFromIndex(i)
             : null;
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public Array<ParseTreeTransient> build()
+
+    public @NonNull ParseTreeTransient[] build()
     {
-        Array<ParseTreeTransient> concatenatedChildren =
-            children == null
-                ? null
-                : Array.concat(children.map(BuildParseTree::build));
+        ParseTreeTransient[] concatenatedChildren = children == EMPTY_BUILD
+            ? EMPTY_TRANSIENT
+            : JArrays.concat(
+                ParseTreeTransient[]::new,
+                children.mapToArray(
+                    ParseTreeBuild::build,
+                    ParseTreeTransient[][]::new));
 
-        Array<ParseTreeTransient> out =
-            capture
-                ? new Array<>(new ParseTreeTransient())
-                : concatenatedChildren;
+        ParseTreeTransient[] out;
 
-        if (capture && children != null)
-            out.first().children = concatenatedChildren.map(ParseTree::new);
+        if (capture)
+        {
+            ParseTreeTransient tree = new ParseTreeTransient();
+            tree.value = value;
 
-        if (out != null && decorations != null)
-            for (ParseTreeTransient node: out)
-                for (Decoration deco: decorations)
-                    deco.decorate(node);
+            tree.children = children == EMPTY_BUILD
+                ? EMPTY_TREE
+                : JArrays.map(
+                    concatenatedChildren,
+                    new ParseTree[concatenatedChildren.length],
+                    ParseTree::new);
 
-        return out != null ? out : Array.empty();
+            out = new ParseTreeTransient[]{tree};
+        }
+        else
+        {
+            out = concatenatedChildren;
+        }
+
+        for (ParseTreeTransient node: out)
+            for (Decoration deco: decorations)
+                deco.decorate(node);
+
+        return out;
     }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // TO STRING
 
@@ -106,7 +125,7 @@ public final class BuildParseTree
 
     public void nodeToString(StringBuilder builder)
     {
-        builder.append(capture + " " + decorations);
+        builder.append(capture + " " + Arrays.toString(decorations));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -127,11 +146,9 @@ public final class BuildParseTree
         nodeToString(builder);
         builder.append("\n");
 
-        if (children != null)
-            for (BuildParseTree child: children)
-            {
-                child.toString(builder, depth + 1);
-            }
+        for (ParseTreeBuild child: children)
+            child.toString(builder, depth + 1);
+
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

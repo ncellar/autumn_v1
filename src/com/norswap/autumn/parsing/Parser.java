@@ -90,7 +90,7 @@ public final class Parser implements Cloneable
             state.end == source.length(),
             state.end >= 0,
             state.end,
-            new ParseTree(state.tree.build().first()),
+            new ParseTree(state.tree.build()[0]),
             Array.map(state.customStates, x -> x == null ? null : x.extract(state)),
             state.errors.report(source));
 

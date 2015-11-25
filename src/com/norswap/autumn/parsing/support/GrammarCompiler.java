@@ -12,6 +12,7 @@ import com.norswap.autumn.parsing.extensions.cluster.Filter;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.expressions.Reference;
 import com.norswap.util.Array;
+import com.norswap.util.JArrays;
 import com.norswap.util.Streams;
 
 import java.util.List;
@@ -349,9 +350,8 @@ public final class GrammarCompiler
 
     private ParsingExpression[] compileChildren(ParseTree tree)
     {
-        return tree.children().stream()
-            .map(this::compilePE)
-            .toArray(ParsingExpression[]::new);
+        ParseTree[] children = tree.children();
+        return JArrays.map(children, new ParsingExpression[children.length], this::compilePE);
     }
 
     // ---------------------------------------------------------------------------------------------
