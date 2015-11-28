@@ -1,5 +1,6 @@
 package com.norswap.util;
 
+import com.norswap.util.annotations.Immutable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
@@ -49,13 +50,20 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
     public static double GROWTH_FACTOR = 2.0f;
 
     /**
-     * The unique instance returned by {@link #empty}. Immutable.
+     * The unique instance returned by {@link #empty}.
      */
-    private static final Array<Object> EMPTY = new Array<>(0);
+    private static final @Immutable Array<Object> EMPTY = new Array<>(0);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Java array holding the contents.
+     */
     private Object[] array;
+
+    /**
+     * Next index at which to insert an item, this is also the size of this array.
+     */
     private int next;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -158,6 +166,9 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
 
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * Creates a new array containing all the items produced by the passed stream.
+     */
     public static <T> Array<T> fromStream(Stream<T> stream)
     {
         return fromUnsafe(stream.toArray(Object[]::new));
@@ -227,7 +238,7 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
         assert n <= array.length;
 
         Array<T> out = Array.ofSize(n);
-        out.copy(array, 0, 0, n);
+        out.copyFrom(array, 0, 0, n);
         return out;
     }
 
@@ -239,7 +250,7 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
     public static <T> Array<T> copyOf(T[] array, int from, int to)
     {
         Array<T> out = Array.ofSize(to - from);
-        out.copy(array, from, to, to - from);
+        out.copyFrom(array, from, to, to - from);
         return out;
     }
 
@@ -254,9 +265,7 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
         Array<T> out = new Array<>();
 
         for (Array<? extends T> array: arrays)
-        {
             out.addAll(array);
-        }
 
         return out;
     }
@@ -266,14 +275,12 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
     /**
      * Return an array which is a concatenation of all the given arrays.
      */
-    public static <T> Array<T> concat(Array<? extends Array<? extends T>> arrays)
+    public static <T> Array<T> concat(Iterable<? extends Array<? extends T>> arrays)
     {
         Array<T> out = new Array<>();
 
         for (Array<? extends T> array: arrays)
-        {
             out.addAll(array);
-        }
 
         return out;
     }
@@ -283,14 +290,12 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
     /**
      * Maps the function f over the given java array and return an array of the results.
      */
-    public static <T, U> Array<T> map(U[] array, Function<U, T> f)
+    public static <T, U> Array<T> map(U[] array, Function<? super U, ? extends T> f)
     {
         Array<T> out = new Array<>(array.length);
 
         for (U u: array)
-        {
             out.add(f.apply(u));
-        }
 
         return out;
     }
@@ -300,14 +305,12 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
     /**
      * Maps the function f over the given iterable and return an array of the results.
      */
-    public static <T, U> Array<T> map(Iterable<U> iterable, Function<U, T> f)
+    public static <T, U> Array<T> map(Iterable<U> iterable, Function<? super U, ? extends T> f)
     {
         Array<T> out = new Array<>();
 
         for (U u: iterable)
-        {
             out.add(f.apply(u));
-        }
 
         return out;
     }
@@ -319,17 +322,18 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
      * min(src1.size(), src2.size())}, placing the results in the corresponding slot of {@code dst},
      * which is then returned.
      */
-    public static <T, U, R> Array<R>
-    bimap(Array<T> src1, Array<U> src2, Array<R> dst, BiFunction<? super T, ? super U, ? extends R> f)
+    public static <T, U, R> Array<R> bimap(
+        Array<T> src1,
+        Array<U> src2,
+        Array<R> dst,
+        BiFunction<? super T, ? super U, ? extends R> f)
     {
         int min = Math.min(src1.size(), src2.size());
 
         assert dst.size() >= min;
 
         for (int i = 0; i < min; ++i)
-        {
             dst.set(i, f.apply(src1.get(i), src2.get(i)));
-        }
 
         return dst;
     }
@@ -341,8 +345,10 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
      * min(src1.size(), src2.size())}, placing the results in the corresponding slot of a new array,
      * which is then returned.
      */
-    public static <T, U, R> Array<R>
-    bimap(Array<T> src1, Array<U> src2, BiFunction<? super T, ? super U, ? extends R> f)
+    public static <T, U, R> Array<R> bimap(
+        Array<T> src1,
+        Array<U> src2,
+        BiFunction<? super T, ? super U, R> f)
     {
         return bimap(src1, src2, new Array<>(Math.min(src1.size(), src2.size())), f);
     }
@@ -359,7 +365,7 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
         assert to >= from;
 
         Array<T> out = Array.ofSize(to - from);
-        out.copy(this, from, 0, to - from);
+        out.copyFrom(this, from, 0, to - from);
         return out;
     }
 
@@ -406,7 +412,7 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
      * position {@code dstPos} of this array. The size of this array should be {@code >= dstPos +
      * length}. Existing elements will be overwritten.
      */
-    public void copy(T[] src, int srcPos, int dstPos, int length)
+    public void copyFrom(T[] src, int srcPos, int dstPos, int length)
     {
         assert src.length >= srcPos + length;
         assert next >= dstPos + length;
@@ -421,7 +427,7 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
      * position {@code dstPos} of this array. The size of this array should be {@code >= dstPos +
      * length}. Existing elements will be overwritten.
      */
-    public void copy(Array<? extends T> src, int srcPos, int dstPos, int length)
+    public void copyFrom(Array<? extends T> src, int srcPos, int dstPos, int length)
     {
         assert src.next >= srcPos + length;
         assert next >= dstPos + length;
@@ -452,7 +458,7 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
      */
     public void copyTo(Array<? super T> dst, int srcPos, int dstPos, int length)
     {
-        dst.copy(this, srcPos, dstPos, length);
+        dst.copyFrom(this, srcPos, dstPos, length);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -492,6 +498,11 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
 
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Always returns a newly allocated array.
+     */
     @Override
     public Object[] toArray()
     {
@@ -555,6 +566,11 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
 
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * If {@code collection} is null, it will be treated as empty.
+     */
     @Override
     public boolean containsAll(Collection<?> c)
     {
@@ -576,6 +592,11 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
 
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * If {@code collection} is null, it will be treated as empty.
+     */
     @Override
     public boolean removeAll(Collection<?> c)
     {
@@ -584,18 +605,20 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
 
     // ---------------------------------------------------------------------------------------------
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * If {@code collection} is null, it will be treated as empty.
+     */
     @Override
     public boolean retainAll(Collection<?> c)
     {
         int size = next;
 
-        for (int i = 0; i < next; ++i)
-        {
-            if (!c.contains(array[i]))
-            {
-                remove(i--);
-            }
-        }
+        if (c != null)
+            for (int i = 0; i < next; ++i)
+                if (!c.contains(array[i]))
+                    remove(i--);
 
         return size != next;
     }
@@ -614,95 +637,18 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
 
     /**
      * Like {@link #containsAll(Collection)}, but for iterables.
-     */
-    public boolean containsAll(Iterable<?> iterable)
-    {
-        for (Object t: iterable)
-        {
-            if (!contains(t)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Like {@link #removeAll(Collection)}, but for iterables.
-     */
-    public boolean removeAll(Iterable<?> iterable)
-    {
-        int size = next;
-        iterable.forEach(this::remove);
-        return size != next;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Like {@link #retainAll(Collection)}, but for iterables.
-     * <p>
-     * Note that the collection overload will be faster if the collection support
-     * sub-linear-time {@link Collection#contains}.
-     */
-    public boolean retainAll(Iterable<?> iterable)
-    {
-        int size = next;
-
-        for (Object o: iterable)
-        {
-            int i = indexOf(o);
-            if (i >= 0) {
-                remove(i);
-            }
-        }
-
-        return size != next;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Like {@link #addAll(Collection)}, but for java arrays.
-     * <p>
-     * If {@code array} is null, it will be treated as empty.
-     */
-    public boolean addAll(T[] array)
-    {
-        int dstPos = next;
-        int size = array == null ? 0 : array.length;
-
-        if (size == 0)
-        {
-            return false;
-        }
-
-        ensureSize(next + size);
-        copy(array, 0, dstPos, size);
-        return true;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Like {@link #addAll(Collection)}, but optimized for arrays.
      * <p>
      * If {@code iterable} is null, it will be treated as empty.
      */
-    public boolean addAll(Array<? extends T> array)
+    public boolean containsAll(Iterable<?> iterable)
     {
-        int dstPos = next;
-        int size = array == null ? 0 : array.size();
+        if (iterable == null)
+            return true;
 
-        if (size == 0)
-        {
-            return false;
-        }
+        for (Object t: iterable)
+            if (!contains(t))
+                return false;
 
-        ensureSize(next + size);
-        copy(array, 0, dstPos, size);
         return true;
     }
 
@@ -718,11 +664,155 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
         int size = next;
 
         if (iterable != null)
-        {
             iterable.forEach(this::add);
+
+        return size != next;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Like {@link #removeAll(Collection)}, but for iterables.
+     * <p>
+     * If {@code iterable} is null, it will be treated as empty.
+     */
+    public boolean removeAll(Iterable<?> iterable)
+    {
+        int size = next;
+
+        if (iterable != null)
+            iterable.forEach(this::remove);
+
+        return size != next;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Like {@link #retainAll(Collection)}, but for iterables.
+     * <p>
+     * Note that the collection overload will be faster if the collection support
+     * sub-linear-time {@link Collection#contains}.
+     * <p>
+     * If {@code iterable} is null, it will be treated as empty.
+     */
+    public boolean retainAll(Iterable<?> iterable)
+    {
+        int size = next;
+
+        for (Object o: iterable)
+        {
+            if (iterable != null)
+            {
+                int i = indexOf(o);
+                if (i >= 0)
+                    remove(i);
+            }
         }
 
         return size != next;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Like {@link #containsAll(Collection)}, but for java arrays.
+     * <p>
+     * If {@code array} is null, it will be treated as empty.
+     */
+    public boolean containsAll(Object[] array)
+    {
+        if (array == null)
+            return true;
+
+        for (Object t: array)
+            if (!contains(t))
+                return false;
+
+        return true;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Like {@link #addAll(Collection)}, but for java arrays.
+     * <p>
+     * If {@code array} is null, it will be treated as empty.
+     */
+    public boolean addAll(T[] array)
+    {
+        int dstPos = next;
+        int size = array == null ? 0 : array.length;
+
+        if (size == 0)
+            return false;
+
+        ensureSize(next + size);
+        copyFrom(array, 0, dstPos, size);
+        return true;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Like {@link #removeAll(Collection)}, but for java arrays.
+     * <p>
+     * If {@code array} is null, it will be treated as empty.
+     */
+    public boolean removeAll(Object[] array)
+    {
+        int size = next;
+
+        if (array != null)
+            for (Object o: array)
+                remove(o);
+
+        return size != next;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Like {@link #retainAll(Collection)}, but for iterables.
+     * <p>
+     * Note that the collection overload will be faster if the collection support
+     * sub-linear-time {@link Collection#contains}.
+     */
+    public boolean retainAll(Object[] array)
+    {
+        int size = next;
+
+        if (array != null)
+        {
+            for (Object o: array)
+            {
+                int i = indexOf(o);
+                if (i >= 0)
+                    remove(i);
+            }
+        }
+
+        return size != next;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Like {@link #addAll(Collection)}, but optimized for arrays.
+     * <p>
+     * If {@code iterable} is null, it will be treated as empty.
+     */
+    public boolean addAll(Array<? extends T> array)
+    {
+        int dstPos = next;
+        int size = array == null ? 0 : array.size();
+
+        if (size == 0)
+            return false;
+
+        ensureSize(next + size);
+        copyFrom(array, 0, dstPos, size);
+        return true;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -882,9 +972,7 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
     public T remove()
     {
         if (next == 0)
-        {
             throw new NoSuchElementException();
-        }
 
         T out = (T) array[next - 1];
         array[--next] = null;
@@ -915,9 +1003,7 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
     public T element()
     {
         if (next == 0)
-        {
             throw new NoSuchElementException();
-        }
 
         return (T) array[next - 1];
     }
@@ -991,9 +1077,8 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
 
     public void ensureSize(int size)
     {
-        if (array.length < size) {
+        if (array.length < size)
             ensureCapacity(size);
-        }
 
         next = size;
     }
@@ -1007,9 +1092,7 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
         if (size < capacity)
         {
             while (size < capacity)
-            {
                 size = (int) (size * GROWTH_FACTOR);
-            }
 
             array = Arrays.copyOf(array, size);
         }
@@ -1020,14 +1103,10 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
     public void truncate(int size)
     {
         for (int i = size; i < next; ++i)
-        {
             array[i] = null;
-        }
 
         if (size < next)
-        {
             next = size;
-        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -1592,7 +1671,6 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
         public void add(T t)
         {
             Array.this.add(index, t);
-            // ++index; // remove this from superclass to satisfy method contract
             direction = 0;
         }
     }

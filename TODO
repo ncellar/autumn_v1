@@ -1,37 +1,22 @@
 --------------------------------------------------------------------------------
 TODO NOW
 
+    - syntactic extensions should use parsing expressions
+        - but should get reference resolution (but should only reference expr)
+            + left-recursion elimination
+
+    - grammatical composition
+        - SubGrammar: verify and document
+
+    - index allocation should be per-grammar
+        - extensions should be registered before root pe
+        - extension pe should be created by extension
+
     - extensions can define syntactic extension
         - declarations: decl <name> <pe> ;
         - expressions: `<name> { <pe> }
 
         - isolate syntax of clusters in extension?
-
-        - tokenizer X =
-        - how to set the current tokenizer?
-            `tokenizer(X)`
-        - how to call a token?
-            % token_name
-        - TokenRef class
-        - how to mark an alternative as a token
-            %= token_name
-            `def_token(X)`
-        - how to extend syntax with custom functions
-            `function(x)[<string>](<expr>)`
-            pexp X = <java method ref>
-        - no capture operator
-            `nocapture(X)`
-        - whitespace operator
-            `whitespace`
-        - dumb operator
-            `fast(X)`
-        - remove ^= and %= operators
-
-    - tokenizers
-        - token PE linked to a tokenizer + type
-        - memoization window around position
-        - error handling: an error over a token can become "unexpected X"
-        - advantage: handles reserved identifiers
 
 TODO NOTES
 
@@ -93,16 +78,50 @@ TODO FURTHER SMALL
 
     - separate accessors and groups better or make an understandble parse tree build error
 
+    - grammar compositions
+
+    - move precedence into its own extension
+
 TODO FURTHER BIG
 
+    - tokenizers
+        - token PE linked to a tokenizer + type
+        - memoization window around position
+        - error handling: an error over a token can become "unexpected X"
+        - advantage: handles reserved identifiers
+
+        - tokenizer X =
+        - how to set the current tokenizer?
+            `tokenizer(X)`
+        - how to call a token?
+            % token_name
+        - TokenRef class
+        - how to mark an alternative as a token
+            %= token_name
+            `def_token(X)`
+        - how to extend syntax with custom functions
+            `function(x)[<string>](<expr>)`
+            pexp X = <java method ref>
+        - no capture operator
+            `nocapture(X)`
+        - whitespace operator
+            `whitespace`
+        - dumb operator
+            `fast(X)`
+        - remove ^= and %= operators
+
     - better support for layering with smart tree-building that automatically rewrites trees
-      (see D5)
+      (see notes, p. D5)
 
     - mini type system for captures? automatic AST classes generation?
 
     - think about building in validation rules
 
-    - grammar composition & parameterization
+    - grammar composition
+        - we already have subgrammars
+        - otherwise, union extensions; and glue grammars: requires path descriptors
+
+    - grammar parameterization
 
 TODO MUCH LATER
 

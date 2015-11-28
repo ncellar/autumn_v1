@@ -6,6 +6,7 @@ import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.util.Array;
 
+import java.util.Collection;
 import java.util.HashSet;
 
 import static com.norswap.util.Caster.cast;
@@ -81,6 +82,26 @@ public final class DefaultErrorState implements ErrorState
         {
             farthestErrorPosition = c.position;
             farthestExpressions = cast(c.expressions.clone());
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void merge(Collection<ErrorLocation> errors)
+    {
+        for (ErrorLocation c: errors)
+        {
+            if (c.position == farthestErrorPosition)
+            {
+                farthestExpressions.add(c.pe);
+            }
+            else if (c.position > farthestErrorPosition)
+            {
+                farthestErrorPosition = c.position;
+                farthestExpressions = new HashSet<>();
+                farthestExpressions.add(c.pe);
+            }
         }
     }
 

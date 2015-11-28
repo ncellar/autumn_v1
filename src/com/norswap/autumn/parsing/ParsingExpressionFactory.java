@@ -542,6 +542,20 @@ public final class ParsingExpressionFactory
         return zeroMore(sequence(seq));
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    public static Success succeed()
+    {
+        return new Success();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static Failure fail()
+    {
+        return new Failure();
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static ParsingExpression notCharSet(String chars)

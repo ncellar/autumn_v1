@@ -33,10 +33,17 @@ public interface Extension
 
     // ---------------------------------------------------------------------------------------------
 
+    default GrammarSyntaxExtension[] grammarSyntaxExtension()
+    {
+        return new GrammarSyntaxExtension[0];
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     /**
-     * Returns the index at with the custom state for this extension can be found in {@link ParseState#customStates}.
-     * This index should be made static to the extension and must be obtained by a call to {@link
-     * CustomStateIndex#allocate}.
+     * Returns the index at with the custom state for this extension can be found in {@link
+     * ParseState#customStates}. This index should be made static to the extension and must be
+     * obtained by a call to {@link CustomStateIndex#allocate}.
      * <p>
      * The default return value (-1) indicates the extension does not require custom state.
      */

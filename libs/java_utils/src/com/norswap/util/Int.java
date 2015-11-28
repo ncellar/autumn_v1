@@ -1,15 +1,15 @@
 package com.norswap.util;
 
 /**
- * A simple modifiable counter for use inside forEach loops and the such.
+ * A simple modifiable boxed integer, for use inside lambdas and such.
  * <p>
  * e.g.:
  * <pre>
- *      Counter c = new Counter();
- *      Arrays.stream(array).forEach(x -> c.i++);
+ *      Int counter = new Int();
+ *      Arrays.stream(array).forEach(x -> counter.i++);
  * </pre>
  */
-public class Counter
+public class Int
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -17,11 +17,11 @@ public class Counter
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public Counter() {}
+    public Int() {}
 
     // ---------------------------------------------------------------------------------------------
 
-    public Counter(int i)
+    public Int(int i)
     {
         this.i = i;
     }

@@ -23,6 +23,8 @@ public interface ErrorState
 
     void merge(ErrorChanges changes);
 
+    void merge(Collection<ErrorLocation> errors);
+
     void handleError(ParsingExpression pe, ParseState state);
 
     ErrorReport report(Source source);

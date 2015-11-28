@@ -1,7 +1,7 @@
 package com.norswap.util.graph;
 
 import com.norswap.util.Array;
-import com.norswap.util.Counter;
+import com.norswap.util.Int;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -200,7 +200,7 @@ public abstract class GraphVisitor<Node>
             return Array.empty();
         }
 
-        Counter c = new Counter();
+        Int c = new Int();
         return Array.map(children(node), x -> new Slot<>(x, node, c.i++));
     }
 

@@ -228,35 +228,36 @@ public final class GrammarGrammar
                 exprLit,
                 group("entries", oneMore(choice(clusterArrow, clusterDirective))))),
 
-        // SYNTAX EXTENSIONS
-
-        syntaxRhs =
-            null,
-
         // TOP LEVEL DECLARATIONS
-
-        declSyntaxDef =
-            namekind("declSyntaxDef",
-                sequence(keyword("decl"), keyword("syntax"), equal, qualifiedIdentifier)),
-
-        exprSyntaxDef =
-            namekind("declSyntaxDef",
-                sequence(keyword("expr"), keyword("syntax"), equal, qualifiedIdentifier)),
 
         rule =
             namekind("rule", sequence(
                 lhs,
                 accessor("rhs", choice(
                     exprCluster,
-                    kind("parsingExpression", capture(parsingExpression)))))),
+                    kind("parsingExpression", capture(parsingExpression)))),
+                semi)),
+
+        customDecl =
+            namekind("customDecl", sequence(
+                token("decl"),
+                captureText("declType", identifier),
+                captureText("text", zeroMore(any(), not(semi))),
+                semi)),
 
         decl =
-            named$("decl", sequence(
-                choice(rule, declSyntaxDef, exprSyntaxDef),
+            named$("decl", choice(rule, customDecl)),
+
+        innport =
+            named$("import", sequence(
+                token("import"),
+                captureText(qualifiedIdentifier),
                 semi)),
 
         root =
-            named$("grammar", group("decls", oneMore(decl)));
+            named$("grammar", sequence(
+                group("imports", zeroMore(innport)),
+                group("decls", oneMore(decl))));
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -1,7 +1,6 @@
 package com.norswap.autumn.parsing;
 
 import com.norswap.autumn.parsing.config.ParserConfiguration;
-import com.norswap.autumn.parsing.capture.ParseTree;
 import com.norswap.autumn.parsing.extensions.Extension;
 import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.state.CustomState;
@@ -53,9 +52,6 @@ public final class Parser implements Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
-    /**
-     * Parses the source using the supplied inputs and returns the result.
-     */
     public ParseResult parse(ParseInputs inputs)
     {
         Array<CustomState> indexedStates = new Array<>();

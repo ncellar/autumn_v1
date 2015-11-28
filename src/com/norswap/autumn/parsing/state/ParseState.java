@@ -14,6 +14,7 @@ import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.state.errors.DefaultErrorState;
 import com.norswap.autumn.parsing.state.errors.ErrorState;
 import com.norswap.util.Array;
+import net.nicoulaj.compilecommand.annotations.Inline;
 
 /**
  * An instance of this class is passed to every parsing expression invocation {@link
@@ -253,6 +254,7 @@ public final class ParseState
     /**
      * Advances the end and black end positions by n characters.
      */
+    @Inline
     public void advance(int n)
     {
         end += n;
@@ -264,6 +266,7 @@ public final class ParseState
     /**
      * Sets the end position to indicate that no match could be found.
      */
+    @Inline
     public void fail()
     {
         this.end = -1;
@@ -275,6 +278,7 @@ public final class ParseState
     /**
      * Indicates whether the match was successful.
      */
+    @Inline
     public boolean succeeded()
     {
         return end != -1;
@@ -285,6 +289,7 @@ public final class ParseState
     /**
      * Indicates whether the match was unsuccessful.
      */
+    @Inline
     public boolean failed()
     {
         return end == -1;
@@ -300,6 +305,7 @@ public final class ParseState
      * In some cases, an expression may elect not to report a failure, in which case it must call
      * {@link ParseState#fail} directly instead (e.g. left-recursion for blocked recursive calls).
      */
+    @Inline
     public void fail(ParsingExpression pe)
     {
         this.end = -1;
@@ -313,6 +319,7 @@ public final class ParseState
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    @Inline
     public ParseInputs inputs(ParsingExpression pe)
     {
         return ParseInputs.create(
@@ -326,6 +333,7 @@ public final class ParseState
 
     // ---------------------------------------------------------------------------------------------
 
+    @Inline
     public void load(ParseInputs inputs)
     {
         this.start = inputs.start();
@@ -342,6 +350,7 @@ public final class ParseState
 
     // ---------------------------------------------------------------------------------------------
 
+    @Inline
     public ParseStateSnapshot snapshot()
     {
         Object[] snapshots = new Object[customStates.length];
@@ -361,6 +370,7 @@ public final class ParseState
 
     // ---------------------------------------------------------------------------------------------
 
+    @Inline
     public void restore(ParseStateSnapshot snapshot)
     {
         start               = snapshot.start;
@@ -378,6 +388,7 @@ public final class ParseState
 
     // ---------------------------------------------------------------------------------------------
 
+    @Inline
     public void uncommit(ParseStateSnapshot snapshot)
     {
         start               = snapshot.start;
@@ -391,6 +402,7 @@ public final class ParseState
 
     // ---------------------------------------------------------------------------------------------
 
+    @Inline
     public void discard()
     {
         end = start;
@@ -404,6 +416,7 @@ public final class ParseState
 
     // ---------------------------------------------------------------------------------------------
 
+    @Inline
     public void commit()
     {
         start = end;
@@ -417,6 +430,7 @@ public final class ParseState
 
     // ---------------------------------------------------------------------------------------------
 
+    @Inline
     public ParseChanges extract()
     {
         return new ParseChanges(
@@ -428,6 +442,7 @@ public final class ParseState
 
     // ---------------------------------------------------------------------------------------------
 
+    @Inline
     public void merge(ParseChanges changes)
     {
         end = changes.end;

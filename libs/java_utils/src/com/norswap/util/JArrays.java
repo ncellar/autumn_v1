@@ -1,12 +1,9 @@
 package com.norswap.util;
 
-
-import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 /**
  * Utilities to deal with plain Java arrays.
@@ -101,9 +98,7 @@ public final class JArrays
         assert dst.length >= i1 + size;
         assert src.length >= i2 + size;
 
-        for (int i = 0 ; i < size ; ++i) {
-            dst[i1 + i] = src[i2 + i];
-        }
+        System.arraycopy(src, i2, dst, i1, size);
 
         return dst;
     }
@@ -135,7 +130,7 @@ public final class JArrays
      * returned array has type {@code Object[]}.
      */
     public static <T> Object[]
-    map(T[] src, Function<? super T, ? extends Object> f)
+    map(T[] src, Function<? super T, Object> f)
     {
         return map(src, new Object[src.length], f);
     }
@@ -241,6 +236,31 @@ public final class JArrays
         }
 
         return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Returns the index where {@code elem} appears first in {@code array}, or -1 if it doesn't
+     * appear.
+     */
+    public static <T, U extends T> int indexOf(T[] array, U elem)
+    {
+        for (int i = 0; i < array.length; i++)
+            if (array[i].equals(elem))
+                return i;
+
+        return -1;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Returns true iif the {@code array} contains {@code elem}.
+     */
+    public static <T, U extends T> boolean contains(T[] array, U elem)
+    {
+        return indexOf(array, elem) != -1;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
