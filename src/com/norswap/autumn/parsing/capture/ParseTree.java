@@ -5,6 +5,7 @@ import com.norswap.util.JArrays;
 import com.norswap.util.Strings;
 
 import com.norswap.util.annotations.NonNull;
+import java.util.Arrays;
 import java.util.Set;
 
 import static com.norswap.util.JObjects.hash;
@@ -233,8 +234,8 @@ public final class ParseTree
            same(accessor,  that.accessor)
         && same(value,     that.value)
         && same(kind,      that.kind)
-        && same(kinds,      that.kinds)
-        && same(children,  that.children);
+        && same(kinds,     that.kinds)
+        && Arrays.equals(children, that.children);
     }
 
     // ---------------------------------------------------------------------------------------------

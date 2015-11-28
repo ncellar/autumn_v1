@@ -1,5 +1,6 @@
 package com.norswap.util;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -23,6 +24,8 @@ public final class JObjects
     /**
      * Same as {@link Objects#equals}, but does not clash with the object's own {@link
      * Object#equals} method.
+     * <p>
+     * For arrays, use {@link Arrays#equals} !
      */
     public static boolean same(Object a, Object b)
     {
