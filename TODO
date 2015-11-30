@@ -81,6 +81,12 @@ TODO FURTHER SMALL
 
     - move precedence into its own extension
 
+    - switch nullability settings to no
+
+    - custom error messages
+
+    - introduce fatal errors during parsing
+
 TODO FURTHER BIG
 
     - tokenizers

@@ -78,6 +78,13 @@ public final class ParseTreeBuild
 
     // ---------------------------------------------------------------------------------------------
 
+    public Array<ParseTreeBuild> children()
+    {
+        return children;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     public Array<ParseTreeBuild> childrenFromIndex(int i)
     {
         return children != EMPTY_BUILD

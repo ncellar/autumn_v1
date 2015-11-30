@@ -22,9 +22,9 @@ import java.util.Map;
  * }</pre>
  * Note that the custom syntax cannot contain closing braces.
  * <p>
- * A syntactic extension must supply the type of extension, the name, a grammar defining
+ * A syntactic extension must supply the type of extension, the name, a parsing expression defining
  * the custom syntax part, and a compiler that is called whenever these custom constructs are
- * encounter. For custom expression, it returns a {@link ParsingExpression}.
+ * encountered. For custom expression, it returns a {@link ParsingExpression}.
  */
 public interface GrammarSyntaxExtension
 {
@@ -45,9 +45,9 @@ public interface GrammarSyntaxExtension
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Returns a grammar describing the syntax of extension.
+     * Returns a parsing expression describing the syntax of extension.
      */
-    Grammar grammar();
+    ParsingExpression syntax();
 
     // ---------------------------------------------------------------------------------------------
 

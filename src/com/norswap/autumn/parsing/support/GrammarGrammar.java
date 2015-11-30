@@ -3,6 +3,13 @@ package com.norswap.autumn.parsing.support;
 import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParsingExpression;
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
+import static com.norswap.autumn.parsing.extensions.GrammarSyntaxExtension.Type.DECLARATION;
+import static com.norswap.autumn.parsing.extensions.GrammarSyntaxExtension.Type.EXPRESSION;
+
+import com.norswap.autumn.parsing.support.dynext.DynExtExtension;
+import com.norswap.autumn.parsing.support.dynext.DynExtReader;
+import com.norswap.autumn.parsing.support.dynext.DynRef;
+import com.norswap.autumn.parsing.support.dynext.DynRefReader;
 
 public final class GrammarGrammar
 {
@@ -42,6 +49,7 @@ public final class GrammarGrammar
     dot         = strtok("."),
     percent     = strtok("%"),
     hat         = strtok("^"),
+    backquote   = strtok("`"),
 
     // NAMES AND LITERALS
 
@@ -64,9 +72,11 @@ public final class GrammarGrammar
     dropLit     = keyword("drop"),
     left_assoc  = keyword("left_assoc"),
     left_recur  = keyword("left_recur"),
+    importLit   = keyword("import"),
+    declLit     = keyword("decl"),
 
     reserved
-        = choice(exprLit, dropLit, left_assoc, left_recur),
+        = choice(exprLit, dropLit, left_assoc, left_recur, importLit, declLit),
 
     unicodeEscape
         = sequence(literal("\\u"), hexDigit, hexDigit, hexDigit, hexDigit),
@@ -199,7 +209,13 @@ public final class GrammarGrammar
             capture("charRange", range),
             captureText("stringLit", stringLit),
             captureText("charSet", charSet),
-            captureText("notCharSet", notCharSet)))),
+            captureText("notCharSet", notCharSet),
+            capture("custom", sequence(
+                backquote,
+                new DynRefReader(EXPRESSION, captureText(identifier)),
+                lBrace,
+                new DynRef(),
+                rBrace))))),
 
         // RULES & CLUSTERS
 
@@ -240,9 +256,9 @@ public final class GrammarGrammar
 
         customDecl =
             namekind("customDecl", sequence(
-                token("decl"),
-                captureText("declType", identifier),
-                captureText("text", zeroMore(any(), not(semi))),
+                declLit,
+                new DynRefReader(DECLARATION, captureText("declType", identifier)),
+                capture("custom", new DynRef()),
                 semi)),
 
         decl =
@@ -250,8 +266,8 @@ public final class GrammarGrammar
 
         innport =
             named$("import", sequence(
-                token("import"),
-                captureText(qualifiedIdentifier),
+                importLit,
+                new DynExtReader(captureText(qualifiedIdentifier)),
                 semi)),
 
         root =
@@ -289,7 +305,10 @@ public final class GrammarGrammar
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static final Grammar grammar = Grammar.fromRoot(root).build();
+    public static final Grammar grammar = Grammar
+        .fromRoot(root)
+        .withExtension(new DynExtExtension())
+        .build();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

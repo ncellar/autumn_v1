@@ -1,20 +1,18 @@
 package com.norswap.autumn.parsing.support;
 
-import com.norswap.autumn.Autumn;
 import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.GrammarBuilder;
-import com.norswap.autumn.parsing.ParseResult;
 import com.norswap.autumn.parsing.Whitespace;
 import com.norswap.autumn.parsing.expressions.Success;
 import com.norswap.autumn.parsing.expressions.Capture;
 import com.norswap.autumn.parsing.capture.Decorate;
 import com.norswap.autumn.parsing.capture.ParseTree;
-import com.norswap.autumn.parsing.extensions.Extension;
 import com.norswap.autumn.parsing.extensions.GrammarSyntaxExtension;
 import com.norswap.autumn.parsing.extensions.cluster.ExpressionCluster.Group;
 import com.norswap.autumn.parsing.extensions.cluster.Filter;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.expressions.Reference;
+import com.norswap.autumn.parsing.support.dynext.DynExtState;
 import com.norswap.util.Array;
 import com.norswap.util.JArrays;
 import com.norswap.util.Streams;
@@ -42,15 +40,21 @@ public final class GrammarCompiler
     private Array<ParsingExpression> namedClusterAlternates = new Array<>();
 
     private HashMap<String, Object> context = new HashMap<>();
-    private Array<Extension> extensions = new Array<>();
-    private HashMap<String, GrammarSyntaxExtension> declExtensions;
-    private HashMap<String, GrammarSyntaxExtension> exprExtensions;
+
+    private DynExtState destate;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static GrammarBuilder compile(ParseTree tree)
+    private GrammarCompiler(DynExtState destate)
     {
-        Array<ParsingExpression> exprs = new GrammarCompiler().run(tree);
+        this.destate = destate;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static GrammarBuilder compile(ParseTree tree, DynExtState destate)
+    {
+        Array<ParsingExpression> exprs = new GrammarCompiler(destate).run(tree);
 
         ParsingExpression whitespace = exprs.stream()
             .filter(rule -> "Spacing".equals(rule.name))
@@ -72,55 +76,12 @@ public final class GrammarCompiler
      */
     public Array<ParsingExpression> run(ParseTree tree)
     {
-        tree.group("imports").forEach(this::compileImport);
+        // We don't process imports, as they have already been at parse-time.
+
         tree.group("decls").forEach(this::compileDeclaration);
         // TODO remove
         rules.addAll(namedClusterAlternates);
         return rules;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    private void compileImport(ParseTree innport)
-    {
-        try {
-            Class<?> klass = Class.forName(innport.value);
-            Extension ext = (Extension) klass.newInstance();
-            extensions.add(ext);
-
-            // Register syntactic extensions.
-            for (GrammarSyntaxExtension syntax: ext.grammarSyntaxExtension())
-            {
-                switch (syntax.type())
-                {
-                    case DECLARATION:
-                        if (declExtensions == null)
-                            declExtensions = new HashMap<>();
-                        declExtensions.put(syntax.name(), syntax);
-                        break;
-
-                    case EXPRESSION:
-                        if (exprExtensions == null)
-                            exprExtensions = new HashMap<>();
-                        exprExtensions.put(syntax.name(), syntax);
-                        break;
-                }
-            }
-        }
-        catch (ClassNotFoundException e)
-        {
-            error("Could not find extension class: %s", innport.value);
-        }
-        catch (ClassCastException e)
-        {
-            error("Imported class is not a descendant of %s: %s",
-                "com.norswap.autumn.parsing.extensions.Extension",
-                innport.value);
-        }
-        catch (InstantiationException | IllegalAccessException e)
-        {
-            error("Imported extension class does not have a public nullary constructor.");
-        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -181,20 +142,8 @@ public final class GrammarCompiler
 
     private void compileCustomDecl(ParseTree customDecl)
     {
-        GrammarSyntaxExtension ext = declExtensions != null
-            ? declExtensions.get(customDecl.value("declType"))
-            : null;
-
-        if (ext == null) error(
-            "Encountered custom declaration with type \"%s\", but none defined in extensions.",
-            customDecl.value("declType"));
-
-        ParseResult result = Autumn.parseString(ext.grammar(), customDecl.value("text"));
-
-        if (!result.matched)
-            error("Custom declaration failed to parse: %s", result.error.message());
-
-        ext.compile(result.tree, context);
+        GrammarSyntaxExtension ext = destate.declSyntaxes.get(customDecl.value("declType"));
+        ext.compile(customDecl.get("custom"), context);
     }
 
     // ---------------------------------------------------------------------------------------------

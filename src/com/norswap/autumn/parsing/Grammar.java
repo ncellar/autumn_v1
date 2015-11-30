@@ -6,6 +6,8 @@ import com.norswap.autumn.parsing.extensions.Extension;
 import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.support.GrammarCompiler;
 import com.norswap.autumn.parsing.support.GrammarGrammar;
+import com.norswap.autumn.parsing.support.dynext.DynExtExtension;
+import com.norswap.autumn.parsing.support.dynext.DynExtState;
 import com.norswap.util.Array;
 import com.norswap.util.annotations.Immutable;
 import com.norswap.util.graph.GraphVisitor;
@@ -91,7 +93,9 @@ public final class Grammar
         }
         else
         {
-            return GrammarCompiler.compile(result.tree);
+            return GrammarCompiler.compile(
+                result.tree,
+                (DynExtState) result.customChanges.get(DynExtExtension.INDEX));
         }
     }
 

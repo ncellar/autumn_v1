@@ -192,9 +192,8 @@ public abstract class ParsingExpression implements DeepCopy
 
     /**
      * Parsing expression must use this method to perform a deep copy of their own data in place.
-     * They must not copy their extension objects, nor their children. They must, however, copy any
-     * wrapper around their children (e.g. an array), or the copy will overwrite the original
-     * parsing expression as well!
+     * They must not copy their children. They must, however, copy any wrapper around their children
+     * (e.g. an array), or the copy will overwrite the original parsing expression as well!
      * <p>
      * This is used by {@link #deepCopy()} and called right after a parsing expression was cloned.
      */
