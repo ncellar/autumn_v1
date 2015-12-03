@@ -2,7 +2,7 @@ package com.norswap.autumn.parsing.support.dynext;
 
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.extensions.Extension;
-import com.norswap.autumn.parsing.extensions.GrammarSyntaxExtension;
+import com.norswap.autumn.parsing.extensions.SyntaxExtension;
 import com.norswap.autumn.parsing.state.CustomState;
 import com.norswap.autumn.parsing.state.ParseState;
 import java.util.HashMap;
@@ -21,9 +21,9 @@ public class DynExtState implements CustomState
 
     public HashSet<Extension> extensions = new HashSet<>();
 
-    public HashMap<String, GrammarSyntaxExtension> declSyntaxes = new HashMap<>();
+    public HashMap<String, SyntaxExtension> declSyntaxes = new HashMap<>();
 
-    public HashMap<String, GrammarSyntaxExtension> exprSyntaxes = new HashMap<>();
+    public HashMap<String, SyntaxExtension> exprSyntaxes = new HashMap<>();
 
     public ParsingExpression target;
 
@@ -33,6 +33,21 @@ public class DynExtState implements CustomState
     public Object extract(ParseState state)
     {
         return this;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public void load(Object inputs)
+    {
+        // TODO should be able to remove this check
+        if (inputs == null)
+            return;
+
+        DynExtState in = (DynExtState) inputs;
+        extensions.addAll(in.extensions);
+        declSyntaxes.putAll(in.declSyntaxes);
+        exprSyntaxes.putAll(in.exprSyntaxes);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

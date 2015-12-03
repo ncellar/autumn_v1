@@ -6,13 +6,12 @@ import com.norswap.autumn.parsing.capture.DecorateWithKind;
 import com.norswap.autumn.parsing.expressions.*;
 import com.norswap.autumn.parsing.expressions.Capture;
 import com.norswap.autumn.parsing.capture.Decorate;
-import com.norswap.autumn.parsing.extensions.cluster.ExpressionCluster;
-import com.norswap.autumn.parsing.extensions.cluster.ExpressionCluster.Group;
+import com.norswap.autumn.parsing.extensions.cluster.expressions.ExpressionCluster;
+import com.norswap.autumn.parsing.extensions.cluster.expressions.ExpressionCluster.Group;
 import com.norswap.autumn.parsing.expressions.Whitespace;
-import com.norswap.autumn.parsing.extensions.cluster.Filter;
-import com.norswap.autumn.parsing.extensions.cluster.WithMinPrecedence;
+import com.norswap.autumn.parsing.extensions.cluster.expressions.Filter;
+import com.norswap.autumn.parsing.extensions.cluster.expressions.WithMinPrecedence;
 import com.norswap.autumn.parsing.extensions.leftrec.LeftRecursive;
-import com.norswap.util.JArrays;
 import java.util.Arrays;
 
 public final class ParsingExpressionFactory
@@ -260,44 +259,37 @@ public final class ParsingExpressionFactory
 
     // ---------------------------------------------------------------------------------------------
 
-    public static Filter filter(
-        ParsingExpression cluster,
-        ParsingExpression[] allowed,
-        ParsingExpression[] forbidden)
+    public static ParsingExpression filter(
+        ParsingExpression pe,
+        String[] allowed,
+        String[] forbidden)
     {
-        Filter filter = new Filter();
-        filter.operand = cluster;
-        filter.allowed = allowed != null ? allowed : new ParsingExpression[0];
-        filter.forbidden = forbidden != null ? forbidden : new ParsingExpression[0];
-        return filter;
+        if ((allowed == null   || allowed.length == 0)
+        &&  (forbidden == null || forbidden.length == 0))
+        {
+            return pe;
+        }
+
+        return new Filter(
+            pe,
+            allowed != null ? allowed : EMPTY_STRINGS,
+            forbidden != null ? forbidden : EMPTY_STRINGS);
+    }
+
+    private static final String[] EMPTY_STRINGS = new String[0];
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static ParsingExpression allow(ParsingExpression pe, String... allowed)
+    {
+        return filter(pe, allowed, null);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    public static Filter allow$(ParsingExpression cluster, ParsingExpression... allowed)
+    public static ParsingExpression forbid(ParsingExpression pe, String... forbidden)
     {
-        if (cluster instanceof Filter)
-        {
-            Filter f = (Filter) cluster;
-            f.allowed = JArrays.concat(f.allowed, allowed);
-            return f;
-        }
-
-        return filter(cluster, allowed, null);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public static Filter forbid$(ParsingExpression cluster, ParsingExpression... forbidden)
-    {
-        if (cluster instanceof Filter)
-        {
-            Filter f = (Filter) cluster;
-            f.forbidden = JArrays.concat(f.forbidden, forbidden);
-            return f;
-        }
-
-        return filter(cluster, null, forbidden);
+        return filter(pe, null, forbidden);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -593,6 +585,20 @@ public final class ParsingExpressionFactory
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    public static ParsingExpression namekind(String string, ParsingExpression pe)
+    {
+        return named$(string, capture($(kind(string)), pe));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static ParsingExpression namekindText(String string, ParsingExpression pe)
+    {
+        return named$(string, captureText($(kind(string)), pe));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     public static ParsingExpression named$(String name, ParsingExpression pe)
     {
         pe.name = name;
@@ -604,6 +610,13 @@ public final class ParsingExpressionFactory
     public static Debug debug(String id)
     {
         return new Debug(id);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static Not fdebug(String id)
+    {
+        return not(new Debug(id));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

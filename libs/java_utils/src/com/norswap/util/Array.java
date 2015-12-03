@@ -154,6 +154,15 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
 
     // ---------------------------------------------------------------------------------------------
 
+    public static <T> Array<T> fromCollection(Collection<? extends T> collection)
+    {
+        Array<T> out = new Array<>(collection.size());
+        out.addAll(collection);
+        return out;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     /**
      * Creates a new array containing all the items iterated over by the passed iterable.
      */
@@ -538,9 +547,7 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
     public boolean add(T t)
     {
         if (next == array.length)
-        {
             ensureCapacity(array.length + 1);
-        }
 
         array[next++] = t;
 
@@ -739,7 +746,8 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
      * <p>
      * If {@code array} is null, it will be treated as empty.
      */
-    public boolean addAll(T[] array)
+    @SafeVarargs
+    public final boolean addAll(T... array)
     {
         int dstPos = next;
         int size = array == null ? 0 : array.length;
@@ -1091,8 +1099,11 @@ public final class Array<T> implements List<T>, Queue<T>, RandomAccess, Cloneabl
 
         if (size < capacity)
         {
+            if (size == 0)
+                size = DEFAULT_CAPACITY;
+
             while (size < capacity)
-                size = (int) (size * GROWTH_FACTOR);
+                size = (int) Math.ceil(size * GROWTH_FACTOR);
 
             array = Arrays.copyOf(array, size);
         }

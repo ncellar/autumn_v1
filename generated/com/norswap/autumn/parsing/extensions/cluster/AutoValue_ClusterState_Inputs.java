@@ -2,6 +2,7 @@
 package com.norswap.autumn.parsing.extensions.cluster;
 
 import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.extensions.cluster.expressions.ExpressionCluster;
 import com.norswap.util.Array;
 import java.util.HashMap;
 import javax.annotation.Generated;

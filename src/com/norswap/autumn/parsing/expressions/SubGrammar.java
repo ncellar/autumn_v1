@@ -79,24 +79,16 @@ public final class SubGrammar extends ParsingExpression
         if (inputMerging.length == 0 && outputMerging.length == 0)
             return;
 
-        for (int i = 0; i < parentExtensions.size(); i++)
-        {
-            Extension parentExt = parentExtensions.get(i);
-
-            for (int j = 0; j < subExtensions.size(); j++)
-            {
-                Extension subExt = subExtensions.get(j);
-
+        for (Extension parentExt: parentExtensions)
+            for (Extension subExt: subExtensions)
                 if (parentExt.getClass() == subExt.getClass())
                 {
                     if (JArrays.contains(inputMerging, subExt))
-                        inputMerge .set(subExt.stateIndex(), parentExt);
+                        inputMerge.set(subExt.stateIndex(), parentExt);
 
                     if (JArrays.contains(outputMerging, subExt))
                         outputMerge.set(subExt.stateIndex(), parentExt);
                 }
-            }
-        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -104,9 +96,14 @@ public final class SubGrammar extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseState state)
     {
-        Array<Object> customInputs = outputMerge.map(from -> from == null
-            ? null
-            : state.customStates[from.stateIndex()].inputs(state));
+        Array<ParseInputs.Entry> customInputs = new Array<>();
+
+        for (Extension ext: outputMerge)
+            if (ext != null)
+            {
+                CustomState cstate = state.customStates[ext.stateIndex()];
+                customInputs.add(new ParseInputs.Entry(cstate, cstate.inputs(state)));
+            }
 
         ParseInputs inputs = ParseInputs.create(
             subgrammar.root,

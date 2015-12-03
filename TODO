@@ -1,22 +1,6 @@
 --------------------------------------------------------------------------------
 TODO NOW
-
-    - syntactic extensions should use parsing expressions
-        - but should get reference resolution (but should only reference expr)
-            + left-recursion elimination
-
-    - grammatical composition
-        - SubGrammar: verify and document
-
-    - index allocation should be per-grammar
-        - extensions should be registered before root pe
-        - extension pe should be created by extension
-
-    - extensions can define syntactic extension
-        - declarations: decl <name> <pe> ;
-        - expressions: `<name> { <pe> }
-
-        - isolate syntax of clusters in extension?
+    - python grammar
 
 TODO NOTES
 
@@ -53,8 +37,15 @@ TODO GUMPTION
 
 TODO FURTHER SMALL
 
+    - index allocation should be per-grammar
+        - extensions should be registered before root pe
+        - extension pe should be created by extension
+
     - allow options in grammar files, namely for root and whitespace spec
       (to be retrieved from GrammarCompiler)
+
+    - rework cluster filtering mechanism
+        - simple fix: insert a checking parsing expression around named arrows
 
     - well formedness check (ford: WF -- can't loop without consuming)
 
@@ -78,14 +69,22 @@ TODO FURTHER SMALL
     - separate accessors and groups better or make an understandble parse tree build error
 
     - grammar compositions
+        - SubGrammar: verify and document
 
     - move precedence into its own extension
 
-    - switch nullability settings to no
+    - switch default nullability settings to yes
 
     - custom error messages
 
     - introduce fatal errors during parsing
+
+    - clarify behaviour of grammatical transformations wrt expression names
+        - either rule substitution: the old rule becomes a new one, the name is **moved**
+        - or wrapping: the name is unchanged
+
+    - clever way to export the inputs
+        - use the parsestate class instead of extension?
 
 TODO FURTHER BIG
 

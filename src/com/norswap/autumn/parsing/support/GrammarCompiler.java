@@ -1,47 +1,64 @@
 package com.norswap.autumn.parsing.support;
 
-import com.norswap.autumn.parsing.Grammar;
-import com.norswap.autumn.parsing.GrammarBuilder;
 import com.norswap.autumn.parsing.Whitespace;
 import com.norswap.autumn.parsing.expressions.Success;
 import com.norswap.autumn.parsing.expressions.Capture;
 import com.norswap.autumn.parsing.capture.Decorate;
 import com.norswap.autumn.parsing.capture.ParseTree;
-import com.norswap.autumn.parsing.extensions.GrammarSyntaxExtension;
-import com.norswap.autumn.parsing.extensions.cluster.ExpressionCluster.Group;
-import com.norswap.autumn.parsing.extensions.cluster.Filter;
+import com.norswap.autumn.parsing.extensions.SyntaxExtension;
+import com.norswap.autumn.parsing.extensions.cluster.expressions.Filter;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.expressions.Reference;
 import com.norswap.autumn.parsing.support.dynext.DynExtState;
 import com.norswap.util.Array;
 import com.norswap.util.JArrays;
-import com.norswap.util.Streams;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.Function;
 
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
 import static com.norswap.util.StringEscape.unescape;
 
+/**
+ * This class is used to compile the parse tree resulting from the parse of a grammar file into a
+ * list of rules to be used in a grammar.
+ * <p>
+ * The syntax of grammar files is defined in {@link MetaGrammar}.
+ * <p>
+ * Compilation is invoked through the {@link #compile} static entry point. This create an instance
+ * of this class which forms the context of the compilation. This instance can be accessed by the
+ * compiler for syntactic extensions ({@link SyntaxExtension#compile}), which can manipulate the
+ * public fields and call the public methods.
+ */
 public final class GrammarCompiler
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    @FunctionalInterface
-    private interface Compiler extends Function<ParseTree, ParsingExpression> {}
+    /**
+     * The list of all rules defined in the grammar file.
+     */
+    public final Array<ParsingExpression> rules = new Array<>();
 
-    @FunctionalInterface
-    private interface Grouper extends Function<ParsingExpression[], ParsingExpression> {}
+    /**
+     * After the compilation finishes, holds the root of the compiled grammar.
+     */
+    public ParsingExpression root;
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * After the compilation finishes, holds the whitespace expression of the compiled grammar.
+     */
+    public ParsingExpression whitespace;
 
-    private Array<ParsingExpression> rules = new Array<>();
-    private Array<ParsingExpression> namedClusterAlternates = new Array<>();
+    /**
+     * A map where syntactic extension can read/write custom data.
+     */
+    public final HashMap<String, Object> context = new HashMap<>();
 
-    private HashMap<String, Object> context = new HashMap<>();
-
-    private DynExtState destate;
+    /**
+     * The dynamic extension state, which lists all registered extensions and their syntactic
+     * extensions.
+     */
+    private final DynExtState destate;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -52,35 +69,35 @@ public final class GrammarCompiler
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static GrammarBuilder compile(ParseTree tree, DynExtState destate)
+    public static GrammarCompiler compile(ParseTree tree, DynExtState destate)
     {
-        Array<ParsingExpression> exprs = new GrammarCompiler(destate).run(tree);
+        GrammarCompiler compiler = new GrammarCompiler(destate);
+        compiler.run(tree);
 
-        ParsingExpression whitespace = exprs.stream()
-            .filter(rule -> "Spacing".equals(rule.name))
-            .findFirst().orElse(Whitespace.DEFAULT());
+        compiler.root = compiler.rules.first();
 
-        return Grammar.fromRoot(exprs.get(0))
-            .rules(exprs)
-            .whitespace(whitespace);
+        compiler.whitespace = compiler.rules
+            .first(rule -> "Spacing".equals(rule.name));
+
+        if (compiler.whitespace == null)
+            compiler.whitespace = Whitespace.DEFAULT();
+
+        return compiler;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * TODO edit
      * Takes the parse tree obtained from a grammar file, and return an array of parsing
      * expressions, corresponding to the grammar rules defined in the grammar.
      * <p>
      * Note that the references inside these expressions are not resolved.
      */
-    public Array<ParsingExpression> run(ParseTree tree)
+    private Array<ParsingExpression> run(ParseTree tree)
     {
         // We don't process imports, as they have already been at parse-time.
 
         tree.group("decls").forEach(this::compileDeclaration);
-        // TODO remove
-        rules.addAll(namedClusterAlternates);
         return rules;
     }
 
@@ -109,46 +126,22 @@ public final class GrammarCompiler
     {
         ParseTree lhs = rule.get("lhs");
         ParseTree rhs = rule.get("rhs");
-        ParsingExpression pe;
-
-        if (rhs.hasKind("parsingExpression"))
-        {
-            pe = compilePE(rhs.child());
-            pe = decorateRule(lhs, pe);
-            rules.add(pe);
-        }
-        else if (rhs.hasKind("exprCluster"))
-        {
-            Array<ParsingExpression> namedAlternates = new Array<>();
-
-            pe = compileCluster(rhs, namedAlternates);
-            pe = decorateRule(lhs, pe);
-
-            for (ParsingExpression alt: namedAlternates)
-            {
-                alt = named$(pe.name + "." + alt.name, alt);
-                namedClusterAlternates.push(alt);
-            }
-
-            rules.add(pe);
-        }
-        else
-        {
-            error("Unknown rule right-hand side: %s", rule);
-        }
+        // TODO don't switch on accessor, don't nest captures
+        ParsingExpression pe = decorateRule(lhs, compilePE(rhs.child()));
+        rules.add(pe);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     private void compileCustomDecl(ParseTree customDecl)
     {
-        GrammarSyntaxExtension ext = destate.declSyntaxes.get(customDecl.value("declType"));
-        ext.compile(customDecl.get("custom"), context);
+        SyntaxExtension ext = destate.declSyntaxes.get(customDecl.value("declType"));
+        ext.compile(this, customDecl.get("custom"));
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    private ParsingExpression decorateRule(ParseTree lhs, ParsingExpression pe)
+    public ParsingExpression decorateRule(ParseTree lhs, ParsingExpression pe)
     {
         if (lhs.has("dumb"))
             pe = dumb(pe);
@@ -159,145 +152,31 @@ public final class GrammarCompiler
         String ruleName = lhs.value("ruleName");
         List<ParseTree> captureSuffixes = lhs.group("captureSuffixes");
 
-        return named$(ruleName,
-            captureSuffixes == null || captureSuffixes.isEmpty()
-                ? pe
-                : compileCapture(ruleName, pe, captureSuffixes));
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    private ParsingExpression compileCluster(
-        ParseTree expression,
-        Array<ParsingExpression> outNamedAlternates)
-    {
-        // Current precedence level, alternates being collected, and group where the alternates
-        // must be added.
-        int precedence = 1;
-        Array<ParsingExpression> alts = new Array<>();
-        Array<Group> groups = new Array<>(group(1, false, false));
-
-        for (ParseTree entry: expression.group("entries"))
-        {
-            if (entry.hasKind("clusterDirective"))
-            {
-                if (!alts.isEmpty())
-                {
-                    // Add the alternates to the current group and prepare for the next group.
-                    groups.peek().operands = alts.toArray(ParsingExpression[]::new);
-                    alts = new Array<>();
-                    ++precedence;
-                }
-                else
-                {
-                    groups.pop();
-                }
-
-                switch (entry.value)
-                {
-                    case "@+":
-                        groups.push(group(precedence, false, false));
-                        break;
-
-                    case "@+_left_recur":
-                        groups.push(group(precedence, true, false));
-                        break;
-
-                    case "@+_left_assoc":
-                        groups.push(group(precedence, true, true));
-                        break;
-
-                    default:
-                        error("Unknown cluster directive: %s", entry);
-                }
-            }
-            else if (entry.hasKind("clusterArrow"))
-            {
-                ParsingExpression pe = compilePE(entry.get("expr").child());
-
-                if (entry.has("lhs"))
-                {
-                    pe = decorateRule(entry.get("lhs"), pe);
-                    outNamedAlternates.push(pe);
-                }
-
-                alts.push(pe);
-            }
-            else
-            {
-                error("Unknown cluster entry: %s", entry);
-            }
-        }
-
-        if (!alts.isEmpty()) {
-            groups.peek().operands = alts.toArray(ParsingExpression[]::new);
-        }
-        else {
-            groups.pop();
-        }
-
-        return cluster(groups.toArray(Group[]::new));
+        return captureSuffixes.isEmpty()
+            ? named$(ruleName, pe)
+            : named$(ruleName, compileCapture(ruleName, pe, captureSuffixes));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private ParsingExpression compileRef(ParseTree tree)
-    {
-        Reference ref = reference(tree.value("name"));
-
-        List<ParseTree> allowed = tree.group("allowed");
-        List<ParseTree> forbidden = tree.group("forbidden");
-
-        if (!allowed.isEmpty() || !forbidden.isEmpty())
-        {
-            return filter(
-                ref,
-                Streams.from(allowed)
-                    .map(pe -> reference(ref.target + "." + pe.value))
-                    .toArray(ParsingExpression[]::new),
-                Streams.from(forbidden)
-                    .map(pe -> reference(ref.target + "." + pe.value))
-                    .toArray(ParsingExpression[]::new)
-            );
-        }
-        else {
-            return ref;
-        }
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
     private String name(String name, ParsingExpression expr, ParseTree suffix)
     {
         if (suffix.has("name"))
-        {
             return suffix.value("name");
-        }
 
         // Else there is a dollar instead of a name.
         // Either this qualifies a rule ...
 
         if (name != null)
-        {
             return name;
-        }
 
-        // ... or a reference (possibly wrapped in a filter).
+        // ... or a reference
 
         if (expr == null)
-        {
             error("Dollar ($) capture name used in conjuction with a marker.");
-        }
-
-        if (expr instanceof Filter)
-        {
-            expr = ((Filter) expr).operand;
-        }
 
         if (!(expr instanceof Reference))
-        {
             error("Dollar ($) capture name is a suffix of something which is not an identifier");
-        }
 
         return ((Reference)expr).target;
     }
@@ -378,7 +257,7 @@ public final class GrammarCompiler
 
     // ---------------------------------------------------------------------------------------------
 
-    private ParsingExpression compilePE(ParseTree tree)
+    public ParsingExpression compilePE(ParseTree tree)
     {
         ParseTree child;
         ParsingExpression childPE;
@@ -441,7 +320,7 @@ public final class GrammarCompiler
                 return exprDropPrecedence(compilePE(tree.child()));
 
             case "ref":
-                return compileRef(tree);
+                return reference(tree.value);
 
             case "any":
                 return any();
@@ -460,6 +339,17 @@ public final class GrammarCompiler
             case "stringLit":
                 return literal(unescape(tree.value("literal")));
 
+            case "customExpr":
+                SyntaxExtension ext = destate.exprSyntaxes.get(tree.value("exprType"));
+                Object out = ext.compile(this, tree.get("custom"));
+
+                if (!(out instanceof ParsingExpression))
+                    error("Expression grammar syntax extension did not compile to a %s but to a %s",
+                        ParsingExpression.class.getName(),
+                        out.getClass().getName());
+
+                return (ParsingExpression) out;
+
             default:
                 error("Parsing expression with unknown name: %s", tree.accessor);
                 return null; // unreachable
@@ -468,7 +358,7 @@ public final class GrammarCompiler
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private void error(String format, Object... items)
+    public void error(String format, Object... items)
     {
         for (int i = 0; i < items.length; ++i)
         {

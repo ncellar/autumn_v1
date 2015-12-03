@@ -82,9 +82,8 @@ public class Capture extends UnaryParsingExpression
     @Override
     public String ownDataString()
     {
-        return decorations.length == 0
-            ? ""
-            : Arrays.toString(decorations);
+        String s = Arrays.toString(decorations);
+        return s.substring(1, s.length() - 1);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

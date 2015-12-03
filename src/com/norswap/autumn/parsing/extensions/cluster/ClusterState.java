@@ -2,8 +2,13 @@ package com.norswap.autumn.parsing.extensions.cluster;
 
 import com.google.auto.value.AutoValue;
 import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.extensions.Extension;
 import com.norswap.autumn.parsing.extensions.Seeds;
+import com.norswap.autumn.parsing.extensions.cluster.expressions.ExpressionCluster;
+import com.norswap.autumn.parsing.extensions.cluster.expressions.Filter;
+import com.norswap.autumn.parsing.extensions.cluster.expressions.WithMinPrecedence;
 import com.norswap.autumn.parsing.state.CustomState;
+import com.norswap.autumn.parsing.state.ExportedInputs;
 import com.norswap.autumn.parsing.state.ParseChanges;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.state.patterns.ValueOutput;

@@ -3,7 +3,7 @@ package com.norswap.autumn.parsing.support.dynext;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.expressions.abstrakt.UnaryParsingExpression;
-import com.norswap.autumn.parsing.extensions.GrammarSyntaxExtension;
+import com.norswap.autumn.parsing.extensions.SyntaxExtension;
 import com.norswap.autumn.parsing.state.ParseState;
 import static com.norswap.util.Caster.cast;
 
@@ -18,11 +18,11 @@ public final class DynRefReader extends UnaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public final GrammarSyntaxExtension.Type type;
+    public final SyntaxExtension.Type type;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public DynRefReader(GrammarSyntaxExtension.Type type, ParsingExpression operand)
+    public DynRefReader(SyntaxExtension.Type type, ParsingExpression operand)
     {
         this.operand = operand;
         this.type = type;
@@ -41,7 +41,7 @@ public final class DynRefReader extends UnaryParsingExpression
             return;
 
         String name = state.tree.children().last().value;
-        GrammarSyntaxExtension ext;
+        SyntaxExtension ext;
 
         switch (type)
         {
@@ -50,13 +50,12 @@ public final class DynRefReader extends UnaryParsingExpression
                 {
                     String errMsg = "Unknown declaration syntactic extension: " + name;
                     // TODO this should not backtrack but be a fatal error
-                    // TODO use errMsg
+                    // TODO use errMsg properly
+                    System.err.println(errMsg);
                     state.fail(this);
                 }
                 else
-                {
-                    destate.target = ext.syntax();
-                }
+                    destate.target = ext.syntax;
                 break;
 
             case EXPRESSION:
@@ -64,13 +63,12 @@ public final class DynRefReader extends UnaryParsingExpression
                 {
                     String errMsg = "Unknown expression syntactic extension: " + name;
                     // TODO this should not backtrack but be a fatal error
-                    // TODO use errMsg
+                    // TODO use errMsg properly
+                    System.err.println(errMsg);
                     state.fail(this);
                 }
                 else
-                {
-                    destate.target = ext.syntax();
-                }
+                    destate.target = ext.syntax;
                 break;
         }
     }

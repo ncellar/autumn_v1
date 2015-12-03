@@ -1,8 +1,9 @@
 package com.norswap.autumn.parsing.extensions.tracer;
 
+import com.norswap.autumn.parsing.extensions.Extension;
 import com.norswap.autumn.parsing.state.CustomState;
 
-public class TraceState  implements CustomState
+public class TraceState implements CustomState
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

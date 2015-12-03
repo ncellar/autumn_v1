@@ -4,8 +4,9 @@ import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.expressions.abstrakt.UnaryParsingExpression;
 import com.norswap.autumn.parsing.extensions.Extension;
-import com.norswap.autumn.parsing.extensions.GrammarSyntaxExtension;
+import com.norswap.autumn.parsing.extensions.SyntaxExtension;
 import com.norswap.autumn.parsing.state.ParseState;
+
 import static com.norswap.util.Caster.cast;
 
 /**
@@ -45,16 +46,18 @@ public class DynExtReader extends UnaryParsingExpression
 
             destate.extensions.add(ext);
 
-            for (GrammarSyntaxExtension syntax: ext.grammarSyntaxExtension())
-                switch (syntax.type())
+            for (SyntaxExtension syntaxExt: ext.syntaxExtensions())
+            {
+                switch (syntaxExt.type)
                 {
                     case DECLARATION:
-                        destate.declSyntaxes.put(syntax.name(), syntax);
+                        destate.declSyntaxes.put(syntaxExt.name, syntaxExt);
                         break;
                     case EXPRESSION:
-                        destate.exprSyntaxes.put(syntax.name(), syntax);
+                        destate.exprSyntaxes.put(syntaxExt.name, syntaxExt);
                         break;
                 }
+            }
 
             return;
         }

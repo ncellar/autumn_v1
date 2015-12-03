@@ -4,6 +4,7 @@ import com.norswap.autumn.parsing.GrammarBuilderExtensionView;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.state.CustomState;
 import com.norswap.autumn.parsing.state.ParseState;
+import com.norswap.util.annotations.NonNull;
 
 /**
  * Interfaces that extensions to the parser must implement.
@@ -33,9 +34,12 @@ public interface Extension
 
     // ---------------------------------------------------------------------------------------------
 
-    default GrammarSyntaxExtension[] grammarSyntaxExtension()
+    /**
+     * Returns a list of grammar syntax extensions defined by this extension.
+     */
+    default @NonNull SyntaxExtension[] syntaxExtensions()
     {
-        return new GrammarSyntaxExtension[0];
+        return new SyntaxExtension[0];
     }
 
     // ---------------------------------------------------------------------------------------------

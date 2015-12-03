@@ -52,9 +52,7 @@ public final class Printer extends ParsingExpressionVisitor
 
         // PEF_UNARY_INVISIBLE is set
         if ((pe.flags & PEF_UNARY_INVISIBLE) != 0)
-        {
             return;
-        }
 
         String name = pe.name;
         String data = pe.ownDataString();
@@ -63,9 +61,7 @@ public final class Printer extends ParsingExpressionVisitor
         sink.accept(pe.toStringOneLine());
 
         if (!stack.isEmpty())
-        {
             appendChildData();
-        }
 
         if (name != null && cutoffAtNames && !(depth == 0 && !cutoffAtOwnName))
         {
@@ -115,7 +111,7 @@ public final class Printer extends ParsingExpressionVisitor
         ParsingExpression pe = slot.initial;
 
         // PEF_UNARY_INVISIBLE is set
-        if ((pe.flags & PEF_UNARY_INVISIBLE) != 0)
+        if ((pe.flags | PEF_UNARY_INVISIBLE) != 0)
         {
             stack.pop();
             indices.pop();
@@ -142,9 +138,7 @@ public final class Printer extends ParsingExpressionVisitor
         String childData = stack.peek().childDataString(indices.peek());
 
         if (!childData.isEmpty())
-        {
             sink.accept(" [" + childData + "]");
-        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

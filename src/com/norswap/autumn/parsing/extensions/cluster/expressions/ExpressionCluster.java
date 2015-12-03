@@ -1,5 +1,7 @@
-package com.norswap.autumn.parsing.extensions.cluster;
+package com.norswap.autumn.parsing.extensions.cluster.expressions;
 
+import com.norswap.autumn.parsing.extensions.cluster.ClusterExtension;
+import com.norswap.autumn.parsing.extensions.cluster.ClusterState;
 import com.norswap.autumn.parsing.state.ParseChanges;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.Parser;
@@ -79,9 +81,7 @@ public final class ExpressionCluster extends ParsingExpression
             // right-recursion.
 
             if (group.precedence < oldPrecedence)
-            {
                 break;
-            }
 
             precedence.value = group.precedence + (group.leftAssociative ? 1 : 0);
 
@@ -160,9 +160,7 @@ public final class ExpressionCluster extends ParsingExpression
         groups = DeepCopy.deepClone(groups);
 
         for (Group group: groups)
-        {
             group.operands = group.operands.clone();
-        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -175,9 +173,7 @@ public final class ExpressionCluster extends ParsingExpression
         for (Group group: groups)
         {
             if (position < pos + group.operands.length)
-            {
                 return "precedence: " + group.precedence;
-            }
 
             pos += group.operands.length;
         }

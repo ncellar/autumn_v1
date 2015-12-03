@@ -1,6 +1,7 @@
 package com.norswap.util;
 
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
@@ -261,6 +262,14 @@ public final class JArrays
     public static <T, U extends T> boolean contains(T[] array, U elem)
     {
         return indexOf(array, elem) != -1;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public static <T> void forEach(T[] array, Consumer<T> consumer)
+    {
+        for (T t: array)
+            consumer.accept(t);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

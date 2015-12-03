@@ -1,5 +1,7 @@
 package com.norswap.autumn.parsing.state;
 
+import com.norswap.autumn.parsing.extensions.Extension;
+
 /**
  * Interface implemented by classes that hold custom state to be added to {@link ParseState}. You
  * should read the documentation of {@link ParseState} before going forward.
@@ -21,8 +23,6 @@ public interface CustomState
 
     default Object inputs(ParseState state) { return null; }
 
-    default void load(Object inputs) {}
-
     default Object snapshot(ParseState state) { return null; }
 
     default void restore(Object snapshot, ParseState state) {}
@@ -36,6 +36,8 @@ public interface CustomState
     default Object extract(ParseState state) { return null; }
 
     default void merge(Object changes, ParseState state) {}
+
+    default void load(Object inputs) {}
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

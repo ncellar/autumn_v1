@@ -3,53 +3,62 @@ package com.norswap.autumn.parsing.support;
 import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParsingExpression;
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
-import static com.norswap.autumn.parsing.extensions.GrammarSyntaxExtension.Type.DECLARATION;
-import static com.norswap.autumn.parsing.extensions.GrammarSyntaxExtension.Type.EXPRESSION;
+import static com.norswap.autumn.parsing.extensions.SyntaxExtension.Type.DECLARATION;
+import static com.norswap.autumn.parsing.extensions.SyntaxExtension.Type.EXPRESSION;
 
+import com.norswap.autumn.parsing.extensions.SyntaxExtension;
 import com.norswap.autumn.parsing.support.dynext.DynExtExtension;
 import com.norswap.autumn.parsing.support.dynext.DynExtReader;
 import com.norswap.autumn.parsing.support.dynext.DynRef;
 import com.norswap.autumn.parsing.support.dynext.DynRefReader;
 
-public final class GrammarGrammar
+/**
+ * This class holds the meta-grammar, i.e. the grammar of grammars (or more specifically of grammar
+ * as specified inside grammar files like "Java8.autumn").
+ * <p>
+ * In addition to the grammar proper ({@link #get}, this class also defines the rules that make up
+ * the grammar. Those can be incorporated in the syntax of syntactic extension (see {@link
+ * SyntaxExtension}). However, it is not recommended to do so, except for references to {@link
+ * #expr}.
+ */
+public final class MetaGrammar
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     private static int i = 0;
 
-    public static ParsingExpression
+    public final static ParsingExpression
 
     // TOKENS
 
-    and         = strtok("&"),
-    bang        = strtok("!"),
-    equal       = strtok("="),
-    plus        = strtok("+"),
-    qMark       = strtok("?"),
-    colon       = strtok(":"),
-    semi        = strtok(";"),
-    slash       = strtok("/"),
-    star        = strtok("*"),
-    tilda       = strtok("~"),
-    lBrace      = strtok("{"),
-    rBrace      = strtok("}"),
-    lParen      = strtok("("),
-    rParen      = strtok(")"),
-    underscore  = strtok("_"),
-    starPlus    = strtok("*+"),
-    plusPlus    = strtok("++"),
-    arrow       = strtok("->"),
-    lAnBra      = strtok("<"),
-    rAnBra      = strtok(">"),
-    comma       = strtok(","),
-    commaPlus   = strtok(",+"),
-    minus       = strtok("-"),
-    hash        = strtok("#"),
-    dollar      = strtok("$"),
-    dot         = strtok("."),
-    percent     = strtok("%"),
-    hat         = strtok("^"),
-    backquote   = strtok("`"),
+    and         = ntoken("&"),
+    bang        = ntoken("!"),
+    equal       = ntoken("="),
+    plus        = ntoken("+"),
+    qMark       = ntoken("?"),
+    colon       = ntoken(":"),
+    semi        = ntoken(";"),
+    slash       = ntoken("/"),
+    star        = ntoken("*"),
+    tilda       = ntoken("~"),
+    lBrace      = ntoken("{"),
+    rBrace      = ntoken("}"),
+    lParen      = ntoken("("),
+    rParen      = ntoken(")"),
+    underscore  = ntoken("_"),
+    starPlus    = ntoken("*+"),
+    plusPlus    = ntoken("++"),
+    lAnBra      = ntoken("<"),
+    rAnBra      = ntoken(">"),
+    comma       = ntoken(","),
+    commaPlus   = ntoken(",+"),
+    minus       = ntoken("-"),
+    hash        = ntoken("#"),
+    dollar      = ntoken("$"),
+    dot         = ntoken("."),
+    percent     = ntoken("%"),
+    hat         = ntoken("^"),
+    backquote   = ntoken("`"),
 
     // NAMES AND LITERALS
 
@@ -68,15 +77,14 @@ public final class GrammarGrammar
     num
         = named$("num", token(oneMore(digit))),
 
-    exprLit     = keyword("expr"),
-    dropLit     = keyword("drop"),
-    left_assoc  = keyword("left_assoc"),
-    left_recur  = keyword("left_recur"),
-    importLit   = keyword("import"),
-    declLit     = keyword("decl"),
+    dropLit     = nKeyword("drop"),
+    left_assoc  = nKeyword("left_assoc"),
+    left_recur  = nKeyword("left_recur"),
+    importLit   = nKeyword("import"),
+    declLit     = nKeyword("decl"),
 
     reserved
-        = choice(exprLit, dropLit, left_assoc, left_recur, importLit, declLit),
+        = choice(dropLit, left_assoc, left_recur, importLit, declLit),
 
     unicodeEscape
         = sequence(literal("\\u"), hexDigit, hexDigit, hexDigit, hexDigit),
@@ -96,14 +104,14 @@ public final class GrammarGrammar
     identifier
         = sequence(not(reserved), letter, zeroMore(nameChar)),
 
-    qualifiedIdentifier
-        = aloSeparated(identifier, dot),
-
     escapedIdentifier
         = sequence(literal("'"), aloUntil(any(), literal("'"))),
 
     name
         = named$("name", token(choice(identifier, escapedIdentifier))),
+
+    qualifiedName
+        = named$("qualifiedName", aloSeparated(name, dot)),
 
     nameOrDollar
         = choice(captureText("name", name), capture("dollar", dollar)),
@@ -137,20 +145,6 @@ public final class GrammarGrammar
             literal("\""),
             captureText("literal", zeroMore(not(literal("\"")), character)),
             literal("\""))),
-
-    reference
-        = sequence(
-            captureText("name", name),
-            optional(
-                strtok("allow"),
-                lBrace,
-                aloSeparated(captureText($(group("allowed")), name), comma),
-                rBrace),
-            optional(
-                strtok("forbid"),
-                lBrace,
-                aloSeparated(captureText($(group("forbidden")), name), comma),
-                rBrace)),
 
     captureSuffix
         = capture($(group("captureSuffixes")), choice(
@@ -204,20 +198,20 @@ public final class GrammarGrammar
         group(++i, // primary
             sequence(lParen, exprDropPrecedence(expr), rParen),
             capture("drop", sequence(dropLit, expr)),
-            capture("ref", reference),
+            captureText("ref", name),
             capture("any", underscore),
             capture("charRange", range),
             captureText("stringLit", stringLit),
             captureText("charSet", charSet),
             captureText("notCharSet", notCharSet),
-            capture("custom", sequence(
+            capture("customExpr", sequence(
                 backquote,
-                new DynRefReader(EXPRESSION, captureText(identifier)),
+                new DynRefReader(EXPRESSION, captureText("exprType", name)),
                 lBrace,
-                new DynRef(),
+                capture("custom", exprDropPrecedence(new DynRef())),
                 rBrace))))),
 
-        // RULES & CLUSTERS
+        // TOP LEVEL DECLARATIONS
 
         lhs =
             named$("lhs", capture("lhs", sequence(
@@ -227,37 +221,14 @@ public final class GrammarGrammar
                 optional(capture("token", percent)),
                 equal))),
 
-        clusterArrow =
-            namekind("clusterArrow", sequence(
-                arrow,
-                optional(lhs),
-                capture("expr", forbid$(parsingExpression, reference("choice"))))),
-
-        clusterDirective =
-            namekindText("clusterDirective", choice(
-                    keyword("@+"),
-                    keyword("@+_left_assoc"),
-                    keyword("@+_left_recur"))),
-
-        exprCluster =
-            namekind("exprCluster", sequence(
-                exprLit,
-                group("entries", oneMore(choice(clusterArrow, clusterDirective))))),
-
-        // TOP LEVEL DECLARATIONS
-
         rule =
             namekind("rule", sequence(
-                lhs,
-                accessor("rhs", choice(
-                    exprCluster,
-                    kind("parsingExpression", capture(parsingExpression)))),
-                semi)),
+                lhs, capture("rhs", parsingExpression), semi)),
 
         customDecl =
             namekind("customDecl", sequence(
                 declLit,
-                new DynRefReader(DECLARATION, captureText("declType", identifier)),
+                new DynRefReader(DECLARATION, captureText("declType", name)),
                 capture("custom", new DynRef()),
                 semi)),
 
@@ -267,7 +238,7 @@ public final class GrammarGrammar
         innport =
             named$("import", sequence(
                 importLit,
-                new DynExtReader(captureText(qualifiedIdentifier)),
+                new DynExtReader(captureText(qualifiedName)),
                 semi)),
 
         root =
@@ -277,35 +248,31 @@ public final class GrammarGrammar
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static ParsingExpression namekind(String string, ParsingExpression pe)
-    {
-        return named$(string, capture($(kind(string)), pe));
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    private static ParsingExpression namekindText(String string, ParsingExpression pe)
-    {
-        return named$(string, captureText($(kind(string)), pe));
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    private static ParsingExpression keyword(String string)
+    public static ParsingExpression nKeyword(String string)
     {
         return named$(string, token(literal(string), not(nameChar)));
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    private static ParsingExpression strtok(String string)
+    public static ParsingExpression keyword(String string)
+    {
+        return token(literal(string), not(nameChar));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Returns a token matching the string literal, named after the literal.
+     */
+    public static ParsingExpression ntoken(String string)
     {
         return named$(string, token(string));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static final Grammar grammar = Grammar
+    public static final Grammar get = Grammar
         .fromRoot(root)
         .withExtension(new DynExtExtension())
         .build();

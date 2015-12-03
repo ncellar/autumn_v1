@@ -13,7 +13,7 @@ final class AutoValue_ParseInputs extends ParseInputs {
   private final int blackStart;
   private final int precedence;
   private final boolean recordErrors;
-  private final Array<Object> customInputs;
+  private final Array<ParseInputs.Entry> customInputs;
 
   AutoValue_ParseInputs(
       ParsingExpression pe,
@@ -21,7 +21,7 @@ final class AutoValue_ParseInputs extends ParseInputs {
       int blackStart,
       int precedence,
       boolean recordErrors,
-      Array<Object> customInputs) {
+      Array<ParseInputs.Entry> customInputs) {
     if (pe == null) {
       throw new NullPointerException("Null pe");
     }
@@ -62,7 +62,7 @@ final class AutoValue_ParseInputs extends ParseInputs {
   }
 
   @Override
-  public Array<Object> customInputs() {
+  public Array<ParseInputs.Entry> customInputs() {
     return customInputs;
   }
 

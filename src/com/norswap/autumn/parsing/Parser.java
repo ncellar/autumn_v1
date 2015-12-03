@@ -4,9 +4,11 @@ import com.norswap.autumn.parsing.config.ParserConfiguration;
 import com.norswap.autumn.parsing.extensions.Extension;
 import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.state.CustomState;
+import com.norswap.autumn.parsing.state.ExportedInputs;
 import com.norswap.autumn.parsing.state.ParseInputs;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.util.Array;
+import java.util.HashMap;
 
 public final class Parser implements Cloneable
 {
@@ -27,6 +29,7 @@ public final class Parser implements Cloneable
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     private ParseState state;
+    private HashMap<Class, Extension> extensions;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -47,21 +50,50 @@ public final class Parser implements Cloneable
      */
     public ParseResult parseRoot()
     {
-        return parse(null);
+        makeState();
+        return parse2(ParseInputs.create(grammar.root, 0, 0, 0, true, Array.empty()));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Invokes the root of the grammar at the start of the input and returns the result.
+     * Before the parse, load the supplied custom inputs.
+     */
+    public ParseResult parseRoot(Array<ExportedInputs> exportedInputs)
+    {
+        makeState();
+
+        Array<ParseInputs.Entry> array = exportedInputs.map(
+            exp -> new ParseInputs.Entry(
+                state.customStates[extensions.get(exp.extension).stateIndex()],
+                exp.actualInputs));
+
+        return parse2(ParseInputs.create(grammar.root, 0, 0, 0, true, array));
     }
 
     // ---------------------------------------------------------------------------------------------
 
     public ParseResult parse(ParseInputs inputs)
     {
+        makeState();
+        return parse2(inputs);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private void makeState()
+    {
         Array<CustomState> indexedStates = new Array<>();
+        extensions = new HashMap<>();
 
         for (Extension extension: grammar.extensions)
         {
             int index = extension.stateIndex();
-
-            if (index != -1) {
+            if (index != -1)
+            {
                 indexedStates.put(index, extension.customParseState());
+                extensions.put(extension.getClass(), extension);
             }
         }
 
@@ -69,18 +101,15 @@ public final class Parser implements Cloneable
             config.errorState(),
             config.memoHandler(),
             indexedStates.toArray(CustomState[]::new));
+    }
 
-        if (inputs != null)
-        {
-            state.load(inputs);
-            if (inputs.start() == 0) processLeadingWhitespace(state);
-            inputs.pe().parse(this, state);
-        }
-        else
-        {
-            processLeadingWhitespace(state);
-            grammar.root.parse(this, state);
-        }
+    // ---------------------------------------------------------------------------------------------
+
+    private ParseResult parse2(ParseInputs inputs)
+    {
+        state.load(inputs);
+        if (inputs.start() == 0) processLeadingWhitespace(state);
+        inputs.pe().parse(this, state);
 
         ParseResult out = new ParseResult(
             state.end == source.length(),
@@ -91,11 +120,10 @@ public final class Parser implements Cloneable
             state.errors.report(source));
 
         if (state.end < 0)
-        {
             state.discard();
-        }
 
         state = null;
+        extensions = null;
         return out;
     }
 

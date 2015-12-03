@@ -1,5 +1,7 @@
-package com.norswap.autumn.parsing.extensions.cluster;
+package com.norswap.autumn.parsing.extensions.cluster.expressions;
 
+import com.norswap.autumn.parsing.extensions.cluster.ClusterExtension;
+import com.norswap.autumn.parsing.extensions.cluster.ClusterState;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.expressions.abstrakt.UnaryParsingExpression;

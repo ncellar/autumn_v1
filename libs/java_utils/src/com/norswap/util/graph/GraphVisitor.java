@@ -131,9 +131,7 @@ public abstract class GraphVisitor<Node>
         afterRoot(slot, walk(slot));
 
         if (slot.assigned != null)
-        {
             modified.add(slot);
-        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -145,6 +143,17 @@ public abstract class GraphVisitor<Node>
     public final void cutoff()
     {
         cutoff = true;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Call this to mark some nodes as visited, no as not to visit their descendants (at least not
+     * through them).
+     */
+    public final void markVisited(Node node)
+    {
+        states.put(node, VISITED);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

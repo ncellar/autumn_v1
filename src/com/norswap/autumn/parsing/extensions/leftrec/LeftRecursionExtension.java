@@ -32,8 +32,8 @@ public final class LeftRecursionExtension implements Extension
         NullabilityCalculator calc = new NullabilityCalculator();
         grammar.compute(calc);
 
-        LeftRecursionVisitor handler = new LeftRecursionVisitor(true, calc);
-        grammar.transform(handler);
+        LeftRecursionVisitor lrHandler = new LeftRecursionVisitor(true, calc);
+        grammar.transform(lrHandler);
     }
 
     // ---------------------------------------------------------------------------------------------

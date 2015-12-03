@@ -828,7 +828,7 @@ ElementValuePair
     = Identifier:+-id '=' ElementValue ;
 
 ElementValue :~ value
-    = Expression forbid { Assignment }
+    = `filter { Expression; forbid: Assignment; }
     / ElementValueArrayInitializer
     / Annotation ;
 
@@ -1017,7 +1017,10 @@ SwitchLabel
     = CASE Expression~label ':' / DEFAULT:~default ':' ;
 
 StatementExpression
-    = Expression allow { Assignment, '++x', '--x', 'x++', 'x--', MethodCall, DotTypeArgsCall, CtorCall } ;
+    = `filter {
+        Expression;
+        allow: Assignment, '++x', '--x', 'x++', 'x--', MethodCall, DotTypeArgsCall, CtorCall;
+    } ;
 
 BasicForStatement :~ basicFor
     = FOR '(' (ForInit :- init)? ';' (Expression - cond)? ';' (StatementExpressionList :- iter)? ')'
@@ -1156,7 +1159,7 @@ LambdaParameters
 
 E = Expression ;
 
-Expression ~ expression = expr
+Expression ~ expression = `expr {
 
     @+_left_recur
     -> Assignment = Assignment
@@ -1167,47 +1170,47 @@ Expression ~ expression = expr
 
     //// BINARY OPERATORS
 
-    @+_left_assoc -> '||' :~$ = E '||' E
-    @+_left_assoc -> '&&' :~$ = E '&&' E
-    @+_left_assoc -> '|'  :~$ = E '|'  E
-    @+_left_assoc -> '^'  :~$ = E '^'  E
-    @+_left_assoc -> '&'  :~$ = E '&'  E
+    @+_left_assoc ->'op||' :~$ = E '||' E
+    @+_left_assoc ->'op&&' :~$ = E '&&' E
+    @+_left_assoc ->'op|'  :~$ = E '|'  E
+    @+_left_assoc ->'op^'  :~$ = E '^'  E
+    @+_left_assoc ->'op&'  :~$ = E '&'  E
 
     @+_left_assoc
-    -> '==' :~$ = E '==' E
-    -> '==' :~$ = E '!=' E
+    ->'op==' :~$ = E '==' E
+    ->'op!=' :~$ = E '!=' E
 
     @+_left_assoc
-    -> '<='         :~$ = E '<=' E
-    -> '>='         :~$ = E '>=' E
-    -> '<'          :~$ = E '<'  E
-    -> '>'          :~$ = E '>'  E
+    ->'op<='         :~$ = E '<=' E
+    ->'op>='         :~$ = E '>=' E
+    ->'op<'          :~$ = E '<'  E
+    ->'op>'          :~$ = E '>'  E
     -> InstanceOf   :~$ = E INSTANCEOF E
 
     @+_left_assoc
-    -> '<<'  :~$ = E '<<' E
-    -> '>>'  :~$ = E '>>' E
-    -> '>>>' :~$ = E '>>>' E
+    ->'op<<'  :~$ = E '<<' E
+    ->'op>>'  :~$ = E '>>' E
+    ->'op>>>' :~$ = E '>>>' E
 
     @+_left_assoc
-    -> '+' :~$ = E '+' E
-    -> '-' :~$ = E '-' E
+    ->'op+' :~$ = E '+' E
+    ->'op-' :~$ = E '-' E
 
     @+_left_assoc
-    -> '*' :~$ = E '*' E
-    -> '/' :~$ = E '/' E
-    -> '%' :~$ = E '%' E
+    ->'op*' :~$ = E '*' E
+    ->'op/' :~$ = E '/' E
+    ->'op%' :~$ = E '%' E
 
 
     //// PREFIX OPERATORS
 
     @+
-    -> '++x' :~$ = '++' E
-    -> '--x' :~$ = '--' E
-    -> '+'   :~$ = '+' E
-    -> '-'   :~$ = '-' E
-    -> '~'   :~$ = '~' E
-    -> '!'   :~$ = '!' E
+    ->'++x'   :~$ = '++' E
+    ->'--x'   :~$ = '--' E
+    ->'op+'   :~$ = '+' E
+    ->'op-'   :~$ = '-' E
+    ->'op~'   :~$ = '~' E
+    ->'op!'   :~$ = '!' E
 
     -> CastExpression
 
@@ -1255,7 +1258,7 @@ Expression ~ expression = expr
 
     -> BasicType
     -> VOID :~$
-    ;
+    };
 
 // ===============================================================================
 
@@ -1290,7 +1293,7 @@ Assignment :~ assignment
     = LValue-l AssignmentOperator:+-op Expression-r ;
 
 LValue
-    = Expression allow { Iden, DotIden, ArrayAccess } ;
+    = `filter { Expression; allow: Iden, DotIden, ArrayAccess; } ;
 
 AssignmentOperator
     = '=' / '*=' / '/=' / '%=' / '+=' / '-=' / '<<=' / '>>=' / '>>>=' / '&=' / '^=' / '|=' ;

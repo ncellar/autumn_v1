@@ -1,13 +1,13 @@
 package com.norswap.autumn.parsing.extensions.leftrec;
 
 import com.norswap.autumn.parsing.ParsingExpression;
-import com.norswap.autumn.parsing.extensions.cluster.ExpressionCluster;
-import com.norswap.autumn.parsing.extensions.leftrec.LeftRecursive;
+import com.norswap.autumn.parsing.extensions.cluster.expressions.ExpressionCluster;
 import com.norswap.util.Array;
 import com.norswap.util.graph.GraphVisitor;
 import com.norswap.util.graph.NodeState;
 import com.norswap.util.graph.Slot;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.function.Predicate;
 
@@ -49,6 +49,23 @@ public final class LeftRecursionVisitor extends GraphVisitor<ParsingExpression>
     {
         this.replace = replace;
         this.nullability = nullability;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Marks the items in {@code cutoff} as visited, so that their descendants won't be visited.
+     * This is typically used when adding parsing expression to an existing grammar, and we know
+     * that any left-recursion cannot cross over the threshold between old and new.
+     */
+    public LeftRecursionVisitor(
+        boolean replace,
+        Predicate<ParsingExpression> nullability,
+        Collection<ParsingExpression> cutoff)
+    {
+        this.replace = replace;
+        this.nullability = nullability;
+        cutoff.forEach(this::markVisited);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

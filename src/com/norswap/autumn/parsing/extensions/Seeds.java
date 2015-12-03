@@ -2,14 +2,13 @@ package com.norswap.autumn.parsing.extensions;
 
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.extensions.cluster.ClusterState;
-import com.norswap.autumn.parsing.extensions.cluster.ExpressionCluster;
+import com.norswap.autumn.parsing.extensions.cluster.expressions.ExpressionCluster;
 import com.norswap.autumn.parsing.extensions.leftrec.LeftRecursive;
 import com.norswap.autumn.parsing.extensions.leftrec.LeftRecursionState;
 import com.norswap.autumn.parsing.state.CustomState;
 import com.norswap.autumn.parsing.state.ParseChanges;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.util.Array;
-import com.norswap.util.Exceptions;
 import com.norswap.util.annotations.Nullable;
 
 /**
@@ -88,7 +87,6 @@ public final class Seeds implements CustomState, Cloneable
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    @Override
     public Object inputs(ParseState state)
     {
         return copy();
@@ -96,7 +94,6 @@ public final class Seeds implements CustomState, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
-    @Override
     public void load(Object inputs)
     {
         Seeds that = (Seeds) inputs;
@@ -111,7 +108,6 @@ public final class Seeds implements CustomState, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
-    @Override
     public Object snapshot(ParseState state)
     {
         return seeded != null ? clone() : null;
@@ -119,7 +115,6 @@ public final class Seeds implements CustomState, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
-    @Override
     public void restore(Object snapshot, ParseState state)
     {
         if (snapshot != null)
@@ -133,7 +128,6 @@ public final class Seeds implements CustomState, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
-    @Override
     public void uncommit(Object snapshot, ParseState state)
     {
         restore(snapshot, state);
@@ -141,7 +135,6 @@ public final class Seeds implements CustomState, Cloneable
 
     // ---------------------------------------------------------------------------------------------
 
-    @Override
     public void commit(ParseState state)
     {
         if (state.end > position)

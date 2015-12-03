@@ -17,7 +17,7 @@ public abstract class ParseInputs
     public abstract int blackStart();
     public abstract int precedence();
     public abstract boolean recordErrors();
-    public abstract Array<Object> customInputs();
+    public abstract Array<Entry> customInputs();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -27,9 +27,29 @@ public abstract class ParseInputs
         int blackStart,
         int precedence,
         boolean recordErrors,
-        Array<Object> customInputs)
+        Array<Entry> customInputs)
     {
-        return new AutoValue_ParseInputs(pe, start, blackStart, precedence, recordErrors, customInputs);
+        return new AutoValue_ParseInputs(
+            pe,
+            start,
+            blackStart,
+            precedence,
+            recordErrors,
+            customInputs);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static final class Entry
+    {
+        public final CustomState state;
+        public final Object input;
+
+        public Entry(CustomState state, Object input)
+        {
+            this.state = state;
+            this.input = input;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

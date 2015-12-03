@@ -2,6 +2,7 @@ package com.norswap.autumn.parsing.extensions.leftrec;
 
 import com.google.auto.value.AutoValue;
 import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.extensions.Extension;
 import com.norswap.autumn.parsing.extensions.Seeds;
 import com.norswap.autumn.parsing.state.CustomState;
 import com.norswap.autumn.parsing.state.ParseChanges;
@@ -86,6 +87,7 @@ public final class LeftRecursionState implements CustomState
         seeds.load(in.seeds());
         this.blocked = cast(in.blocked().clone());
     }
+
     // ---------------------------------------------------------------------------------------------
 
     @Override

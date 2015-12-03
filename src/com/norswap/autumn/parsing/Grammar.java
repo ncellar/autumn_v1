@@ -5,7 +5,7 @@ import com.norswap.autumn.parsing.config.ParserConfiguration;
 import com.norswap.autumn.parsing.extensions.Extension;
 import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.parsing.support.GrammarCompiler;
-import com.norswap.autumn.parsing.support.GrammarGrammar;
+import com.norswap.autumn.parsing.support.MetaGrammar;
 import com.norswap.autumn.parsing.support.dynext.DynExtExtension;
 import com.norswap.autumn.parsing.support.dynext.DynExtState;
 import com.norswap.util.Array;
@@ -81,22 +81,9 @@ public final class Grammar
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // TODO use exceptions + document ParseException
     public static GrammarBuilder fromSource(Source source)
     {
-        ParseResult result =
-            new Parser(GrammarGrammar.grammar, source, ParserConfiguration.DEFAULT).parseRoot();
-
-        if (!result.matched)
-        {
-            throw new ParseException(result.error);
-        }
-        else
-        {
-            return GrammarCompiler.compile(
-                result.tree,
-                (DynExtState) result.customChanges.get(DynExtExtension.INDEX));
-        }
+        return new GrammarBuilder(source);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -114,21 +101,35 @@ public final class Grammar
     public ParsingExpression getRule(String name)
     {
         if (rulesByName == null)
+            getRules();
+
+        return rulesByName.get(name);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Returns a map from rule name to rules. The returned map backs the {@link #getRule} and should
+     * not be modified.
+     */
+    public Map<String, ParsingExpression> getRules()
+    {
+        if (rulesByName == null)
         {
             rulesByName = new HashMap<>();
 
             rules.forEach(
-            pe -> {
-                String key = pe.name;
+                pe -> {
+                    String key = pe.name;
 
-                if (key != null)
-                {
-                    rulesByName.put(key, pe);
-                }
-            });
+                    if (key != null)
+                    {
+                        rulesByName.put(key, pe);
+                    }
+                });
         }
 
-        return rulesByName.get(name);
+        return rulesByName;
     }
 
     // ---------------------------------------------------------------------------------------------

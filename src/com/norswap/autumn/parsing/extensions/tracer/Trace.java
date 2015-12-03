@@ -2,11 +2,12 @@ package com.norswap.autumn.parsing.extensions.tracer;
 
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.parsing.expressions.abstrakt.InstrumentedExpression;
 import com.norswap.autumn.parsing.expressions.abstrakt.UnaryParsingExpression;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.util.Strings;
 
-public final class Trace extends UnaryParsingExpression
+public final class Trace extends InstrumentedExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -30,14 +31,6 @@ public final class Trace extends UnaryParsingExpression
         ++ tstate.level;
         operand.parse(parser, state);
         -- tstate.level;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Override
-    public int parseDumb(Parser parser, int position)
-    {
-        return operand.parseDumb(parser, position);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

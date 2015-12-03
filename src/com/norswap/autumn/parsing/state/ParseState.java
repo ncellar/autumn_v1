@@ -322,13 +322,19 @@ public final class ParseState
     @Inline
     public ParseInputs inputs(ParsingExpression pe)
     {
+        Array<ParseInputs.Entry> custom = new Array<>();
+
+        for (CustomState state: customStates)
+            if (state != null)
+                custom.add(new ParseInputs.Entry(state, state.inputs(this)));
+
         return ParseInputs.create(
             pe,
             start,
             blackStart,
             precedence,
             recordErrors,
-            Array.map(customStates, x -> x == null ? null : x.inputs(this)));
+            custom);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -341,11 +347,7 @@ public final class ParseState
         this.precedence = inputs.precedence();
         this.recordErrors = inputs.recordErrors();
 
-        Array<Object> customInputs = inputs.customInputs();
-        int size = customInputs.size();
-        for (int i = 0; i < size; ++i) {
-            if (customStates[i] != null) customStates[i].load(customInputs.get(i));
-        }
+        inputs.customInputs().forEach(e -> e.state.load(e.input));
     }
 
     // ---------------------------------------------------------------------------------------------

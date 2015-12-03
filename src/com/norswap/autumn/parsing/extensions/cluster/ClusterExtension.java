@@ -1,6 +1,7 @@
 package com.norswap.autumn.parsing.extensions.cluster;
 
 import com.norswap.autumn.parsing.extensions.Extension;
+import com.norswap.autumn.parsing.extensions.SyntaxExtension;
 import com.norswap.autumn.parsing.state.CustomState;
 import com.norswap.autumn.parsing.extensions.CustomStateIndex;
 
@@ -15,10 +16,24 @@ public final class ClusterExtension implements Extension
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    private static final SyntaxExtension[] syntaxExtensions = new SyntaxExtension[] {
+        new SyntaxExtensionCluster(),
+        new SyntaxExtensionFilter()};
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     @Override
     public CustomState customParseState()
     {
         return new ClusterState();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Override
+    public SyntaxExtension[] syntaxExtensions()
+    {
+        return syntaxExtensions;
     }
 
     // ---------------------------------------------------------------------------------------------
