@@ -26,7 +26,6 @@ public final class AutumnBench
         Instant startParse = Instant.now();
         Grammar grammar = Grammar.fromSource(
             Source.fromFile(grammarFile).columnStart(1).build())
-            .defaultExtensions(false)
             .build();
 
         // inspect grammar

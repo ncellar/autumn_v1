@@ -3,7 +3,6 @@ package com.norswap.autumn.parsing.extensions.tracer;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.expressions.abstrakt.InstrumentedExpression;
-import com.norswap.autumn.parsing.expressions.abstrakt.UnaryParsingExpression;
 import com.norswap.autumn.parsing.state.ParseState;
 import com.norswap.util.Strings;
 

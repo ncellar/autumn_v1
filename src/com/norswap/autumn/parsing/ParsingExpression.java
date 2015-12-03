@@ -22,7 +22,6 @@ public abstract class ParsingExpression implements DeepCopy
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public String name;
-    public int flags;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // PARSING
@@ -150,6 +149,18 @@ public abstract class ParsingExpression implements DeepCopy
         // delete trailing newline
         builder.deleteCharAt(builder.length() - 1);
         return builder.toString();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Indicate whether the parsing expression node should be visible when printing a parsing
+     * expression graph. An invisible expression will have its children appear as children of
+     * its own parents.
+     */
+    public boolean isPrintable()
+    {
+        return true;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

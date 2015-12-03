@@ -106,7 +106,7 @@ public final class SyntaxExtensionCluster extends SyntaxExtension
         else {
             groups.pop();
         }
-
+        
         return cluster(groups.toArray(ExpressionCluster.Group[]::new));
     }
 
