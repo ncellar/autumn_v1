@@ -32,12 +32,15 @@ public final class DefaultErrorReport implements ErrorReport
         b.append(farthestErrorPosition);
         b.append(":\n");
 
+        // TODO
+        /*
         for (ParsingExpression farthestExpression: farthestExpressions)
         {
             b.append(farthestExpression);
             b.append("\n");
             errorLocations.add(new ErrorLocation(farthestErrorPosition.offset, farthestExpression));
         }
+        //*/
 
         this.message = b.toString();
     }

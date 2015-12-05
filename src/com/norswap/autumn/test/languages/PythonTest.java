@@ -31,11 +31,22 @@ public final class PythonTest
 
         for (Path path: Glob.glob("**/*.py", Paths.get("../django-1.9")))
         {
+            /*
+            if (!path.toString().equals("..\\django-1.9\\tests\\view_tests\\tests\\py3_test_debug.py"))
+                continue;
+            //*/
+
+            // These are templates to be preprocessed or python 3 syntax.
+            if (path.startsWith("..\\django-1.9\\django\\conf\\app_template")
+            ||  path.startsWith("..\\django-1.9\\tests\\template_tests")
+            ||  path.toString().startsWith("..\\django-1.9\\tests\\view_tests\\tests\\py3"))
+                continue;
+
+            System.err.println(path);
             ParseResult result = Autumn.parseFile(grammar, path.toString());
 
             if (!result.matched)
             {
-                System.err.println(path);
                 System.err.println(result.error.message());
 
                 return;

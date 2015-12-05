@@ -1,5 +1,5 @@
 
-Root = `END_LINE_JOINING {} file_input ;
+Root = `TOKEN { "" } `END_LINE_JOINING {} file_input ;
 
 NEWLINE = `NEWLINE {} ;
 INDENT = `INDENT {} ;
@@ -126,7 +126,7 @@ import_stmt = import_name | import_from ;
 
 import_name = `TOKEN {"import"} dotted_as_names ;
 
-import_from = (`TOKEN {"from"} (`TOKEN {"."}* dotted_name | `TOKEN {"."}+)
+import_from = (`TOKEN {"from"} (`TOKEN {"."}* !("import" !(letter | digit | "_")) dotted_name | `TOKEN {"."}+)
               `TOKEN {"import"} (`TOKEN {"*"} | '(' import_as_names ')' | import_as_names)) ;
 
 import_as_name = NAME (`TOKEN {"as"} NAME)? ;
@@ -230,15 +230,15 @@ dictorsetmaker = ( (test `TOKEN {":"} test (comp_for | (`TOKEN {","} test `TOKEN
 
 classdef = `TOKEN {"class"} NAME ('(' (testlist)? ')')? `TOKEN {":"} suite ;
 
-arglist = (argument `TOKEN {","})* (argument (`TOKEN {","})?
+arglist = (argument `TOKEN {","})* (argument
                          |`TOKEN {"*"} test (`TOKEN {","} argument)* (`TOKEN {","} `TOKEN {"**"} test)?
-                         |`TOKEN {"**"} test) ;
+                         |`TOKEN {"**"} test)? ;
 
 argument = test (comp_for)? | test `TOKEN {"="} test ;
 
 list_iter = list_for | list_if ;
 
-list_for = `TOKEN {"for"} exprlist `TOKEN {"in"} testlist_safe  ;
+list_for = `TOKEN {"for"} exprlist `TOKEN {"in"} testlist_safe (list_iter)? ;
 
 list_if = `TOKEN {"if"} old_test (list_iter)? ;
 

@@ -3,6 +3,7 @@ package com.norswap.autumn.test.languages.python;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
+import com.norswap.autumn.parsing.expressions.Literal;
 import com.norswap.autumn.parsing.expressions.abstrakt.UnaryParsingExpression;
 import com.norswap.autumn.parsing.state.ParseState;
 
@@ -90,6 +91,14 @@ public class PythonToken extends UnaryParsingExpression
 
         */
 
+        PythonState pstate = (PythonState) state.customStates[PythonExtension.INDEX];
+
+        if (pstate.token() != PythonIndentToken.NONE)
+        {
+            state.fail(this);
+            return;
+        }
+
         operand.parse(parser, state);
 
         if (state.failed())
@@ -97,8 +106,6 @@ public class PythonToken extends UnaryParsingExpression
             state.fail(this);
             return;
         }
-
-        PythonState pstate = (PythonState) state.customStates[PythonExtension.INDEX];
 
         if (pstate.lineJoining > 0)
         {
@@ -123,18 +130,15 @@ public class PythonToken extends UnaryParsingExpression
                 inNewline = true;
                 ++ pos;
                 newLinePos = pos;
+                continue;
             }
-            else
+            else if (inNewline)
             {
-                if (inNewline)
-                {
-                    pstate.newLineEmmitted = true;
-                    pstate.oldIndent = pstate.indent;
-                    pstate.newLinePos = newLinePos;
-                    pstate.indent = (pos - newLinePos) / parser.source.tabSize;
-                }
-                break;
+                pstate.newLineEmmitted = true;
+                pstate.oldIndent = pstate.indent;
+                pstate.indent = (pos - newLinePos) / parser.source.tabSize;
             }
+            break;
         }
 
         state.end = pos;

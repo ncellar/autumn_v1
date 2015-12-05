@@ -9,6 +9,14 @@ public class PythonIndentToken extends ParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    public static final int
+    NONE    = 0,
+    INDENT  = 1,
+    DEDENT  = 2,
+    NEWLINE = 3;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     public PythonIndentToken(String name)
     {
         this.name = name;
@@ -20,29 +28,27 @@ public class PythonIndentToken extends ParsingExpression
     public void parse(Parser parser, ParseState state)
     {
         PythonState pstate = (PythonState) state.customStates[PythonExtension.INDEX];
+        int token = pstate.token();
 
         switch (name)
         {
             case "INDENT":
-                if ( !pstate.newLineEmmitted
-                &&   pstate.indent > pstate.oldIndent
-                &&   pstate.newLinePos + pstate.indent * parser.source.tabSize == state.start)
-                    pstate.oldIndent = pstate.indent;
+                if (token == INDENT)
+                    ++ pstate.oldIndent;
+                    //pstate.oldIndent = pstate.indent;
                 else
                     state.fail();
                 break;
 
             case "DEDENT":
-                if ( !pstate.newLineEmmitted
-                &&   pstate.indent < pstate.oldIndent
-                &&   pstate.newLinePos + pstate.indent * parser.source.tabSize == state.start)
+                if (token == DEDENT)
                     -- pstate.oldIndent;
                 else
                     state.fail();
                 break;
 
             case "NEWLINE":
-                if (pstate.newLineEmmitted)
+                if (token == NEWLINE)
                     pstate.newLineEmmitted = false;
                 else
                     state.fail();

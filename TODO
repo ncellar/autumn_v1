@@ -1,7 +1,9 @@
 --------------------------------------------------------------------------------
 TODO NOW
     - python grammar
+        - try bruteforce tree
         - restore only report tokens
+        - restore default error report
 
 TODO NOTES
 
@@ -111,6 +113,8 @@ TODO FURTHER BIG
         - dumb operator
             `fast(X)`
         - remove ^= and %= operators
+
+    - hookable preprocessing phase
 
     - better support for layering with smart tree-building that automatically rewrites trees
       (see notes, p. D5)
