@@ -222,16 +222,25 @@ public final class GrammarBuilder implements GrammarBuilderExtensionView
     {
         Array<ExportedInputs> customInputs = new Array<>();
 
-        if (defaultExtensions)
+        // TODO make nicer?
+
+        if (defaultExtensions || !extensions.isEmpty())
         {
             DynExtState destate = new DynExtState();
 
-            destate.extensions.add(leftrec);
-            destate.extensions.add(cluster);
+            if (defaultExtensions)
+            {
+                destate.extensions.add(leftrec);
+                destate.extensions.add(cluster);
 
-            // cluster only has expression extensions
-            for (SyntaxExtension ext: cluster.syntaxExtensions())
-                destate.exprSyntaxes.put(ext.name, ext);
+                // cluster only has expression extensions
+                for (SyntaxExtension sext : cluster.syntaxExtensions())
+                    destate.exprSyntaxes.put(sext.name, sext);
+            }
+
+            for (Extension ext: extensions)
+                for (SyntaxExtension sext : ext.syntaxExtensions())
+                    destate.exprSyntaxes.put(sext.name, sext);
 
             customInputs.add(new ExportedInputs(DynExtExtension.class, destate));
         }

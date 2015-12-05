@@ -1,4 +1,4 @@
-package com.norswap.autumn.parsing.state.errors;
+package com.norswap.autumn.parsing.errors;
 
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.expressions.Token;
@@ -113,7 +113,8 @@ public final class DefaultErrorState implements ErrorState
         // only record errors for tokens
         if (!(pe instanceof Token))
         {
-            return;
+            // TODO
+            // return;
         }
 
         if (state.start == farthestErrorPosition)

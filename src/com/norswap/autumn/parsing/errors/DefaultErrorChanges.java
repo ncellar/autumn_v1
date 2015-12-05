@@ -1,4 +1,4 @@
-package com.norswap.autumn.parsing.state.errors;
+package com.norswap.autumn.parsing.errors;
 
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.source.Source;

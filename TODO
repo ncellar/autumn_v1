@@ -1,11 +1,9 @@
 --------------------------------------------------------------------------------
 TODO NOW
     - python grammar
+        - restore only report tokens
 
 TODO NOTES
-
-    - state.uncommit + state.discard == state.restore
-    - extensibility on two axis: new combinators + custom state
 
     - parsec choice combinator doesn't backtrack unless your use try
         - is explicit backtracking control a good idea? (use <|>)
@@ -38,6 +36,9 @@ TODO GUMPTION
     - insert $ in Java8 grammar (rule-level only) (-> 544)
 
 TODO FURTHER SMALL
+
+    - graph visitor: visit before edge
+        - and rename afterChild in term of edges
 
     - index allocation should be per-grammar
         - extensions should be registered before root pe

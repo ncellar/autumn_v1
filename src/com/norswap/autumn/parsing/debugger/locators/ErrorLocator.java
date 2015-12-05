@@ -4,7 +4,7 @@ import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.debugger.NodeInfo;
 import com.norswap.autumn.parsing.debugger.store.LocateStatus;
 import com.norswap.autumn.parsing.state.ParseState;
-import com.norswap.autumn.parsing.state.errors.ErrorLocation;
+import com.norswap.autumn.parsing.errors.ErrorLocation;
 import com.norswap.util.Array;
 
 /**

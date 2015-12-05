@@ -1,6 +1,6 @@
 package com.norswap.autumn.parsing;
 
-import com.norswap.autumn.parsing.state.errors.ErrorReport;
+import com.norswap.autumn.parsing.errors.ErrorReport;
 
 public final class ParseException extends RuntimeException
 {

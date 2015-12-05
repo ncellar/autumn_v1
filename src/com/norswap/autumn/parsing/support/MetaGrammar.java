@@ -39,6 +39,7 @@ public final class MetaGrammar
     colon       = ntoken(":"),
     semi        = ntoken(";"),
     slash       = ntoken("/"),
+    pipe        = ntoken("|"),
     star        = ntoken("*"),
     tilda       = ntoken("~"),
     lBrace      = ntoken("{"),
@@ -137,7 +138,9 @@ public final class MetaGrammar
     notCharSet
         = named$("notCharSet", token(
             literal("^["),
-            captureText("notCharSet", oneMore(not(literal("]"), character))),
+            captureText("notCharSet", oneMore(
+                not(literal("]")),
+                character)),
             literal("]"))),
 
     stringLit
@@ -171,6 +174,9 @@ public final class MetaGrammar
 
         groupLeftAssoc(++i,
             named$("choice", capture("choice", aloSeparated(expr, slash)))),
+
+        groupLeftAssoc(++i,
+            named$("longestMatch", capture("longestMatch", aloSeparated(expr, pipe)))),
 
         groupLeftAssoc(++i,
             capture("sequence", sequence(expr, oneMore(expr)))),

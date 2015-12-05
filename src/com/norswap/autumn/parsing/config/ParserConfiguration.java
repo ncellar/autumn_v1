@@ -1,7 +1,7 @@
 package com.norswap.autumn.parsing.config;
 
-import com.norswap.autumn.parsing.state.errors.DefaultErrorState;
-import com.norswap.autumn.parsing.state.errors.ErrorState;
+import com.norswap.autumn.parsing.errors.DefaultErrorState;
+import com.norswap.autumn.parsing.errors.ErrorState;
 
 import java.util.function.Supplier;
 

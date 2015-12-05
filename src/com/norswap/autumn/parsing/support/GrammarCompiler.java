@@ -267,6 +267,9 @@ public final class GrammarCompiler
             case "choice":
                 return choice(compileChildren(tree));
 
+            case "longestMatch":
+                return longestMatch(compileChildren(tree));
+
             case "sequence":
                 return sequence(compileChildren(tree));
 

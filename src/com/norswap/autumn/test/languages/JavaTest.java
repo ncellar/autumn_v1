@@ -1,4 +1,4 @@
-package com.norswap.autumn.test.parsing;
+package com.norswap.autumn.test.languages;
 
 import com.norswap.autumn.Autumn;
 import com.norswap.autumn.parsing.Grammar;
@@ -10,21 +10,30 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public final class JavaGrammarTest
+public final class JavaTest
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static String grammarFile = "src/com/norswap/autumn/test/grammars/Java8.autumn";
+    private static String grammarFile = "grammars/Java8.autumn";
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static void main(String[] args) throws IOException
     {
-        Grammar grammar = Grammar.fromSource(Source.fromFile(grammarFile).build()).build();
+        Grammar grammar =
+            Grammar.fromSource(Source.fromFile(grammarFile).columnStart(1).build()).build();
 
         for (Path path: Glob.glob("**/*.java", Paths.get("../guava")))
         {
             ParseResult result = Autumn.parseFile(grammar, path.toString());
+
+            if (!result.matched)
+            {
+                System.err.println(path);
+                System.err.println(result.error.message());
+
+                return;
+            }
         }
     }
 

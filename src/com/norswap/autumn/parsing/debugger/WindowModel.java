@@ -6,7 +6,7 @@ import com.norswap.autumn.parsing.debugger.locators.ErrorLocator;
 import com.norswap.autumn.parsing.debugger.locators.ExecutionLocator;
 import com.norswap.autumn.parsing.debugger.locators.NextLocator;
 import com.norswap.autumn.parsing.debugger.store.DebuggerStore;
-import com.norswap.autumn.parsing.state.errors.ErrorLocation;
+import com.norswap.autumn.parsing.errors.ErrorLocation;
 import com.norswap.util.Array;
 
 /**

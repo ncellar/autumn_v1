@@ -11,8 +11,8 @@ import com.norswap.autumn.parsing.expressions.Precedence;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.extensions.Extension;
 import com.norswap.autumn.parsing.source.Source;
-import com.norswap.autumn.parsing.state.errors.DefaultErrorState;
-import com.norswap.autumn.parsing.state.errors.ErrorState;
+import com.norswap.autumn.parsing.errors.DefaultErrorState;
+import com.norswap.autumn.parsing.errors.ErrorState;
 import com.norswap.util.Array;
 import net.nicoulaj.compilecommand.annotations.Inline;
 
