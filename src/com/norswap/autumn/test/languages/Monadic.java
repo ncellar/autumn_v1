@@ -1,17 +1,23 @@
-package com.norswap.autumn.test.languages.clike;
+package com.norswap.autumn.test.languages;
 
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.expressions.abstrakt.UnaryParsingExpression;
 import com.norswap.autumn.parsing.state.ParseState;
+import java.util.function.Function;
 
-public class TypeUse extends UnaryParsingExpression
+public final class Monadic extends UnaryParsingExpression
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    TypeUse(ParsingExpression operand)
+    public final Function<ParseState, ParsingExpression> f;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public Monadic(ParsingExpression operand, Function<ParseState, ParsingExpression> f)
     {
         this.operand = operand;
+        this.f = f;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -21,28 +27,15 @@ public class TypeUse extends UnaryParsingExpression
     {
         operand.parse(parser, state);
 
-        if (state.failed())
-        {
+        if (state.failed()) {
             state.fail();
             return;
         }
 
-        CLikeState clstate = (CLikeState) state.customStates[CLikeExtension.INDEX];
-        String typeName = state.tree.children().last().value;
+        f.apply(state).parse(parser, state);
 
-        if (!clstate.items.contains(typeName))
-        {
+        if (state.failed())
             state.fail();
-            System.err.println(String.format("unsuccessful type use (%s) at: %s",
-                typeName,
-                parser.source.position(state.start)));
-        }
-        else
-        {
-            System.err.println(String.format("successful type use (%s) at: %s",
-                typeName,
-                parser.source.position(state.start)));
-        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

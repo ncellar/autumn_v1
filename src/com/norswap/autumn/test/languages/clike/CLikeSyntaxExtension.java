@@ -1,5 +1,6 @@
 package com.norswap.autumn.test.languages.clike;
 
+import static com.norswap.autumn.parsing.ParsingExpressionFactory.captureText;
 import com.norswap.autumn.parsing.capture.ParseTree;
 import com.norswap.autumn.parsing.extensions.SyntaxExtension;
 import com.norswap.autumn.parsing.support.GrammarCompiler;
@@ -22,10 +23,10 @@ public class CLikeSyntaxExtension extends SyntaxExtension
         switch (name)
         {
             case "TYPEDEF":
-                return new TypeDef(compiler.compilePE(tree.child()));
+                return new TypeDef(captureText(compiler.compilePE(tree.child())));
 
             case "TYPEUSE":
-                return new TypeUse(compiler.compilePE(tree.child()));
+                return new TypeUse(captureText(compiler.compilePE(tree.child())));
 
             default:
                 throw new Error("Unknown name: " + name);

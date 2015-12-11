@@ -1,20 +1,19 @@
 struct TryStructSyntax
 {
     int x;
-    Foobar ** y;
+    TryStructSyntax ** y;
 }
 
-fun Foobar tryFunctionSyntax(Yi yi, Er *er, San **san, int si)
+fun TryStructSyntax tryFunctionSyntax(TryStructSyntax * a, int b)
 {
-    int x;
-    x = 1;
+    int x = 1;
     TryStructSyntax tss;
     tss.x = 2;
     x * tss.x;
     return aFunction(x * x, tss.y, &tss);
 }
 
-function int Point(int x, int y)
+fun int Point(int x, int y)
 {
     return x + y;
 }

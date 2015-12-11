@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
 TODO NOW
-    - python grammar
+    - python grammar + other
         - try bruteforce tree
         - restore only report tokens
         - restore default error report
@@ -38,6 +38,9 @@ TODO GUMPTION
     - insert $ in Java8 grammar (rule-level only) (-> 544)
 
 TODO FURTHER SMALL
+
+    - apparently the parser is CRLF (windows newline encoding) hostile
+      probably due to how file is read in
 
     - graph visitor: visit before edge
         - and rename afterChild in term of edges
