@@ -23,7 +23,7 @@ public final class JavaTest
         Grammar grammar =
             Grammar.fromSource(Source.fromFile(grammarFile).columnStart(1).build()).build();
 
-        for (Path path: Glob.glob("**/*.java", Paths.get("../guava")))
+        for (Path path: Glob.glob("**/*.java", Paths.get("../_readonly/guava")))
         {
             ParseResult result = Autumn.parseFile(grammar, path.toString());
 

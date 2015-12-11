@@ -113,8 +113,7 @@ public final class DefaultErrorState implements ErrorState
         // only record errors for tokens
         if (!(pe instanceof Token))
         {
-            // TODO
-            // return;
+            return;
         }
 
         if (state.start == farthestErrorPosition)

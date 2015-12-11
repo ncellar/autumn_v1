@@ -10,6 +10,8 @@ import java.util.Set;
  * Default implementation of {@link ErrorReport}, used by {@link DefaultErrorState}.
  * <p>
  * Reports the tokens which we expected at the farthest error position, but failed to match.
+ * <p>
+ * Currently, this is often unhelpful in practice.
  */
 public final class DefaultErrorReport implements ErrorReport
 {
@@ -32,8 +34,9 @@ public final class DefaultErrorReport implements ErrorReport
         b.append(farthestErrorPosition);
         b.append(":\n");
 
-        // TODO
-        /*
+        // NOTE(norswap): As stated, the strategy is often unhelpful.
+        // So here's some comment hackery to quickly disable it (and report nothing).
+        //*
         for (ParsingExpression farthestExpression: farthestExpressions)
         {
             b.append(farthestExpression);

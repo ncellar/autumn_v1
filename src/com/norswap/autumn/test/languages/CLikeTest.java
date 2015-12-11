@@ -21,8 +21,6 @@ public final class CLikeTest
     {
         Grammar grammar = Grammar.fromSource(Source.fromFile(grammarFile).columnStart(1).build())
             .withExtension(new CLikeExtension())
-            //.withExtension(new TracerExtension())
-            //.withExtension(new BruteForceTreeExtension())
             .build();
 
         ParseResult result = Autumn.parseSource(grammar, Source.fromFile(testFile).columnStart(1).build());

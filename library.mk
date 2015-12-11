@@ -90,7 +90,7 @@ export MANUAL=$(MANUAL_TEXT)
 help:
 	@echo "$$MANUAL"
 
-# NOTE(norswap): The quotes around "deps/*" are necessary to avoid shell
+# NOTE(norswap): The quotes around "deps/jar/*" are necessary to avoid shell
 # wildcard expansion. The wildcard must be processed by javac.
 
 build:

@@ -77,6 +77,13 @@ public class Capture extends UnaryParsingExpression
         }
     }
 
+    @Override
+    public int parseDumb(Parser parser, int position)
+    {
+        // TODO
+        return operand.parseDumb(parser, position);
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
