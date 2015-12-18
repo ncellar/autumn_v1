@@ -17,13 +17,6 @@
   <scope>provided</scope>
 </dependency>
 
-<dependency>
-    <groupId>net.ju-n.compile-command-annotations</groupId>
-    <artifactId>compile-command-annotations</artifactId>
-    <version>1.2.0</version>
-    <optional>true</optional>
-</dependency>
-
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
  
   </dependencies>
