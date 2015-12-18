@@ -52,7 +52,9 @@ public final class Source
 
     public static Source fromZeroTerminatedString(String string, String identifier, int columnStart, int tabSize)
     {
-        string = string.replaceAll("\t", Strings.times(tabSize, " "));
+        string = string
+            .replaceAll("\t", Strings.times(tabSize, " "))
+            .replaceAll("\r", "");
         return new Source(string, identifier, columnStart, tabSize);
     }
 

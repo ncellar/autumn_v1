@@ -15,11 +15,11 @@ public final class SourceBuilder
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    private String filename;
     private String string;
     private String identifier;
     private int columnStart = 0;
     private int tabSize = 4;
-    private Charset encoding = Encoding.UTF_8;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -54,7 +54,10 @@ public final class SourceBuilder
         byte[] terminator = "\0".getBytes(charset);
         byte[] data = new byte[(int) file.length() + terminator.length];
 
-        stream.read(data);
+        int read = 0;
+        while (read < data.length - 1)
+            read += stream.read(data);
+
         stream.close();
 
         // EOF terminator
@@ -86,14 +89,6 @@ public final class SourceBuilder
     public SourceBuilder tabSize(int size)
     {
         this.tabSize = size;
-        return this;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public SourceBuilder encoding(Charset charset)
-    {
-        this.encoding = charset;
         return this;
     }
 
