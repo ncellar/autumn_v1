@@ -7,6 +7,9 @@ MVN_OUTPUT?=deps/fetched
 JVM_ARGS?=
 JVC_ARGS?=
 
+QUOTED_LIBS:=$(foreach PATH,$(subst :, ,$(LIBS)),"$(PATH)")
+$(info $(QUOTED_LIBS))
+
 ifeq ($(OS),Windows_NT)
 	SEP=;
 else
@@ -23,7 +26,7 @@ define MANUAL_TEXT
 build
 
     Compiles all java files in 'src', as well as all java files in the
-    directories listed in the LIBS variable.
+    directories listed in the LIBS variable (separated by ':').
 
     The generated class files are put in the output directory. This
     directory can be set via the OUTDIR variable and default to 'out/$o'.
@@ -33,6 +36,11 @@ build
     'opti' will disable *all* debugging information. Defaults to 'dev'.
 
 	The 'resources' directory is automatically copied to the output directory.
+
+	Options in the JVC_ARGS variable are passed to javac.
+
+	Directories listed in the BIN_LIBS variable (separated by ':') are added to
+	the classpath.
 
 clean
 
@@ -47,6 +55,9 @@ run
 
 	The output directory, its 'resources' sub-directory and all jars in the 'deps/jar/'
     directory are added to the class path.
+
+	Directories listed in the BIN_LIBS variable (separated by ':')  are added to
+	the classpath.
 
 trace
 
@@ -98,7 +109,8 @@ help:
 build:
 	mkdir -p $(OUTDIR) $(GENDIR)
 	if [ -d resources ]; then cp -R resources/. $(OUTDIR); fi
-	javac -Xlint:unchecked $(JVC_ARGS) $(DEBUG) -d $(OUTDIR) -s $(GENDIR) -cp "deps/jar/*$(SEP)$(BIN_LIBS)" `find src $(LIBS) -name *.java`
+	javac -Xlint:unchecked $(JVC_ARGS) $(DEBUG) -d $(OUTDIR) -s $(GENDIR) \
+	-cp "deps/jar/*$(SEP)$(BIN_LIBS)" `find src $(QUOTED_LIBS) -name *.java`
 
 clean:
 	rm -rf $(OUTDIR) $(GENDIR)
