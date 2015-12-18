@@ -1,4 +1,9 @@
 --------------------------------------------------------------------------------
+TODO NOW
+
+- separate test from src
+- remove Inline annotations
+- make file reader CRLF compliant
 
 TODO NOTES
 
@@ -33,9 +38,6 @@ TODO GUMPTION
     - insert $ in Java8 grammar (rule-level only) (-> 544)
 
 TODO FURTHER SMALL
-
-    - apparently the parser is CRLF (windows newline encoding) hostile
-      probably due to how file is read in
 
     - graph visitor: visit before edge
         - and rename afterChild in term of edges
@@ -83,6 +85,9 @@ TODO FURTHER SMALL
 
     - clever way to export the inputs
         - use the parsestate class instead of extension?
+
+    - increase depth when profiling
+        http://stackoverflow.com/questions/18245217
 
 TODO FURTHER BIG
 
