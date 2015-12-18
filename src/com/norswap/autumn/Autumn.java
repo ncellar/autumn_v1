@@ -1,10 +1,7 @@
 package com.norswap.autumn;
 
-import com.norswap.autumn.parsing.Grammar;
-import com.norswap.autumn.parsing.ParseResult;
-import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.config.ParserConfiguration;
-import com.norswap.autumn.parsing.source.Source;
+import com.norswap.autumn.config.ParserConfiguration;
+import com.norswap.autumn.source.Source;
 
 import java.io.IOException;
 

@@ -1,11 +1,11 @@
 package com.norswap.autumn.test.languages.python;
 
-import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
-import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
+import com.norswap.autumn.Parser;
+import com.norswap.autumn.ParsingExpression;
+import static com.norswap.autumn.ParsingExpressionFactory.*;
 
-import com.norswap.autumn.parsing.expressions.abstrakt.UnaryParsingExpression;
-import com.norswap.autumn.parsing.state.ParseState;
+import com.norswap.autumn.expressions.abstrakt.UnaryParsingExpression;
+import com.norswap.autumn.state.ParseState;
 
 public class PythonToken extends UnaryParsingExpression
 {

@@ -1,7 +1,6 @@
 package com.norswap.autumn.test.parsing;
 
-import com.norswap.autumn.parsing.capture.ParseTree;
-import com.norswap.util.Array;
+import com.norswap.autumn.capture.ParseTree;
 
 public class ParseTreeBuilder
 {

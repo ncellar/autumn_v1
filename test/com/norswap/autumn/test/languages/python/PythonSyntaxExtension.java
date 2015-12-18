@@ -1,10 +1,10 @@
 package com.norswap.autumn.test.languages.python;
 
-import com.norswap.autumn.parsing.capture.ParseTree;
-import com.norswap.autumn.parsing.extensions.SyntaxExtension;
-import com.norswap.autumn.parsing.support.GrammarCompiler;
-import static com.norswap.autumn.parsing.ParsingExpressionFactory.succeed;
-import com.norswap.autumn.parsing.support.MetaGrammar;
+import com.norswap.autumn.capture.ParseTree;
+import com.norswap.autumn.extensions.SyntaxExtension;
+import com.norswap.autumn.support.GrammarCompiler;
+import static com.norswap.autumn.ParsingExpressionFactory.succeed;
+import com.norswap.autumn.support.MetaGrammar;
 
 public class PythonSyntaxExtension extends SyntaxExtension
 {

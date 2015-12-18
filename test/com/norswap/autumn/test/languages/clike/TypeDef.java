@@ -1,9 +1,9 @@
 package com.norswap.autumn.test.languages.clike;
 
-import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
-import com.norswap.autumn.parsing.expressions.abstrakt.UnaryParsingExpression;
-import com.norswap.autumn.parsing.state.ParseState;
+import com.norswap.autumn.Parser;
+import com.norswap.autumn.ParsingExpression;
+import com.norswap.autumn.expressions.abstrakt.UnaryParsingExpression;
+import com.norswap.autumn.state.ParseState;
 
 public class TypeDef extends UnaryParsingExpression
 {

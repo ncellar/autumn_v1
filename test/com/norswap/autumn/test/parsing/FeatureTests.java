@@ -1,16 +1,15 @@
 package com.norswap.autumn.test.parsing;
 
-import com.norswap.autumn.parsing.ParsingExpression;
-import com.norswap.autumn.parsing.capture.ParseTree;
-import com.norswap.autumn.test.Ensure;
+import com.norswap.autumn.ParsingExpression;
+import com.norswap.autumn.capture.ParseTree;
 import com.norswap.autumn.test.Ensure;
 import com.norswap.autumn.test.TestRunner;
 
 import java.util.List;
 
-import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
+import static com.norswap.autumn.ParsingExpressionFactory.*;
 import static com.norswap.autumn.test.parsing.ParseTreeBuilder.$;
-import static com.norswap.autumn.parsing.ParsingExpressionFactory.$;
+import static com.norswap.autumn.ParsingExpressionFactory.$;
 
 public final class FeatureTests
 {

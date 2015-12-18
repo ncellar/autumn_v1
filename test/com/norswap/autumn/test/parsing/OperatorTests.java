@@ -1,9 +1,9 @@
 package com.norswap.autumn.test.parsing;
 
-import com.norswap.autumn.parsing.ParsingExpression;
+import com.norswap.autumn.ParsingExpression;
 import com.norswap.autumn.test.TestRunner;
 
-import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
+import static com.norswap.autumn.ParsingExpressionFactory.*;
 
 public final class OperatorTests
 {

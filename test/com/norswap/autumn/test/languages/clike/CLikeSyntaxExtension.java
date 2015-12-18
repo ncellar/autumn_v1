@@ -1,10 +1,10 @@
 package com.norswap.autumn.test.languages.clike;
 
-import static com.norswap.autumn.parsing.ParsingExpressionFactory.captureText;
-import com.norswap.autumn.parsing.capture.ParseTree;
-import com.norswap.autumn.parsing.extensions.SyntaxExtension;
-import com.norswap.autumn.parsing.support.GrammarCompiler;
-import com.norswap.autumn.parsing.support.MetaGrammar;
+import static com.norswap.autumn.ParsingExpressionFactory.captureText;
+import com.norswap.autumn.capture.ParseTree;
+import com.norswap.autumn.extensions.SyntaxExtension;
+import com.norswap.autumn.support.GrammarCompiler;
+import com.norswap.autumn.support.MetaGrammar;
 
 public class CLikeSyntaxExtension extends SyntaxExtension
 {

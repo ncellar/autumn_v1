@@ -1,9 +1,9 @@
 package com.norswap.autumn.test.languages.clike;
 
-import com.norswap.autumn.parsing.extensions.CustomStateIndex;
-import com.norswap.autumn.parsing.extensions.Extension;
-import com.norswap.autumn.parsing.extensions.SyntaxExtension;
-import com.norswap.autumn.parsing.state.CustomState;
+import com.norswap.autumn.extensions.CustomStateIndex;
+import com.norswap.autumn.extensions.Extension;
+import com.norswap.autumn.extensions.SyntaxExtension;
+import com.norswap.autumn.state.CustomState;
 
 public final class CLikeExtension implements Extension
 {

@@ -1,9 +1,9 @@
 package com.norswap.autumn.test.languages;
 
-import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
-import com.norswap.autumn.parsing.expressions.abstrakt.UnaryParsingExpression;
-import com.norswap.autumn.parsing.state.ParseState;
+import com.norswap.autumn.Parser;
+import com.norswap.autumn.ParsingExpression;
+import com.norswap.autumn.expressions.abstrakt.UnaryParsingExpression;
+import com.norswap.autumn.state.ParseState;
 import java.util.function.Function;
 
 public final class Monadic extends UnaryParsingExpression

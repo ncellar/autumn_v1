@@ -1,10 +1,10 @@
 package com.norswap.autumn.test.parsing;
 
 import com.norswap.autumn.Autumn;
-import com.norswap.autumn.parsing.Grammar;
-import com.norswap.autumn.parsing.ParseResult;
-import com.norswap.autumn.parsing.ParsingExpression;
-import com.norswap.autumn.parsing.capture.ParseTree;
+import com.norswap.autumn.Grammar;
+import com.norswap.autumn.ParseResult;
+import com.norswap.autumn.ParsingExpression;
+import com.norswap.autumn.capture.ParseTree;
 import com.norswap.autumn.test.TestFailed;
 
 public final class Common

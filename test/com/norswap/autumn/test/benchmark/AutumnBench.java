@@ -1,9 +1,9 @@
 package com.norswap.autumn.test.benchmark;
 
 import com.norswap.autumn.Autumn;
-import com.norswap.autumn.parsing.Grammar;
-import com.norswap.autumn.parsing.ParseResult;
-import com.norswap.autumn.parsing.source.Source;
+import com.norswap.autumn.Grammar;
+import com.norswap.autumn.ParseResult;
+import com.norswap.autumn.source.Source;
 import com.norswap.util.Array;
 import com.norswap.util.Glob;
 

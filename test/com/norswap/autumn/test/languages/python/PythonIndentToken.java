@@ -1,9 +1,9 @@
 package com.norswap.autumn.test.languages.python;
 
-import com.norswap.autumn.parsing.Parser;
-import com.norswap.autumn.parsing.ParsingExpression;
-import com.norswap.autumn.parsing.graph.Nullability;
-import com.norswap.autumn.parsing.state.ParseState;
+import com.norswap.autumn.Parser;
+import com.norswap.autumn.ParsingExpression;
+import com.norswap.autumn.graph.Nullability;
+import com.norswap.autumn.state.ParseState;
 
 public class PythonIndentToken extends ParsingExpression
 {

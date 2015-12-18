@@ -1,11 +1,11 @@
 package com.norswap.autumn.test.languages;
 
 import com.norswap.autumn.Autumn;
-import com.norswap.autumn.parsing.Grammar;
-import com.norswap.autumn.parsing.ParseResult;
-import com.norswap.autumn.parsing.ParsingExpression;
-import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
-import com.norswap.autumn.parsing.source.Source;
+import com.norswap.autumn.Grammar;
+import com.norswap.autumn.ParseResult;
+import com.norswap.autumn.ParsingExpression;
+import static com.norswap.autumn.ParsingExpressionFactory.*;
+import com.norswap.autumn.source.Source;
 import java.io.IOException;
 
 public final class SnippetTest

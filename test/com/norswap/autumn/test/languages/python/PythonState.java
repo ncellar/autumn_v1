@@ -1,7 +1,7 @@
 package com.norswap.autumn.test.languages.python;
 
-import com.norswap.autumn.parsing.state.ParseState;
-import com.norswap.autumn.parsing.state.patterns.Duplex;
+import com.norswap.autumn.state.ParseState;
+import com.norswap.autumn.state.patterns.Duplex;
 
 public final class PythonState extends Duplex<PythonState>
 {
