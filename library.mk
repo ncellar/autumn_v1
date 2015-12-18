@@ -1,9 +1,11 @@
 o?=dev
 LIBS?=
+BIN_LIBS?=
 OUTDIR?=out/$o
 GENDIR?=generated
 MVN_OUTPUT?=deps/fetched
 JVM_ARGS?=
+JVC_ARGS?=
 
 ifeq ($(OS),Windows_NT)
 	SEP=;
@@ -96,13 +98,13 @@ help:
 build:
 	mkdir -p $(OUTDIR) $(GENDIR)
 	if [ -d resources ]; then cp -R resources/. $(OUTDIR); fi
-	javac -Xlint:unchecked $(DEBUG) -d $(OUTDIR) -s $(GENDIR) -cp "deps/jar/*" `find src $(LIBS) -name *.java`
+	javac -Xlint:unchecked $(JVC_ARGS) $(DEBUG) -d $(OUTDIR) -s $(GENDIR) -cp "deps/jar/*$(SEP)$(BIN_LIBS)" `find src $(LIBS) -name *.java`
 
 clean:
 	rm -rf $(OUTDIR) $(GENDIR)
 
 run:
-	java -cp "$(OUTDIR)$(SEP)deps/jar/*$(SEP)$(OUTDIR)/resources" $(JVM_ARGS) $t $a
+	java -cp "$(OUTDIR)$(SEP)deps/jar/*$(SEP)$(BIN_LIBS)$(SEP)$(OUTDIR)/resources" $(JVM_ARGS) $t $a
 
 trace:
 	java -cp "$(OUTDIR)$(SEP)deps/*$(SEP)$(OUTDIR)/resources" -agentlib:hprof=cpu=samples,interval=1 $t $a
