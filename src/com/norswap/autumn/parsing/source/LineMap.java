@@ -8,9 +8,7 @@ import java.util.Arrays;
  * Maps line numbers to their file offsets and allows the reverse mapping in O(log(number of
  * lines)).
  * <p>
- * The class implementation assumes that lines start at 1, while columns start at 0, but allows to
- * add an offset for the starting index of columns when getting position pairs out of the class
- * (using the {@code columnStart} parameter).
+ * Lines start at index 1, while columns start at 0.
  */
 public final class LineMap
 {
