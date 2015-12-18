@@ -3,12 +3,12 @@ package com.norswap.autumn.test.parsing;
 import com.norswap.autumn.parsing.ParsingExpression;
 import com.norswap.autumn.parsing.capture.ParseTree;
 import com.norswap.autumn.test.Ensure;
+import com.norswap.autumn.test.Ensure;
 import com.norswap.autumn.test.TestRunner;
 
 import java.util.List;
 
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
-import static com.norswap.autumn.test.parsing.Common.*;
 import static com.norswap.autumn.test.parsing.ParseTreeBuilder.$;
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.$;
 
@@ -95,14 +95,14 @@ public final class FeatureTests
     {
         pe = oneMore(token(literal("*")));
 
-        ensureMatch(pe, "*");
-        ensureMatch(pe, "* \n\t");
-        ensureMatch(pe, "* \n\t*** * * \n\t");
-        ensureMatch(pe, "* // hello lol");
-        ensureMatch(pe, "* /* is diz real life? */");
-        ensureMatch(pe, "* /* nested /* amazing innit? */ lol */");
-        ensureFail(pe, " ");
-        ensureMatch(pe, " *");
+        Common.ensureMatch(pe, "*");
+        Common.ensureMatch(pe, "* \n\t");
+        Common.ensureMatch(pe, "* \n\t*** * * \n\t");
+        Common.ensureMatch(pe, "* // hello lol");
+        Common.ensureMatch(pe, "* /* is diz real life? */");
+        Common.ensureMatch(pe, "* /* nested /* amazing innit? */ lol */");
+        Common.ensureFail(pe, " ");
+        Common.ensureMatch(pe, " *");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -113,9 +113,9 @@ public final class FeatureTests
             leftRecursive(reference("expr"), literal("*")),
             num.deepCopy()));
 
-        ensureMatch(pe, "1");
-        ensureMatch(pe, "1*");
-        ensureMatch(pe, "1***");
+        Common.ensureMatch(pe, "1");
+        Common.ensureMatch(pe, "1*");
+        Common.ensureMatch(pe, "1***");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -127,11 +127,11 @@ public final class FeatureTests
             leftAssociative(reference("expr"), literal("*"), reference("expr")),
             num.deepCopy()));
 
-        ensureMatch(pe, "1");
-        ensureMatch(pe, "1+1");
-        ensureMatch(pe, "1*1");
-        ensureMatch(pe, "1+1+1+1");
-        ensureMatch(pe, "1*1+1*1");
+        Common.ensureMatch(pe, "1");
+        Common.ensureMatch(pe, "1+1");
+        Common.ensureMatch(pe, "1*1");
+        Common.ensureMatch(pe, "1+1+1+1");
+        Common.ensureMatch(pe, "1*1+1*1");
     }
 
 
@@ -139,7 +139,7 @@ public final class FeatureTests
 
     public void testCapture()
     {
-        tree = tree(captureText("a", oneMore(literal("a"))), "aaa");
+        tree = Common.tree(captureText("a", oneMore(literal("a"))), "aaa");
         Ensure.equals(tree.get("a").value, "aaa");
     }
 
@@ -147,7 +147,7 @@ public final class FeatureTests
 
     public void testMultipleCapture()
     {
-        tree = tree(sequence(oneMore(captureText($(group("a")), literal("a")))), "aaa");
+        tree = Common.tree(sequence(oneMore(captureText($(group("a")), literal("a")))), "aaa");
         List<ParseTree> aResults = tree.group("a");
 
         Ensure.equals(aResults.size(), 3);
@@ -172,7 +172,7 @@ public final class FeatureTests
 
         for (ParsingExpression expr: new ParsingExpression[]{expr1, expr2})
         {
-            tree = tree(expr, "1+2+3");
+            tree = Common.tree(expr, "1+2+3");
 
             expected = $($("+",
                 $("left", $("num", "1")),
@@ -194,7 +194,7 @@ public final class FeatureTests
             leftAssociative(plus.deepCopy()),
             num.deepCopy()));
 
-        tree = tree(pe, "1+2+3");
+        tree = Common.tree(pe, "1+2+3");
 
         expected = $($("+",
             $("left", $("+",
@@ -216,7 +216,7 @@ public final class FeatureTests
             precedence(2, leftAssociative(mult.deepCopy())),
             num.deepCopy()));
 
-        tree = tree(pe, "1+2*3");
+        tree = Common.tree(pe, "1+2*3");
 
         expected = $($("+",
             $("left", $("num", "1")),
@@ -226,7 +226,7 @@ public final class FeatureTests
 
         Ensure.equals(tree, expected);
 
-        tree = tree(pe, "1*2+3");
+        tree = Common.tree(pe, "1*2+3");
 
         expected = $($("+",
             $("left", $("*",
@@ -251,7 +251,7 @@ public final class FeatureTests
             group(3,
                 num.deepCopy())));
 
-        tree = tree(pe, "1+2-3+4*5/6*7+8");
+        tree = Common.tree(pe, "1+2-3+4*5/6*7+8");
 
         expected = $($("+",
             $("left", $("+",
@@ -286,7 +286,7 @@ public final class FeatureTests
             group(3,
                 num.deepCopy())));
 
-        tree = tree(pe, "1+2-3+4*5/6*7+8");
+        tree = Common.tree(pe, "1+2-3+4*5/6*7+8");
 
         expected = $($("+",
             $("left", $("num", "1")),
@@ -321,7 +321,7 @@ public final class FeatureTests
             group(3,
                 num.deepCopy())));
 
-        tree = tree(pe, "1+2-3+4*5/6*7+8");
+        tree = Common.tree(pe, "1+2-3+4*5/6*7+8");
 
         expected = $($("+",
             $("left", $("+",

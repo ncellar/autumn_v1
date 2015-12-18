@@ -3,7 +3,7 @@ package com.norswap.autumn.test.languages.python;
 import com.norswap.autumn.parsing.Parser;
 import com.norswap.autumn.parsing.ParsingExpression;
 import static com.norswap.autumn.parsing.ParsingExpressionFactory.*;
-import com.norswap.autumn.parsing.expressions.Literal;
+
 import com.norswap.autumn.parsing.expressions.abstrakt.UnaryParsingExpression;
 import com.norswap.autumn.parsing.state.ParseState;
 

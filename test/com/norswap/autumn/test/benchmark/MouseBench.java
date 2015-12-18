@@ -1,6 +1,7 @@
 package com.norswap.autumn.test.benchmark;
 
 import com.norswap.autumn.test.mouse.MouseJava8Parser;
+import com.norswap.autumn.test.mouse.MouseJava8Parser;
 import com.norswap.util.Array;
 import com.norswap.util.Glob;
 import mouse.runtime.Source;

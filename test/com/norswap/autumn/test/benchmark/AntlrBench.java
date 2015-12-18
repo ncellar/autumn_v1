@@ -1,26 +1,22 @@
 package com.norswap.autumn.test.benchmark;
 
-import com.norswap.autumn.test.rats.RatsJava7Parser;
+import com.norswap.autumn.test.antlr.Java7Parser;
+import com.norswap.autumn.test.antlr.Java7Lexer;
+import com.norswap.autumn.test.antlr.Java7Parser;
 import com.norswap.util.Array;
 import com.norswap.util.Glob;
-import xtc.parser.ParseError;
-import xtc.parser.Result;
-import xtc.parser.SemanticValue;
-import xtc.tree.Node;
-import xtc.tree.Printer;
+import org.antlr.v4.runtime.ANTLRFileStream;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.ParserRuleContext;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 
-public class RatsBench
+public final class AntlrBench
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -41,7 +37,6 @@ public class RatsBench
             durations.add(Duration.between(mid, tmp));
             mid = tmp;
         }
-
         Instant end = Instant.now();
         System.out.println("Code parsed in: " + Duration.between(start, end).dividedBy(iters));
         System.out.println(durations);
@@ -62,44 +57,21 @@ public class RatsBench
     private static void parseFile(String file)
     {
         try {
-            Reader reader = new BufferedReader(new FileReader(file));
-            RatsJava7Parser parser = new RatsJava7Parser(reader, file);
-            Result result = parser.pCompilationUnit(0);
+            //Lexer lexer = new Java8Lexer(new ANTLRFileStream(file));
+            Lexer lexer = new Java7Lexer(new ANTLRFileStream(file));
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
 
-            if (result.hasValue())
-            {
-                /* // Print AST
+            //Java8Parser parser = new Java8Parser(tokens);
+            Java7Parser parser = new Java7Parser(tokens);
 
-                SemanticValue v = (SemanticValue)result;
+            ParserRuleContext t = parser.compilationUnit();
 
-                if (v.value instanceof Node)
-                {
-                    Printer ptr =
-                        new Printer(new BufferedWriter(new OutputStreamWriter(System.out)));
-
-                    ptr.format((Node)v.value).pln().flush();
-                }
-                else
-                {
-                    System.out.println(v.value.toString());
-                }
-
-                return;
-                //*/
-            }
-            else
-            {
-                ParseError err = (ParseError) result;
-                if (-1 == err.index) {
-                    System.err.println("  Parse error");
-                } else {
-                    System.err.println("  " + parser.location(err.index) + ": " + err.msg);
-                }
-            }
         }
-        catch (IOException e)
+        catch (Exception e)
         {
-            System.out.println("Could not read file: " + file);
+            // In case of error, ANTLR will print it regardless.
+            System.err.println(file);
+            System.err.println("parser exception: " + e);
         }
     }
 

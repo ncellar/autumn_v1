@@ -5,6 +5,7 @@ import com.norswap.autumn.parsing.Grammar;
 import com.norswap.autumn.parsing.ParseResult;
 import com.norswap.autumn.parsing.source.Source;
 import com.norswap.autumn.test.languages.python.PythonExtension;
+import com.norswap.autumn.test.languages.python.PythonExtension;
 import com.norswap.util.Glob;
 
 import java.io.File;
