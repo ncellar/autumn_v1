@@ -56,7 +56,7 @@ public final class NullabilityCalculator
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void before(Slot<ParsingExpression> pe)
+    public void beforeNode(Slot<ParsingExpression> pe)
     {
         nullabilities.put(pe.initial, pe.initial.nullability());
     }
@@ -64,7 +64,7 @@ public final class NullabilityCalculator
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void after(Slot<ParsingExpression> slot, Array<Slot<ParsingExpression>> children)
+    public void afterNode(Slot<ParsingExpression> slot, Array<Slot<ParsingExpression>> children)
     {
         Nullability n = nullabilities.get(slot.initial);
 

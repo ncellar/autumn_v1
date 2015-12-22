@@ -11,14 +11,24 @@ import static com.norswap.util.graph.NodeState.*;
 /**
  * A graph visit defines a visit of a graph made of nodes with type {@code Node}.
  * <p>
- * The visit is defined via a set of callbacks invoked at various point of the visit, namely {@link
- * #before}, {@link #afterChild}, {@link #after}, {@link #afterRoot} and {@link #conclude}.
+ * The visit is defined via a set of callbacks invoked before/after visiting each node or edge in
+ * the graph.at various point of the visit, namely {@link #beforeNode}, {@link #beforeEdge} {@link
+ * #afterEdge}, {@link #afterNode}, {@link #afterRoot}. {@link #conclude} is called at the end of
+ * the visit.
+ * <p>
+ * Each node and edge is visited only once, when it is first encountered. {@link #beforeNode} is
+ * called upon visiting a new edge. Then, for its first outgoing edge, {@link #beforeEdge} is
+ * called. Then the node at the other side of the edge is visited, if it hasn't been already, thus
+ * starting this process recursively. When the visit of the other node is complete (or if the node
+ * had been visited already), {@link #afterEdge} is called. This process is repeated for all other
+ * outgoing edges. Finally {@link #afterNode} is called. The visitor automatically prevents infinite
+ * recursion due to cycles.
  * <p>
  * Instead of passing the nodes directly, we pass a {@link Slot} object. These make available the
  * original value of the node ({@link Slot#initial}), and make it possible to indicate that we wish
  * to replace the node with another (by assigning the {@link Slot#assigned} slot. These changes will
- * not be effected until the end of the walk, and their semantics is determined by the
- * implementation of the {@link #applyChanges} method.
+ * not be applied until the end of the walk, and their semantics is determined by the implementation
+ * of the {@link #applyChanges} method.
  * <p>
  * The visit is started by calling {@link #visit(Node)} (single root) or {@link #visit(Collection)}
  * (multiple roots). It is also possible to perform incremental visits by repeatedly calling the
@@ -45,26 +55,33 @@ public abstract class GraphVisitor<Node>
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Called when a node is visited, before attempting to visit its children. Guaranteed to be
-     * called only once per node.
+     * Called first when visiting a node.
      */
-    public void before(Slot<Node> node) {}
+    public void beforeNode(Slot<Node> node) {}
 
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Called after attempting to visit each child of {@code parent} (after calling {@link #after}
-     * with the child itself, if that hasn't been done already).
+     * Called before visiting the [start -> end] edge. {@code state} is the state of the of end
+     * node.
      */
-    public void afterChild(Slot<Node> parent, Slot<Node> child, NodeState state) {}
+    public void beforeEdge(Slot<Node> start, Slot<Node> end, NodeState state) {}
 
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Called after we have attempted to visit all the children of the node. Guaranteed to be called
-     * only once per node.
+     * Called after visiting the [start -> end] edge (this includes visiting the end node if it
+     * hadn't been already). {@code state} is the state of the of end node.
      */
-    public void after(Slot<Node> node, Array<Slot<Node>> children) {}
+    public void afterEdge(Slot<Node> start, Slot<Node> end, NodeState state) {}
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Called after visiting a node, which includes visiting all its outgoing edges and the nodes
+     * at the other side of these edges, recursively.
+     */
+    public void afterNode(Slot<Node> node, Array<Slot<Node>> children) {}
 
     // ---------------------------------------------------------------------------------------------
 
@@ -137,7 +154,7 @@ public abstract class GraphVisitor<Node>
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * This can be called from {@link #before} in order to specify that the children of the node
+     * This can be called from {@link #beforeNode} in order to specify that the children of the node
      * shouldn't be visited.
      */
     public final void cutoff()
@@ -177,14 +194,18 @@ public abstract class GraphVisitor<Node>
                 return VISITED;
         }
 
-        before(node);
+        beforeNode(node);
 
         Array<Slot<Node>> children = getChildren(initial);
 
         for (Slot<Node> child: children)
         {
-            NodeState childState = walk(child);
-            afterChild(node, child, childState);
+            NodeState childState;
+
+            childState = states.getOrDefault(child, FIRST_VISIT);
+            beforeEdge(node, child, childState);
+            childState = walk(child);
+            afterEdge(node, child, childState);
 
             if (child.assigned != null)
             {
@@ -192,7 +213,7 @@ public abstract class GraphVisitor<Node>
             }
         }
 
-        after(node, children);
+        afterNode(node, children);
         states.put(node.initial, VISITED);
 
         return FIRST_VISIT;

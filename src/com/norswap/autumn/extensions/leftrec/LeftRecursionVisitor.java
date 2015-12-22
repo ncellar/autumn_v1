@@ -81,7 +81,7 @@ public final class LeftRecursionVisitor extends GraphVisitor<ParsingExpression>
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void before(Slot<ParsingExpression> slot)
+    public void beforeNode(Slot<ParsingExpression> slot)
     {
         ParsingExpression pe = slot.initial;
 
@@ -97,7 +97,7 @@ public final class LeftRecursionVisitor extends GraphVisitor<ParsingExpression>
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void after(Slot<ParsingExpression> slot, Array<Slot<ParsingExpression>> children)
+    public void afterNode(Slot<ParsingExpression> slot, Array<Slot<ParsingExpression>> children)
     {
         ParsingExpression pe = slot.initial;
 
@@ -113,7 +113,7 @@ public final class LeftRecursionVisitor extends GraphVisitor<ParsingExpression>
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void afterChild(Slot<ParsingExpression> parent, Slot<ParsingExpression> child, NodeState state)
+    public void afterEdge(Slot<ParsingExpression> parent, Slot<ParsingExpression> child, NodeState state)
     {
         if (state == NodeState.CUTOFF)
         {

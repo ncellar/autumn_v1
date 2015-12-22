@@ -31,7 +31,7 @@ public final class Transformer extends ParsingExpressionVisitor
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void afterChild(
+    public void afterEdge(
         Slot<ParsingExpression> parent,
         Slot<ParsingExpression> child,
         NodeState state)
@@ -45,7 +45,7 @@ public final class Transformer extends ParsingExpressionVisitor
     @Override
     public void afterRoot(Slot<ParsingExpression> slot, NodeState state)
     {
-        afterChild(null, slot, state);
+        afterEdge(null, slot, state);
     }
 
     // ---------------------------------------------------------------------------------------------

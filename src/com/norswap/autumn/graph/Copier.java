@@ -19,7 +19,7 @@ public final class Copier extends ParsingExpressionVisitor
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void before(Slot<ParsingExpression> node)
+    public void beforeNode(Slot<ParsingExpression> node)
     {
         node.assigned = node.initial.clone();
         node.assigned.copyOwnData();
@@ -29,7 +29,7 @@ public final class Copier extends ParsingExpressionVisitor
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void afterChild(Slot<ParsingExpression> parent, Slot<ParsingExpression> child, NodeState state)
+    public void afterEdge(Slot<ParsingExpression> parent, Slot<ParsingExpression> child, NodeState state)
     {
         switch (state)
         {

@@ -43,7 +43,7 @@ public final class Printer extends ParsingExpressionVisitor
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void before(Slot<ParsingExpression> slot)
+    public void beforeNode(Slot<ParsingExpression> slot)
     {
         ParsingExpression pe = slot.initial;
 
@@ -73,7 +73,7 @@ public final class Printer extends ParsingExpressionVisitor
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void afterChild(Slot<ParsingExpression> parent, Slot<ParsingExpression> child, NodeState state)
+    public void afterEdge(Slot<ParsingExpression> parent, Slot<ParsingExpression> child, NodeState state)
     {
         switch (state)
         {
@@ -102,7 +102,7 @@ public final class Printer extends ParsingExpressionVisitor
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void after(Slot<ParsingExpression> slot, Array<Slot<ParsingExpression>> children)
+    public void afterNode(Slot<ParsingExpression> slot, Array<Slot<ParsingExpression>> children)
     {
         ParsingExpression pe = slot.initial;
 

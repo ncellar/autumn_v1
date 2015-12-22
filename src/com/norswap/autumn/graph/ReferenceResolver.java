@@ -62,7 +62,7 @@ public final class ReferenceResolver extends ParsingExpressionVisitor
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void before(Slot<ParsingExpression> node)
+    public void beforeNode(Slot<ParsingExpression> node)
     {
         ParsingExpression initial = node.initial;
 
@@ -84,7 +84,7 @@ public final class ReferenceResolver extends ParsingExpressionVisitor
     // ---------------------------------------------------------------------------------------------
 
     @Override
-    public void afterChild(Slot<ParsingExpression> parent, Slot<ParsingExpression> child, NodeState state)
+    public void afterEdge(Slot<ParsingExpression> parent, Slot<ParsingExpression> child, NodeState state)
     {
         ParsingExpression initial = child.initial;
 
