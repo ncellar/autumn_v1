@@ -10,6 +10,10 @@ import com.norswap.autumn.state.ParseState;
 import com.norswap.util.Array;
 import java.util.HashMap;
 
+/**
+ * All the immutable data associate with a parser, which namely includes the grammar, the source
+ * test and configuration options.
+ */
 public final class Parser implements Cloneable
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
