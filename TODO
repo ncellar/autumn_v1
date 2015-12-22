@@ -15,24 +15,6 @@ TODO NOTES
         - probably should have a Error(msg) parsing expression that fails with a message
         - interplay with cutting/limited backtracking? to commit to certain alternatives
 
-TODO DEBUGGER
-
-    - rework package
-        - positioning in next and error locator
-            - invert locate
-                - check locators (done: after, before) |<-
-        - integrate own capture info
-        - register state tracking custom state
-        - why do I have a distinction between ExecutionLocation and spine?
-
-    - bookmarks (shared, synchronized) and history (forked)
-
-    - consider later:
-        - make location info class
-        - document the "non-inspection" behaviour of beforeLocator
-
-    - repeating locators (which can locate multiple locations if invoked repeatedly)
-
 TODO GUMPTION
 
     - insert $ in Java8 grammar (rule-level only) (-> 544)
