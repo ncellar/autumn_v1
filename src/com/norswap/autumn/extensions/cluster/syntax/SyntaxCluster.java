@@ -1,13 +1,14 @@
-package com.norswap.autumn.extensions.cluster;
+package com.norswap.autumn.extensions.cluster.syntax;
 
 import com.norswap.autumn.ParsingExpression;
 import com.norswap.autumn.capture.ParseTree;
 import com.norswap.autumn.extensions.SyntaxExtension;
+import com.norswap.autumn.extensions.cluster.ClusterExtension;
+import com.norswap.autumn.extensions.cluster.ClusterSyntax;
 import com.norswap.autumn.extensions.cluster.expressions.ExpressionCluster;
 import com.norswap.autumn.support.GrammarCompiler;
 import com.norswap.util.Array;
 
-import static com.norswap.autumn.ParsingExpressionFactory.cluster;
 import static com.norswap.autumn.ParsingExpressionFactory.group;
 
 /**
@@ -27,21 +28,24 @@ import static com.norswap.autumn.ParsingExpressionFactory.group;
  * };
  * }</pre>
  */
-public final class SyntaxExtensionCluster extends SyntaxExtension
+public final class SyntaxCluster extends SyntaxExtension
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public SyntaxExtensionCluster()
+    private final ClusterExtension cext;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public SyntaxCluster(ClusterExtension cext)
     {
         super(Type.EXPRESSION, "expr", ClusterSyntax.exprCluster);
+        this.cext = cext;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public Object compile(
-        GrammarCompiler compiler,
-        ParseTree expression)
+    public Object compile(GrammarCompiler compiler, ParseTree expression)
     {
         expression = expression.child();
 
@@ -107,7 +111,7 @@ public final class SyntaxExtensionCluster extends SyntaxExtension
             groups.pop();
         }
 
-        return cluster(groups.toArray(ExpressionCluster.Group[]::new));
+        return cext.cluster(groups.toArray(ExpressionCluster.Group[]::new));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

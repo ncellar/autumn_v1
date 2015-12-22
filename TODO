@@ -1,35 +1,32 @@
 --------------------------------------------------------------------------------
 TODO NOW
 
-TODO GRADUAL
-
-- user manual
-
-TODO NOTES
-
-    - parsec choice combinator doesn't backtrack unless your use try
-        - is explicit backtracking control a good idea? (use <|>)
-        - related to cut (although simpler implem)
-
-    - look at parsec etc for error handling
-        - probably should have a Error(msg) parsing expression that fails with a message
-        - interplay with cutting/limited backtracking? to commit to certain alternatives
-
-TODO GUMPTION
-
-    - insert $ in Java8 grammar (rule-level only) (-> 544)
-
-TODO FURTHER SMALL
-
     - index allocation should be per-grammar
         - extensions should be registered before root pe
         - extension pe should be created by extension
+
+    ==> done: ExpressionCluster, other (in ext + out ext) to go
 
     - allow options in grammar files, namely for root and whitespace spec
       (to be retrieved from GrammarCompiler)
 
     - rework cluster filtering mechanism
         - simple fix: insert a checking parsing expression around named arrows
+        - OR warn and implement next item instead
+
+    - better support for layering with smart tree-building that automatically rewrites trees
+          (see notes, p. D5)
+
+TODO GRADUAL
+
+    - user manual
+
+TODO GUMPTION
+
+    - insert $ in Java8 grammar (rule-level only) (-> 544)
+    - reorganize imports
+
+TODO FURTHER SMALL
 
     - well formedness check (ford: WF -- can't loop without consuming)
 
@@ -37,11 +34,6 @@ TODO FURTHER SMALL
         - MemoScope
         - ScopedMemo
     - compact parsing expression printing (not multiline)
-
-    - reorganize imports
-
-    - abstract the hierarchical string printing pattern
-        (present in different kind of trees for instances)
 
     - generators for state/input/etc boilerplate
 
@@ -67,6 +59,16 @@ TODO FURTHER SMALL
 
     - increase depth when profiling
         http://stackoverflow.com/questions/18245217
+
+TODO WONDER
+
+    - parsec choice combinator doesn't backtrack unless your use try
+        - is explicit backtracking control a good idea? (use <|>)
+        - related to cut (although simpler implem)
+
+    - look at parsec etc for error handling
+        - probably should have a Error(msg) parsing expression that fails with a message
+        - interplay with cutting/limited backtracking? to commit to certain alternatives
 
 TODO FURTHER BIG
 
@@ -95,11 +97,6 @@ TODO FURTHER BIG
         - dumb operator
             `fast(X)`
         - remove ^= and %= operators
-
-    - hookable preprocessing phase
-
-    - better support for layering with smart tree-building that automatically rewrites trees
-      (see notes, p. D5)
 
     - mini type system for captures? automatic AST classes generation?
 

@@ -119,9 +119,7 @@ public abstract class SyntaxExtension
      * To context object can be used to read/write information local to the parse. It is shared
      * with other objects, so keys should be uniquely prefixed.
      */
-    public abstract Object compile(
-        GrammarCompiler compiler,
-        ParseTree tree);
+    public abstract Object compile(GrammarCompiler compiler, ParseTree tree);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }

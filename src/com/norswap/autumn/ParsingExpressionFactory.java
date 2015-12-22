@@ -6,11 +6,9 @@ import com.norswap.autumn.capture.DecorateWithKind;
 import com.norswap.autumn.expressions.*;
 import com.norswap.autumn.expressions.Capture;
 import com.norswap.autumn.capture.Decorate;
-import com.norswap.autumn.extensions.cluster.expressions.ExpressionCluster;
 import com.norswap.autumn.extensions.cluster.expressions.ExpressionCluster.Group;
 import com.norswap.autumn.expressions.Whitespace;
 import com.norswap.autumn.extensions.cluster.expressions.Filter;
-import com.norswap.autumn.extensions.cluster.expressions.WithMinPrecedence;
 import com.norswap.autumn.extensions.leftrec.LeftRecursive;
 import java.util.Arrays;
 
@@ -182,50 +180,6 @@ public final class ParsingExpressionFactory
 
     // ---------------------------------------------------------------------------------------------
 
-    public static ExpressionCluster cluster(Group... groups)
-    {
-        ExpressionCluster result = new ExpressionCluster();
-
-        // Sort in decreasing order of precedence.
-        Arrays.sort(groups, (g1, g2) -> g2.precedence - g1.precedence);
-
-        result.groups = groups;
-        return result;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public static WithMinPrecedence exprDropPrecedence(ParsingExpression operand)
-    {
-        return exprWithMinPrecedence(0, operand);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public static WithMinPrecedence exprDropPrecedence(ParsingExpression... seq)
-    {
-        return exprWithMinPrecedence(0, sequence(seq));
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public static WithMinPrecedence exprWithMinPrecedence(int minPrecedence, ParsingExpression operand)
-    {
-        WithMinPrecedence result = new WithMinPrecedence();
-        result.operand = operand;
-        result.minPrecedence = minPrecedence;
-        return result;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public static WithMinPrecedence exprWithMinPrecedence(int minPrecedence, ParsingExpression... seq)
-    {
-        return exprWithMinPrecedence(minPrecedence, sequence(seq));
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
     public static Group group(int precedence, boolean leftRecursive, boolean leftAssociative, ParsingExpression... alternates)
     {
         Group group = new Group();
@@ -255,51 +209,6 @@ public final class ParsingExpressionFactory
     public static Group groupLeftAssoc(int precedence, ParsingExpression... alternates)
     {
         return group(precedence, true, true, alternates);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public static ParsingExpression filter(
-        ParsingExpression pe,
-        String[] allowed,
-        String[] forbidden)
-    {
-        if ((allowed == null   || allowed.length == 0)
-        &&  (forbidden == null || forbidden.length == 0))
-        {
-            return pe;
-        }
-
-        return new Filter(
-            pe,
-            allowed != null ? allowed : EMPTY_STRINGS,
-            forbidden != null ? forbidden : EMPTY_STRINGS);
-    }
-
-    private static final String[] EMPTY_STRINGS = new String[0];
-
-    // ---------------------------------------------------------------------------------------------
-
-    public static ParsingExpression allow(ParsingExpression pe, String... allowed)
-    {
-        return filter(pe, allowed, null);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public static ParsingExpression forbid(ParsingExpression pe, String... forbidden)
-    {
-        return filter(pe, null, forbidden);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Use to create the allowed and forbidden parameters to {@link #filter}.
-     */
-    public static ParsingExpression[] $(ParsingExpression... exprs)
-    {
-        return exprs;
     }
 
     // ---------------------------------------------------------------------------------------------

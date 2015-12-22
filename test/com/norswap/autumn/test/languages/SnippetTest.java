@@ -5,6 +5,8 @@ import com.norswap.autumn.Grammar;
 import com.norswap.autumn.ParseResult;
 import com.norswap.autumn.ParsingExpression;
 import static com.norswap.autumn.ParsingExpressionFactory.*;
+import static com.norswap.autumn.extensions.cluster.ClusterExpressionFactory.exprDropPrecedence;
+import com.norswap.autumn.extensions.cluster.ClusterExtension;
 import com.norswap.autumn.source.Source;
 import java.io.IOException;
 
@@ -20,11 +22,12 @@ public final class SnippetTest
 
     public static void main(String[] args) throws IOException
     {
+        ClusterExtension cext = new ClusterExtension();
         int i = 0;
         ParsingExpression
         Identifier = token(oneMore(charRange('a', 'z'))),
         E = reference("Expression"),
-        Expression = named$("Expression", cluster(
+        Expression = named$("Expression", cext.cluster(
             groupLeftAssoc(++i, choice(
                 sequence(E, token("*"), E),
                 sequence(E, token("/"), E))),
@@ -41,8 +44,9 @@ public final class SnippetTest
         Statement = choice(Assignment, Print),
         Root = zeroMore(Statement);
 
-        // Grammar grammar = Grammar.fromRoot(Root).build();
-        Grammar grammar = Grammar.fromSource(Source.fromFile(grammarFile).columnStart(1).build())
+        Source source = Source.fromFile(grammarFile).columnStart(1).build();
+        Grammar grammar = Grammar.fromSource(source)
+            .withExtension(cext)
             //.withExtension(new TracerExtension())
             //.withExtension(new BruteForceTreeExtension())
             .build();

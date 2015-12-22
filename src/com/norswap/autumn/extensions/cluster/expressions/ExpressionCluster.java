@@ -1,22 +1,29 @@
 package com.norswap.autumn.extensions.cluster.expressions;
 
-import com.norswap.autumn.extensions.cluster.ClusterExtension;
+import com.norswap.autumn.Parser;
+import com.norswap.autumn.ParsingExpression;
+import com.norswap.autumn.expressions.abstrakt.NaryParsingExpression;
 import com.norswap.autumn.extensions.cluster.ClusterState;
+import com.norswap.autumn.graph.Nullability;
 import com.norswap.autumn.state.ParseChanges;
 import com.norswap.autumn.state.ParseState;
-import com.norswap.autumn.Parser;
-import com.norswap.autumn.expressions.abstrakt.NaryParsingExpression;
-import com.norswap.autumn.ParsingExpression;
-import com.norswap.autumn.graph.Nullability;
 import com.norswap.util.DeepCopy;
-
 import java.util.Arrays;
 import java.util.function.Predicate;
 
-import static com.norswap.util.Caster.cast;
-
 public final class ExpressionCluster extends ParsingExpression
 {
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private final ClusterState cstate;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public ExpressionCluster(ClusterState cstate)
+    {
+        this.cstate = cstate;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public final static class Group extends NaryParsingExpression
@@ -57,7 +64,6 @@ public final class ExpressionCluster extends ParsingExpression
     @Override
     public void parse(Parser parser, ParseState state)
     {
-        ClusterState cstate = cast(state.customStates[ClusterExtension.INDEX]);
         ParseChanges changes;
 
         if ((changes = cstate.getSeed(this)) != null)

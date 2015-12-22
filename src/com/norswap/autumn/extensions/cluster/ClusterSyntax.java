@@ -3,11 +3,13 @@ package com.norswap.autumn.extensions.cluster;
 import com.norswap.autumn.ParsingExpression;
 
 import static com.norswap.autumn.ParsingExpressionFactory.*;
+import com.norswap.autumn.extensions.cluster.syntax.SyntaxCluster;
+import com.norswap.autumn.extensions.cluster.syntax.SyntaxFilter;
 import static com.norswap.autumn.support.MetaGrammar.*;
 
 /**
- * Parsing expressions used to define the syntax of {@link SyntaxExtensionCluster} and
- * {@link SyntaxExtensionFilter}.
+ * Parsing expressions used to define the syntax of {@link SyntaxCluster} and
+ * {@link SyntaxFilter}.
  */
 public final class ClusterSyntax
 {
@@ -19,10 +21,8 @@ public final class ClusterSyntax
         namekind("clusterArrow", sequence(
             ntoken("->"),
             optional(lhs),
-            // TODO
             capture("expr",
                 parsingExpression))),
-                //forbid(parsingExpression, "choice")))),
 
     clusterDirective =
         namekindText("clusterDirective", choice(

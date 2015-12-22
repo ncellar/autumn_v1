@@ -318,9 +318,6 @@ public final class GrammarCompiler
                 childPE = child.accessor.equals("marker") ? null : compilePE(child);
                 return compileCapture(null, childPE, tree.group("captureSuffixes"));
 
-            case "drop":
-                return exprDropPrecedence(compilePE(tree.child()));
-
             case "ref":
                 return reference(tree.value);
 

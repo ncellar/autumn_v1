@@ -20,8 +20,8 @@ public final class JavaTest
 
     public static void main(String[] args) throws IOException
     {
-        Grammar grammar =
-            Grammar.fromSource(Source.fromFile(grammarFile).columnStart(1).build()).build();
+        Source source = Source.fromFile(grammarFile).columnStart(1).build();
+        Grammar grammar = Grammar.fromSource(source).build();
 
         for (Path path: Glob.glob("**/*.java", Paths.get("../_readonly/guava")))
         {

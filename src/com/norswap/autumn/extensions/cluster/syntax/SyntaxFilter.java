@@ -1,12 +1,14 @@
-package com.norswap.autumn.extensions.cluster;
+package com.norswap.autumn.extensions.cluster.syntax;
 
 import com.norswap.autumn.capture.ParseTree;
 import com.norswap.autumn.extensions.SyntaxExtension;
+import com.norswap.autumn.extensions.cluster.ClusterSyntax;
 import com.norswap.autumn.extensions.cluster.expressions.Filter;
 import com.norswap.autumn.support.GrammarCompiler;
+import com.norswap.autumn.support.MetaGrammar;
 import com.norswap.util.Array;
 
-import static com.norswap.autumn.ParsingExpressionFactory.filter;
+import static com.norswap.autumn.extensions.cluster.ClusterExpressionFactory.filter;
 import static com.norswap.autumn.ParsingExpressionFactory.reference;
 
 /**
@@ -18,11 +20,11 @@ import static com.norswap.autumn.ParsingExpressionFactory.reference;
  * myRule2 = `filter { myClusterRule; forbidden: myArrow1, myArrow2; }
  * }</pre>
  */
-public final class SyntaxExtensionFilter extends SyntaxExtension
+public final class SyntaxFilter extends SyntaxExtension
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public SyntaxExtensionFilter()
+    public SyntaxFilter()
     {
         super(Type.EXPRESSION, "filter", ClusterSyntax.filter);
     }

@@ -3,10 +3,11 @@ package com.norswap.autumn.support;
 import com.norswap.autumn.Grammar;
 import com.norswap.autumn.ParsingExpression;
 import static com.norswap.autumn.ParsingExpressionFactory.*;
+import com.norswap.autumn.extensions.SyntaxExtension;
 import static com.norswap.autumn.extensions.SyntaxExtension.Type.DECLARATION;
 import static com.norswap.autumn.extensions.SyntaxExtension.Type.EXPRESSION;
-
-import com.norswap.autumn.extensions.SyntaxExtension;
+import static com.norswap.autumn.extensions.cluster.ClusterExpressionFactory.exprDropPrecedence;
+import com.norswap.autumn.extensions.cluster.ClusterExtension;
 import com.norswap.autumn.support.dynext.DynExtExtension;
 import com.norswap.autumn.support.dynext.DynExtReader;
 import com.norswap.autumn.support.dynext.DynRef;
@@ -25,9 +26,11 @@ public final class MetaGrammar
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    private static final ClusterExtension clusterExtension = new ClusterExtension();
+
     private static int i = 0;
 
-    public final static ParsingExpression
+    public static final ParsingExpression
 
     // TOKENS
 
@@ -78,14 +81,11 @@ public final class MetaGrammar
     num
         = named$("num", token(oneMore(digit))),
 
-    dropLit     = nKeyword("drop"),
-    left_assoc  = nKeyword("left_assoc"),
-    left_recur  = nKeyword("left_recur"),
     importLit   = nKeyword("import"),
     declLit     = nKeyword("decl"),
 
     reserved
-        = choice(dropLit, left_assoc, left_recur, importLit, declLit),
+        = choice(importLit, declLit),
 
     unicodeEscape
         = sequence(literal("\\u"), hexDigit, hexDigit, hexDigit, hexDigit),
@@ -165,7 +165,7 @@ public final class MetaGrammar
     // EXPRESSIONS
 
     parsingExpression
-        = named$("parsingExpression", cluster(
+        = named$("parsingExpression", clusterExtension.cluster(
 
         // NOTE(norswap)
         // Using left associativity for choice and sequence ensures that sub-expressions
@@ -203,7 +203,6 @@ public final class MetaGrammar
 
         group(++i, // primary
             sequence(lParen, exprDropPrecedence(expr), rParen),
-            capture("drop", sequence(dropLit, expr)),
             captureText("ref", name),
             capture("any", underscore),
             capture("charRange", range),
@@ -280,6 +279,7 @@ public final class MetaGrammar
 
     public static final Grammar get = Grammar
         .fromRoot(root)
+        .withExtension(clusterExtension)
         .withExtension(new DynExtExtension())
         .build();
 

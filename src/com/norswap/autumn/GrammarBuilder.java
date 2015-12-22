@@ -209,8 +209,10 @@ public final class GrammarBuilder implements GrammarBuilderExtensionView
 
         extensions.forEach(ext -> ext.transform(this));
 
+        // NOTE(norswap): we don't add the cluster extension for DSL builds
+        // This would make no sense as the extension as to be created in order to spawn the PEs.
         if (defaultExtensions)
-            extensions.addAll(leftrec, cluster);
+            extensions.addAll(leftrec);
 
         return new Grammar(root, rules, whitespace, processLeadingWhitespace, extensions);
     }

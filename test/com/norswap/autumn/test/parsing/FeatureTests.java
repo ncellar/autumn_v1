@@ -2,6 +2,7 @@ package com.norswap.autumn.test.parsing;
 
 import com.norswap.autumn.ParsingExpression;
 import com.norswap.autumn.capture.ParseTree;
+import com.norswap.autumn.extensions.cluster.ClusterExtension;
 import com.norswap.autumn.test.Ensure;
 import com.norswap.autumn.test.TestRunner;
 
@@ -240,7 +241,9 @@ public final class FeatureTests
 
     public void testExpression()
     {
-        pe = named$("expr", cluster(
+        ClusterExtension cext = new ClusterExtension();
+
+        pe = named$("expr", cext.cluster(
             groupLeftAssoc(1,
                 plus.deepCopy(),
                 minus.deepCopy()),
@@ -250,7 +253,7 @@ public final class FeatureTests
             group(3,
                 num.deepCopy())));
 
-        tree = Common.tree(pe, "1+2-3+4*5/6*7+8");
+        tree = Common.tree(pe, "1+2-3+4*5/6*7+8", cext);
 
         expected = $($("+",
             $("left", $("+",
@@ -273,9 +276,11 @@ public final class FeatureTests
 
     public void testExpression2()
     {
+        ClusterExtension cext = new ClusterExtension();
+
         // NOTE(norswap): Same as testExpression() but + and - are now right-associative.
 
-        pe = named$("expr", cluster(
+        pe = named$("expr", cext.cluster(
             groupLeftRec(1,
                 plus.deepCopy(),
                 minus.deepCopy()),
@@ -285,7 +290,7 @@ public final class FeatureTests
             group(3,
                 num.deepCopy())));
 
-        tree = Common.tree(pe, "1+2-3+4*5/6*7+8");
+        tree = Common.tree(pe, "1+2-3+4*5/6*7+8", cext);
 
         expected = $($("+",
             $("left", $("num", "1")),
@@ -308,9 +313,11 @@ public final class FeatureTests
 
     public void testExpression3()
     {
+        ClusterExtension cext = new ClusterExtension();
+
         // NOTE(norswap): Same as testExpression() but * and / are now right-associative.
 
-        pe = named$("expr", cluster(
+        pe = named$("expr", cext. cluster(
             groupLeftAssoc(1,
                 plus.deepCopy(),
                 minus.deepCopy()),
@@ -320,7 +327,7 @@ public final class FeatureTests
             group(3,
                 num.deepCopy())));
 
-        tree = Common.tree(pe, "1+2-3+4*5/6*7+8");
+        tree = Common.tree(pe, "1+2-3+4*5/6*7+8", cext);
 
         expected = $($("+",
             $("left", $("+",

@@ -2,18 +2,22 @@ package com.norswap.autumn.test.parsing;
 
 import com.norswap.autumn.Autumn;
 import com.norswap.autumn.Grammar;
+import com.norswap.autumn.GrammarBuilder;
 import com.norswap.autumn.ParseResult;
 import com.norswap.autumn.ParsingExpression;
 import com.norswap.autumn.capture.ParseTree;
+import com.norswap.autumn.extensions.Extension;
 import com.norswap.autumn.test.TestFailed;
 
 public final class Common
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static ParseResult parse(ParsingExpression pe, String string)
+    public static ParseResult parse(ParsingExpression pe, String string, Extension... exts)
     {
-        return Autumn.parseString(Grammar.fromRoot(pe).build(), string);
+        GrammarBuilder gb = Grammar.fromRoot(pe);
+        for (Extension ext: exts) gb.withExtension(ext);
+        return Autumn.parseString(gb.build(), string);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -82,9 +86,9 @@ public final class Common
 
     // ---------------------------------------------------------------------------------------------
 
-    public static ParseTree tree(ParsingExpression pe, String string)
+    public static ParseTree tree(ParsingExpression pe, String string, Extension... exts)
     {
-        ParseResult result = parse(pe, string);
+        ParseResult result = parse(pe, string, exts);
         ensureMatch(result);
         return result.tree;
     }

@@ -1185,7 +1185,7 @@ Expression ~ expression = `expr {
     ->'op>='         :~$ = E '>=' E
     ->'op<'          :~$ = E '<'  E
     ->'op>'          :~$ = E '>'  E
-    -> InstanceOf   :~$ = E INSTANCEOF E
+    -> InstanceOf    :~$ = E INSTANCEOF E
 
     @+_left_assoc
     ->'op<<'  :~$ = E '<<' E
@@ -1223,14 +1223,14 @@ Expression ~ expression = `expr {
     @+_left_assoc
     -> 'x++'            :~$ = E '++'
     -> 'x--'            :~$ = E '--'
-    -> DotTypeArgsCall  :~$ = E-op '.' TypeArguments Identifier :+-id drop Arguments
-    -> MethodCall       :~$ = (E-op drop Arguments)
-    -> DotNew           :~$ = E-op '.' NEW drop ClassCreator
+    -> DotTypeArgsCall  :~$ = E-op '.' TypeArguments Identifier :+-id `drop { Arguments }
+    -> MethodCall       :~$ = E-op `drop { Arguments }
+    -> DotNew           :~$ = E-op '.' NEW `drop { ClassCreator }
     -> DotThis          :~$ = E '.' THIS
     -> DotSuper         :~$ = E '.' SUPER
     -> DotClass         :~$ = E '.' CLASS
     -> DotIden          :~$ = E-op '.' Identifier:+-id
-    -> ArrayAccess      :~$ = E-op '[' drop E-subscript ']'
+    -> ArrayAccess      :~$ = E-op '[' `drop { E-subscript } ']'
     -> MethodRef        :~$ = E-op '::' TypeArguments? Identifier:+-id
     -> NewRef           :~$ = TypeArguments? NEW
 
@@ -1243,13 +1243,13 @@ Expression ~ expression = `expr {
     //// PRIMARY EXPRESSIONS
 
     @+
-    -> Parens           :~$ = '(' drop Expression ')'
+    -> Parens           :~$ = '(' `drop { Expression } ')'
     -> ThisCall         :~$ = THIS Arguments
     -> THIS :~$
     -> SuperCall        :~$ = SUPER Arguments
     -> SUPER :~$
-    -> CtorCall         :~$ = NEW drop ClassCreator
-    -> ArrayCtorCall    :~$ = NEW drop ArrayCreator
+    -> CtorCall         :~$ = NEW `drop { ClassCreator }
+    -> ArrayCtorCall    :~$ = NEW `drop { ArrayCreator }
     -> Iden             :~$ = Identifier
     -> Literal
 
@@ -1299,7 +1299,7 @@ AssignmentOperator
     = '=' / '*=' / '/=' / '%=' / '+=' / '-=' / '<<=' / '>>=' / '>>>=' / '&=' / '^=' / '|=' ;
 
 ConditionalExpression :~ conditionalExpr
-    = Expression-cond '?' drop Expression-if ':' Expression-else ;
+    = Expression-cond '?' `drop { Expression-if } ':' Expression-else ;
 
 // NOTE:-first must be reference type or primitive type
 //       further allowed only w/ reference type and must be class types
