@@ -1,11 +1,15 @@
 # Autumn: Extensible Parsing Combinators
 
+**DISCLAIMER**
+
+This repository was put up for historical records, only.
+
+There is a newer and better version of Autumn, available at
+https://github.com/norswap/autumn
+
 ## Documentation
 
-Soon: a user manual. You can send me angry emails if I procrastinate for too
-long.
-
-In the meantime, dig around [the Autumn class][autumn] for documented entry
+Dig around [the Autumn class][autumn] for documented entry
 points into the parser. There's also [a good example][java-example] that uses
 the bundled Java grammar.
 
