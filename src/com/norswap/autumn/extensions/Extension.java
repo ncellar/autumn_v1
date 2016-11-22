@@ -11,7 +11,7 @@ import com.norswap.util.annotations.NonNull;
  * <p>
  * An extension is made of an optional grammar transformation and an optional custom parse state.
  */
-public interface Extension
+public interface Extension                          
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 

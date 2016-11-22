@@ -86,16 +86,6 @@ public class Nullability
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * {@code bool ? yes(pe) : no(pe)}
-     */
-    public static Nullability bool(ParsingExpression pe, boolean bool)
-    {
-        return new Nullability(pe, true, bool, null);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
     public static Nullability yes(ParsingExpression pe)
     {
         return new Nullability(pe, true, true, null);
@@ -117,27 +107,17 @@ public class Nullability
             @Override
             public Nullability reduce(Nullability[] nullabilities)
             {
-                boolean allYes = true;
+                int yeses = 0;
 
                 for (Nullability n : nullabilities)
-                {
                     if (n.resolved)
-                    {
                         if (!n.nullable)
-                        {
                             return no(pe);
-                        }
-                    }
-                    else if (allYes)
-                    {
-                        allYes = false;
-                    }
-                }
+                        else
+                            ++ yeses;
 
-                if (allYes)
-                {
+                if (yeses == nullabilities.length)
                     return yes(pe);
-                }
 
                 return all(pe, Arrays.stream(nullabilities)
                     .filter(n -> !n.resolved)
@@ -157,34 +137,24 @@ public class Nullability
 
     // ---------------------------------------------------------------------------------------------
 
-    public static final Nullability any(ParsingExpression pe, ParsingExpression[] toReduce)
+    public static Nullability any(ParsingExpression pe, ParsingExpression[] toReduce)
     {
         return new Nullability(pe, false, false, toReduce)
         {
             @Override
             public Nullability reduce(Nullability[] nullabilities)
             {
-                boolean allNo = true;
+                int noes = 0;
 
                 for (Nullability n : nullabilities)
-                {
                     if (n.resolved)
-                    {
                         if (n.nullable)
-                        {
                             return yes(pe);
-                        }
-                    }
-                    else if (allNo)
-                    {
-                        allNo = false;
-                    }
-                }
+                        else
+                            ++ noes;
 
-                if (allNo)
-                {
+                if (noes == nullabilities.length)
                     return no(pe);
-                }
 
                 return any(pe, Arrays.stream(nullabilities)
                     .filter(n -> !n.resolved)
@@ -211,29 +181,21 @@ public class Nullability
             @Override
             public Nullability reduce(Nullability[] nullabilities)
             {
-                Nullability n = nullabilities[0];
-
-                if (n.resolved)
-                {
-                    return n.nullable
+                return nullabilities[0].resolved
+                    ? nullabilities[0].nullable
                         ? yes(pe)
-                        : no(pe);
-                }
-
-                return this;
+                        : no(pe)
+                    : this;
             }
 
             @Override
             public Nullability update(Nullability n)
             {
-                if (n.resolved)
-                {
-                    return n.nullable
+                return n.resolved
+                    ? n.nullable
                         ? yes(pe)
-                        : no(pe);
-                }
-
-                return null;
+                        : no(pe)
+                    : null;
             }
         };
     }

@@ -8,7 +8,6 @@ JVM_ARGS?=
 JVC_ARGS?=
 
 QUOTED_LIBS:=$(foreach PATH,$(subst :, ,$(LIBS)),"$(PATH)")
-$(info $(QUOTED_LIBS))
 
 ifeq ($(OS),Windows_NT)
 	SEP=;

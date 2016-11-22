@@ -76,7 +76,9 @@ public final class Literal extends ParsingExpression
     @Override
     public Nullability nullability()
     {
-        return Nullability.bool(this, string.isEmpty());
+        return string.isEmpty()
+            ? Nullability.yes(this)
+            : Nullability.no(this);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

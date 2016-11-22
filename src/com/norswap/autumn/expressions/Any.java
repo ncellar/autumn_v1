@@ -26,6 +26,8 @@ public final class Any extends ParsingExpression
         {
             state.fail(this);
         }
+
+        char c = '\0';
     }
 
     // ---------------------------------------------------------------------------------------------
